@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reversi Game - Red vs Blue AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 3D Flip effect for game pieces */
+        .piece-container {
+            perspective: 1000px;
+        }
+        .piece {
+            width: 85%;
+            height: 85%;
+            border-radius: 50%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+        
+        .piece.red {
+            transform: rotateY(0deg);
+        }
+        
+        .piece.blue {
+            transform: rotateY(180deg);
+        }
+
+        .piece-front, .piece-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .piece-front {
+            background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b);
+        }
+
+        .piece-back {
+            background: radial-gradient(circle at 30% 30%, #3b82f6, #1e40af);
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-[#fcf8f2] text-slate-800 min-h-screen flex flex-col items-center justify-between p-4 sm:p-6">
+
+    <!-- Header & Title -->
+    <header class="w-full max-w-xl text-center mb-2 relative flex items-center justify-center">
+        <!-- Red Home Button -->
+        <a href="index.html" class="absolute left-0 p-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center" title="Go to Home (index.html)">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+            </svg>
+        </a>
+
+        <div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                REVERSI
+            </h1>
+            <p class="text-slate-600 text-xs sm:text-sm mt-0.5">Player (Red) vs Computer (Blue)</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-xl flex flex-col items-center gap-4">
+        
+        <!-- Difficulty Selection Bar -->
+        <div class="bg-amber-100/70 backdrop-blur border border-amber-200/80 p-1.5 rounded-xl flex w-full justify-between items-center shadow-md">
+            <span class="text-xs sm:text-sm font-semibold text-slate-700 ml-2 hidden xs:inline">Difficulty:</span>
+            <div class="grid grid-cols-3 gap-1.5 w-full xs:w-auto flex-1 xs:flex-none">
+                <button id="btn-easy" onclick="setDifficulty('easy')" class="difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-medium transition-all duration-200">
+                    Easy
+                </button>
+                <button id="btn-medium" onclick="setDifficulty('medium')" class="difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-medium transition-all duration-200">
+                    Medium
+                </button>
+                <button id="btn-hard" onclick="setDifficulty('hard')" class="difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-medium transition-all duration-200">
+                    Hard (Aggressive)
+                </button>
+            </div>
+        </div>
+
+        <!-- Scoreboard & Turn Display -->
+        <div class="grid grid-cols-2 gap-3 w-full">
+            <!-- Red Player Score -->
+            <div id="card-red" class="bg-amber-50/90 border-2 border-red-500/40 rounded-xl p-3 flex items-center justify-between transition-all duration-300 shadow-sm">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-red-400 to-red-700 shadow-md border border-red-300/30"></div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-semibold">PLAYER</div>
+                        <div class="text-sm sm:text-base font-bold text-red-600">Red</div>
+                    </div>
+                </div>
+                <div id="score-red" class="text-2xl sm:text-3xl font-black text-slate-800">2</div>
+            </div>
+
+            <!-- Blue Computer Score -->
+            <div id="card-blue" class="bg-amber-50/90 border-2 border-slate-300 rounded-xl p-3 flex items-center justify-between transition-all duration-300 shadow-sm">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-md border border-blue-300/30"></div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-semibold">AI</div>
+                        <div class="text-sm sm:text-base font-bold text-blue-600">Blue</div>
+                    </div>
+                </div>
+                <div id="score-blue" class="text-2xl sm:text-3xl font-black text-slate-800">2</div>
+            </div>
+        </div>
+
+        <!-- Status Banner -->
+        <div id="status-banner" class="w-full bg-amber-100/80 border border-amber-200 rounded-lg py-2 px-4 text-center text-xs sm:text-sm font-semibold text-slate-700 flex items-center justify-center gap-2 min-h-[40px] shadow-sm">
+            <span>Your Turn (Red)</span>
+        </div>
+
+        <!-- Game Board Container -->
+        <div class="w-full aspect-square max-w-[500px] bg-emerald-800/80 p-2 sm:p-3 rounded-2xl shadow-xl border-4 border-emerald-900/40 relative">
+            <div id="board" class="w-full h-full grid grid-cols-8 grid-rows-8 gap-1 sm:gap-1.5 bg-emerald-700/40 p-1 rounded-xl">
+                <!-- 64 Board cells generated dynamically -->
+            </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="flex gap-3 w-full justify-center">
+            <button onclick="resetGame()" class="bg-amber-100 hover:bg-amber-200 text-slate-800 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl border border-amber-300 shadow active:scale-95 transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                New Game
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal for Game Over -->
+    <div id="game-over-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+            <div id="modal-icon" class="text-5xl mb-3">🏆</div>
+            <h2 id="modal-title" class="text-2xl font-black text-slate-800 mb-1">Game Over</h2>
+            <p id="modal-subtitle" class="text-sm text-slate-600 mb-6">Red Player Wins!</p>
+            
+            <div class="bg-amber-100/60 rounded-xl p-4 mb-6 grid grid-cols-2 gap-4 border border-amber-200">
+                <div class="text-center">
+                    <div class="text-xs font-semibold text-red-600">RED (Player)</div>
+                    <div id="modal-score-red" class="text-2xl font-black text-slate-800">32</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs font-semibold text-blue-600">BLUE (AI)</div>
+                    <div id="modal-score-blue" class="text-2xl font-black text-slate-800">32</div>
+                </div>
+            </div>
+
+            <button onclick="closeModal(); resetGame();" class="w-full bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-500 hover:to-blue-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-all">
+                Play Again
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-4 text-xs text-slate-500 text-center">
+        Standard Reversi Rules • Red moves first
+    </footer>
+
+    <script>
+        // Constants
+        const EMPTY = 0;
+        const RED = 1;    // Player
+        const BLUE = -1;  // AI
+
+        const BOARD_SIZE = 8;
+        const DIRECTIONS = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [0, -1],           [0, 1],
+            [1, -1],  [1, 0],  [1, 1]
+        ];
+
+        // Positional Weight Matrix for AI Evaluation
+        const POSITIONAL_WEIGHTS = [
+            [ 120, -20,  20,   5,   5,  20, -20, 120],
+            [-20,  -40,  -5,  -5,  -5,  -5, -40, -20],
+            [  20,  -5,  15,   3,   3,  15,  -5,  20],
+            [   5,  -5,   3,   3,   3,   3,  -5,   5],
+            [   5,  -5,   3,   3,   3,   3,  -5,   5],
+            [  20,  -5,  15,   3,   3,  15,  -5,  20],
+            [-20,  -40,  -5,  -5,  -5,  -5, -40, -20],
+            [ 120, -20,  20,   5,   5,  20, -20, 120]
+        ];
+
+        // State variables
+        let board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(EMPTY));
+        let currentPlayer = RED;
+        let currentDifficulty = 'easy'; // Default difficulty set to easy
+        let isAiThinking = false;
+
+        // Initialize on load
+        window.onload = function() {
+            setDifficulty('easy');
+            resetGame();
+        };
+
+        function resetGame() {
+            // Clear board
+            board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(EMPTY));
+            
+            // Standard Othello starting configuration
+            board[3][3] = BLUE;
+            board[3][4] = RED;
+            board[4][3] = RED;
+            board[4][4] = BLUE;
+
+            currentPlayer = RED;
+            isAiThinking = false;
+
+            renderBoard();
+            updateScoresAndStatus();
+        }
+
+        function setDifficulty(diff) {
+            currentDifficulty = diff;
+            
+            // Update difficulty UI buttons
+            const buttons = ['easy', 'medium', 'hard'];
+            buttons.forEach(b => {
+                const btn = document.getElementById(`btn-${b}`);
+                if (b === diff) {
+                    btn.className = "difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-bold bg-amber-600 text-white shadow";
+                } else {
+                    btn.className = "difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-900 hover:bg-amber-200/60";
+                }
+            });
+        }
+
+        function renderBoard() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+
+            const validMoves = getValidMoves(board, currentPlayer);
+
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const cellVal = board[r][c];
+                    const isValidMove = validMoves.some(m => m.r === r && m.c === c);
+
+                    const cell = document.createElement('div');
+                    cell.className = 'w-full h-full bg-emerald-500/80 rounded-md sm:rounded-lg flex items-center justify-center relative cursor-pointer';
+                    
+                    if (isValidMove && currentPlayer === RED && !isAiThinking) {
+                        cell.onclick = () => handlePlayerMove(r, c);
+                    } else if (cellVal === EMPTY) {
+                        cell.onclick = null;
+                    }
+
+                    if (cellVal !== EMPTY) {
+                        const pieceContainer = document.createElement('div');
+                        pieceContainer.className = 'piece-container w-full h-full flex items-center justify-center';
+
+                        const piece = document.createElement('div');
+                        piece.className = `piece ${cellVal === RED ? 'red' : 'blue'}`;
+
+                        const front = document.createElement('div');
+                        front.className = 'piece-front';
+                        const back = document.createElement('div');
+                        back.className = 'piece-back';
+
+                        piece.appendChild(front);
+                        piece.appendChild(back);
+                        pieceContainer.appendChild(piece);
+                        cell.appendChild(pieceContainer);
+                    }
+
+                    boardEl.appendChild(cell);
+                }
+            }
+        }
+
+        function handlePlayerMove(r, c) {
+            if (currentPlayer !== RED || isAiThinking) return;
+
+            const flipped = getFlippedPieces(board, r, c, RED);
+            if (flipped.length === 0) return;
+
+            makeMove(board, r, c, RED);
+            renderBoard();
+            updateScoresAndStatus();
+
+            // Next turn: AI
+            currentPlayer = BLUE;
+            checkNextTurn();
+        }
+
+        function makeMove(bd, r, c, player) {
+            const flipped = getFlippedPieces(bd, r, c, player);
+            bd[r][c] = player;
+            flipped.forEach(([fr, fc]) => {
+                bd[fr][fc] = player;
+            });
+        }
+
+        function checkNextTurn() {
+            updateScoresAndStatus();
+            const playerMoves = getValidMoves(board, RED);
+            const aiMoves = getValidMoves(board, BLUE);
+
+            if (playerMoves.length === 0 && aiMoves.length === 0) {
+                // Game ended
+                setTimeout(endGame, 600);
+                return;
+            }
+
+            if (currentPlayer === BLUE) {
+                if (aiMoves.length === 0) {
+                    // AI has no moves, pass turn back to Player
+                    showStatusBanner("AI has no valid moves. Your turn! (Red)");
+                    currentPlayer = RED;
+                    renderBoard();
+                } else {
+                    // AI Turn
+                    isAiThinking = true;
+                    showStatusBanner("AI is thinking...");
+                    renderBoard();
+                    setTimeout(triggerAiMove, 700);
+                }
+            } else {
+                if (playerMoves.length === 0) {
+                    // Player has no moves, pass turn to AI
+                    showStatusBanner("You have no valid moves. AI's turn!");
+                    currentPlayer = BLUE;
+                    renderBoard();
+                    setTimeout(checkNextTurn, 1000);
+                } else {
+                    showStatusBanner("Your Turn (Red)");
+                    isAiThinking = false;
+                    renderBoard();
+                }
+            }
+        }
+
+        function getValidMoves(bd, player) {
+            const moves = [];
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (bd[r][c] === EMPTY) {
+                        const flipped = getFlippedPieces(bd, r, c, player);
+                        if (flipped.length > 0) {
+                            moves.push({ r, c, count: flipped.length });
+                        }
+                    }
+                }
+            }
+            return moves;
+        }
+
+        function getFlippedPieces(bd, r, c, player) {
+            if (bd[r][c] !== EMPTY) return [];
+            const opponent = -player;
+            let totalFlipped = [];
+
+            for (const [dr, dc] of DIRECTIONS) {
+                let nr = r + dr;
+                let nc = c + dc;
+                let candidate = [];
+
+                while (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && bd[nr][nc] === opponent) {
+                    candidate.push([nr, nc]);
+                    nr += dr;
+                    nc += dc;
+                }
+
+                if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && bd[nr][nc] === player) {
+                    if (candidate.length > 0) {
+                        totalFlipped = totalFlipped.concat(candidate);
+                    }
+                }
+            }
+            return totalFlipped;
+        }
+
+        function triggerAiMove() {
+            const validMoves = getValidMoves(board, BLUE);
+            if (validMoves.length === 0) {
+                isAiThinking = false;
+                currentPlayer = RED;
+                checkNextTurn();
+                return;
+            }
+
+            let chosenMove = null;
+
+            if (currentDifficulty === 'easy') {
+                // Random move selection
+                chosenMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+            } else if (currentDifficulty === 'medium') {
+                // Medium: Positional evaluation + flip count
+                let bestScore = -Infinity;
+                for (const move of validMoves) {
+                    const tempBoard = cloneBoard(board);
+                    makeMove(tempBoard, move.r, move.c, BLUE);
+                    let score = POSITIONAL_WEIGHTS[move.r][move.c] + (move.count * 2);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        chosenMove = move;
+                    }
+                }
+            } else {
+                // Hard: Aggressive Minimax with Alpha-Beta Pruning (Depth 4)
+                chosenMove = getBestMoveMinimax(board, 4);
+            }
+
+            if (!chosenMove) {
+                chosenMove = validMoves[0];
+            }
+
+            makeMove(board, chosenMove.r, chosenMove.c, BLUE);
+            isAiThinking = false;
+            currentPlayer = RED;
+
+            renderBoard();
+            checkNextTurn();
+        }
+
+        function getBestMoveMinimax(bd, depth) {
+            const validMoves = getValidMoves(bd, BLUE);
+            let bestScore = -Infinity;
+            let bestMove = validMoves[0];
+
+            for (const move of validMoves) {
+                const tempBoard = cloneBoard(bd);
+                makeMove(tempBoard, move.r, move.c, BLUE);
+                const score = minimax(tempBoard, depth - 1, -Infinity, Infinity, false);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+            return bestMove;
+        }
+
+        function minimax(bd, depth, alpha, beta, isMaximizing) {
+            const aiMoves = getValidMoves(bd, BLUE);
+            const playerMoves = getValidMoves(bd, RED);
+
+            if (depth === 0 || (aiMoves.length === 0 && playerMoves.length === 0)) {
+                return evaluateBoardAggressive(bd);
+            }
+
+            if (isMaximizing) {
+                if (aiMoves.length === 0) {
+                    return minimax(bd, depth - 1, alpha, beta, false);
+                }
+                let maxEval = -Infinity;
+                for (const move of aiMoves) {
+                    const tempBoard = cloneBoard(bd);
+                    makeMove(tempBoard, move.r, move.c, BLUE);
+                    const evalVal = minimax(tempBoard, depth - 1, alpha, beta, false);
+                    maxEval = Math.max(maxEval, evalVal);
+                    alpha = Math.max(alpha, evalVal);
+                    if (beta <= alpha) break; // Alpha-beta pruning
+                }
+                return maxEval;
+            } else {
+                if (playerMoves.length === 0) {
+                    return minimax(bd, depth - 1, alpha, beta, true);
+                }
+                let minEval = Infinity;
+                for (const move of playerMoves) {
+                    const tempBoard = cloneBoard(bd);
+                    makeMove(tempBoard, move.r, move.c, RED);
+                    const evalVal = minimax(tempBoard, depth - 1, alpha, beta, true);
+                    minEval = Math.min(minEval, evalVal);
+                    beta = Math.min(beta, evalVal);
+                    if (beta <= alpha) break; // Alpha-beta pruning
+                }
+                return minEval;
+            }
+        }
+
+        // Aggressive board evaluation focusing on corner control, mobility restriction, and piece advantage
+        function evaluateBoardAggressive(bd) {
+            let positionalScore = 0;
+            let blueCount = 0;
+            let redCount = 0;
+
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (bd[r][c] === BLUE) {
+                        blueCount++;
+                        positionalScore += POSITIONAL_WEIGHTS[r][c];
+                    } else if (bd[r][c] === RED) {
+                        redCount++;
+                        positionalScore -= POSITIONAL_WEIGHTS[r][c];
+                    }
+                }
+            }
+
+            // Mobility Evaluation (Restricting player options)
+            const aiMobility = getValidMoves(bd, BLUE).length;
+            const playerMobility = getValidMoves(bd, RED).length;
+            const mobilityScore = (aiMobility - playerMobility) * 15;
+
+            // Aggressive Piece count weighting
+            const parityScore = (blueCount - redCount) * 5;
+
+            return positionalScore + mobilityScore + parityScore;
+        }
+
+        function cloneBoard(bd) {
+            return bd.map(row => [...row]);
+        }
+
+        function updateScoresAndStatus() {
+            let redScore = 0;
+            let blueScore = 0;
+
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (board[r][c] === RED) redScore++;
+                    if (board[r][c] === BLUE) blueScore++;
+                }
+            }
+
+            document.getElementById('score-red').innerText = redScore;
+            document.getElementById('score-blue').innerText = blueScore;
+
+            // Active player card styling
+            const cardRed = document.getElementById('card-red');
+            const cardBlue = document.getElementById('card-blue');
+
+            if (currentPlayer === RED) {
+                cardRed.classList.add('border-red-500', 'bg-red-50/80', 'ring-2', 'ring-red-400/50');
+                cardRed.classList.remove('border-red-500/40', 'bg-amber-50/90');
+                cardBlue.classList.remove('border-blue-500', 'bg-blue-50/80', 'ring-2', 'ring-blue-400/50');
+                cardBlue.classList.add('border-slate-300', 'bg-amber-50/90');
+            } else {
+                cardBlue.classList.add('border-blue-500', 'bg-blue-50/80', 'ring-2', 'ring-blue-400/50');
+                cardBlue.classList.remove('border-slate-300', 'bg-amber-50/90');
+                cardRed.classList.remove('border-red-500', 'bg-red-50/80', 'ring-2', 'ring-red-400/50');
+                cardRed.classList.add('border-red-500/40', 'bg-amber-50/90');
+            }
+        }
+
+        function showStatusBanner(msg) {
+            document.getElementById('status-banner').innerHTML = `<span>${msg}</span>`;
+        }
+
+        function endGame() {
+            let redScore = 0;
+            let blueScore = 0;
+
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (board[r][c] === RED) redScore++;
+                    if (board[r][c] === BLUE) blueScore++;
+                }
+            }
+
+            const modal = document.getElementById('game-over-modal');
+            const modalContent = document.getElementById('modal-content');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            const subtitle = document.getElementById('modal-subtitle');
+
+            document.getElementById('modal-score-red').innerText = redScore;
+            document.getElementById('modal-score-blue').innerText = blueScore;
+
+            if (redScore > blueScore) {
+                icon.innerText = "🎉";
+                title.innerText = "Victory!";
+                title.className = "text-2xl font-black text-red-500 mb-1";
+                subtitle.innerText = "Congratulations! You defeated the AI.";
+            } else if (blueScore > redScore) {
+                icon.innerText = "🤖";
+                title.innerText = "Defeat!";
+                title.className = "text-2xl font-black text-blue-500 mb-1";
+                subtitle.innerText = "The AI outmaneuvered you this time.";
+            } else {
+                icon.innerText = "🤝";
+                title.innerText = "It's a Tie!";
+                title.className = "text-2xl font-black text-purple-400 mb-1";
+                subtitle.innerText = "Both players played an exceptional match.";
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('game-over-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
