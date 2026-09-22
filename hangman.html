@@ -350,7 +350,15 @@
         const modalTitle = document.getElementById('modal-title');
         const modalMessage = document.getElementById('modal-message');
 
-        // فراخوانی مستقیم از فایل words.json
+        // تابع یکسان‌سازی حروف فارسی و عربی
+        function normalizeText(text) {
+            if (!text) return '';
+            return text
+                .replace(/ي/g, 'ی')
+                .replace(/ك/g, 'ک')
+                .replace(/آ/g, 'ا');
+        }
+
         async function loadWords() {
             try {
                 const response = await fetch('./words.json');
@@ -359,11 +367,10 @@
                 initGame();
             } catch (error) {
                 console.error('خطا در دریافت فایل words.json:', error);
-                alert('خطا در دریافت فایل کلمات! لطفاً از وجود فایل words.json در گیت‌هاب مطمئن شوید.');
+                alert('خطا در دریافت فایل کلمات! لطفاً از وجود فایل words.json مطمئن شوید.');
             }
         }
 
-        // شروع/بازنشانی بازی و انتخاب کلمه تصادفی
         function initGame() {
             if (wordList.length === 0) return;
 
@@ -371,7 +378,6 @@
             wrongGuesses = 0;
             totalGuesses = 0;
 
-            // انتخاب کاملاً تصادفی کلمه از فایل JSON
             const randomIndex = Math.floor(Math.random() * wordList.length);
             currentWordObj = wordList[randomIndex];
 
@@ -390,14 +396,14 @@
         function renderWord() {
             wordDisplay.innerHTML = '';
             const word = currentWordObj.word;
+            const normalizedGuessed = guessedLetters.map(normalizeText);
 
             for (let char of word) {
                 const slot = document.createElement('div');
                 slot.className = 'letter-slot';
                 
-                const isGuessed = guessedLetters.includes(char) || 
-                    (char === 'آ' && guessedLetters.includes('ا')) || 
-                    (char === 'ا' && guessedLetters.includes('آ'));
+                const normalizedChar = normalizeText(char);
+                const isGuessed = normalizedGuessed.includes(normalizedChar);
 
                 slot.textContent = isGuessed ? char : '';
                 wordDisplay.appendChild(slot);
@@ -425,24 +431,24 @@
             totalGuesses++;
 
             const btn = document.getElementById(`key-${letter}`);
-            btn.disabled = true;
+            if (btn) btn.disabled = true;
 
             const word = currentWordObj.word;
-            const isCorrect = word.includes(letter) || 
-                (letter === 'ا' && word.includes('آ')) || 
-                (letter === 'آ' && word.includes('ا'));
+            const normalizedWord = normalizeText(word);
+            const normalizedLetter = normalizeText(letter);
+
+            const isCorrect = normalizedWord.includes(normalizedLetter);
 
             if (isCorrect) {
-                btn.classList.add('correct');
+                if (btn) btn.classList.add('correct');
             } else {
-                btn.classList.add('wrong');
+                if (btn) btn.classList.add('wrong');
                 wrongGuesses++;
                 if (wrongGuesses <= maxWrong) {
                     figureParts[wrongGuesses - 1].style.display = 'block';
                 }
             }
 
-            // روشن شدن دکمه راهنما پس از ۳ حدس با حداقل ۲ اشتباه
             if (totalGuesses >= 3 && wrongGuesses >= 2) {
                 hintBtn.disabled = false;
             }
@@ -458,10 +464,11 @@
 
         function checkWin() {
             const word = currentWordObj.word;
+            if (!word) return;
+
+            const normalizedGuessed = guessedLetters.map(normalizeText);
             const isWon = [...word].every(char => 
-                guessedLetters.includes(char) || 
-                (char === 'آ' && guessedLetters.includes('ا')) || 
-                (char === 'ا' && guessedLetters.includes('آ'))
+                normalizedGuessed.includes(normalizeText(char))
             );
 
             if (isWon && word.length > 0) {
@@ -485,12 +492,8 @@
 
         document.addEventListener('keydown', (e) => {
             const key = e.key;
-            if (persianAlphabet.includes(key)) {
+            if (persianAlphabet.includes(key) || key === 'ک' || key === 'ی') {
                 handleGuess(key);
-            } else if (key === 'ک') {
-                handleGuess('ک');
-            } else if (key === 'ی') {
-                handleGuess('ی');
             }
         });
 
