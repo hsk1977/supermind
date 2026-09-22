@@ -402,6 +402,7 @@
 
         let currentLang = 'fa';
         let wordList = [];
+        let remainingWords = [];
         let currentWordObj = {};
         let guessedLetters = [];
         let wrongGuesses = 0;
@@ -453,6 +454,7 @@
                 const response = await fetch(fileName);
                 if (!response.ok) throw new Error('File not found');
                 wordList = await response.json();
+                remainingWords = [...wordList]; // مقداردهی مجدد لیست کلمات باقی‌مانده
                 initGame();
             } catch (error) {
                 console.error('Error loading words:', error);
@@ -463,12 +465,21 @@
         function initGame() {
             if (wordList.length === 0) return;
 
+            // اگر تمام کلمات لیست بازی شدند، دوباره لیست را شارژ کن
+            if (remainingWords.length === 0) {
+                remainingWords = [...wordList];
+            }
+
             guessedLetters = [];
             wrongGuesses = 0;
             totalGuesses = 0;
 
-            const randomIndex = Math.floor(Math.random() * wordList.length);
-            currentWordObj = wordList[randomIndex];
+            // انتخاب تصادفی یک کلمه از بین کلمات باقی‌مانده
+            const randomIndex = Math.floor(Math.random() * remainingWords.length);
+            currentWordObj = remainingWords[randomIndex];
+
+            // حذف کلمه انتخاب‌شده از لیست کلمات باقی‌مانده تا دوباره تکرار نشود
+            remainingWords.splice(randomIndex, 1);
 
             figureParts.forEach(part => part.style.display = 'none');
 
