@@ -1,637 +1,493 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>فکر بکر</title>
-<!-- کتابخانه انیمیشن آتش‌بازی -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<style>
-  :root{
-    --bg: #f8f6f0;
-    --panel: #e6dfd3;
-    --panel-2: #ddd5c5;
-    --wood: #d9cfbe;
-    --wood-light: #ece5d8;
-    --gold: #b88d1d;
-    --gold-bright: #d1a324;
-    --cream: #fbf9f5;
-    --muted: #736b5e;
-    --danger: #c65b4f;
-    --slot-empty: rgba(0,0,0,0.08);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منوی بازی‌های فکری</title>
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Vazirmatn Font for Persian -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        * {
+            font-family: 'Vazirmatn', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
-    --peg-1: #d64545;
-    --peg-2: #3f88c5;
-    --peg-3: #4fa66b;
-    --peg-4: #e0b93c;
-    --peg-5: #9b6bd0;
-    --peg-6: #e08a3c;
+        /* Cozy room background effect */
+        body {
+            background: radial-gradient(circle at center, #fdf6e2 0%, #e2d2b4 60%, #b89b72 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 12px;
+            overflow-x: hidden;
+        }
 
-    --pin-black: #1a1816;
-    --pin-white: #ffffff;
+        /* Mobile Frame Styling */
+        .phone-frame {
+            background: #fff8eb;
+            border: 10px solid #7c4d30;
+            border-radius: 42px;
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.3),
+                inset 0 0 15px rgba(124, 77, 48, 0.4),
+                0 0 0 4px #d4a373;
+            max-width: 440px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(#e0c3fc 0.5px, transparent 0.5px), 
+                radial-gradient(#e5d9f2 0.5px, #fff8eb 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
 
-    --text-onbg: #2c2a26;
-    --muted-onbg: #6b6459;
-    --accent-onbg: #7a5a0c;
-  }
+        /* Top phone notch/bar */
+        .phone-notch {
+            width: 120px;
+            height: 18px;
+            background: #7c4d30;
+            margin: 0 auto;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
 
-  *{ box-sizing: border-box; }
+        .notch-camera {
+            width: 8px;
+            height: 8px;
+            background: #3e2723;
+            border-radius: 50%;
+        }
 
-  html, body{
-    margin:0; padding:0;
-    background: var(--bg);
-    color: var(--text-onbg);
-    font-family: 'Vazirmatn', Tahoma, 'Segoe UI', sans-serif;
-    min-height: 100vh;
-  }
+        .notch-speaker {
+            width: 35px;
+            height: 4px;
+            background: #3e2723;
+            border-radius: 4px;
+        }
 
-  .stage{
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 24px 16px 50px;
-  }
+        /* Wood frame title block */
+        .wood-title-banner {
+            background: linear-gradient(180deg, #b07d4f 0%, #83522b 100%);
+            border: 3px solid #5a3517;
+            box-shadow: 0 5px 0 #3d210b, inset 0 2px 4px rgba(255,255,255,0.4);
+            border-radius: 20px;
+            color: #fff8e7;
+            text-shadow: 2px 2px 0px #3d210b;
+        }
 
-  header{
-    text-align: center;
-    margin-bottom: 16px;
-  }
+        /* Game Card Styles */
+        .game-card {
+            position: relative;
+            border-radius: 20px;
+            border: 4px solid #8d5b34;
+            background: #fefae0;
+            box-shadow: 0 6px 0 #5c3a1e, 0 10px 15px rgba(0,0,0,0.15);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            overflow: hidden;
+        }
 
-  header h1{
-    font-size: 28px;
-    font-weight: 800;
-    margin: 0;
-    color: var(--accent-onbg);
-  }
+        .game-card.unlocked:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 0 #5c3a1e, 0 15px 20px rgba(0,0,0,0.2);
+        }
 
-  header p{
-    margin: 6px 0 0;
-    color: var(--muted-onbg);
-    font-size: 13.5px;
-    font-weight: 500;
-  }
+        .game-card.unlocked:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 2px 0 #5c3a1e;
+        }
 
-  .board{
-    background: linear-gradient(180deg, var(--wood-light), var(--wood));
-    border-radius: 18px;
-    padding: 14px 12px;
-    box-shadow:
-      0 10px 25px rgba(0,0,0,0.08),
-      inset 0 0 0 2px rgba(0,0,0,0.05),
-      inset 0 2px 6px rgba(255,255,255,0.8);
-  }
+        .game-card.selected {
+            border-color: #ffd166;
+            box-shadow: 0 0 0 4px #ffd166, 0 6px 0 #5c3a1e;
+        }
 
-  .secret-slot{
-    display:flex;
-    justify-content:center;
-    gap: 10px;
-    padding: 14px 10px;
-    margin-bottom: 12px;
-    background: var(--panel);
-    border-radius: 12px;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
-  }
+        /* Locked Card Styling */
+        .game-card.locked {
+            filter: grayscale(0.85);
+            opacity: 0.8;
+            background: #e0d8c3;
+            border-color: #928374;
+            box-shadow: 0 5px 0 #665c54;
+        }
 
-  .rows{
-    display:flex;
-    flex-direction: column-reverse;
-    gap: 6px;
-  }
+        .game-card.locked:hover {
+            transform: shake;
+            animation: shake 0.4s ease-in-out;
+        }
 
-  .row{
-    display:flex;
-    align-items:center;
-    gap: 10px;
-    background: var(--panel);
-    border-radius: 10px;
-    padding: 7px 10px;
-    transition: box-shadow .2s ease, background .2s ease;
-  }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
 
-  .row.active{
-    background: var(--panel-2);
-    box-shadow: 0 0 0 2px var(--gold) inset, 0 0 10px rgba(184,141,29,0.2);
-  }
+        /* Start Button */
+        .btn-start {
+            background: linear-gradient(180deg, #06d6a0 0%, #059669 100%);
+            border: 4px solid #04664a;
+            box-shadow: 0 6px 0 #023e2d, 0 10px 15px rgba(5, 150, 105, 0.3);
+            text-shadow: 1px 2px 0px #023e2d;
+            border-radius: 25px;
+            transition: all 0.15s ease;
+        }
 
-  .row-num{
-    width: 20px;
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 600;
-    text-align: center;
-    flex-shrink: 0;
-  }
+        .btn-start:hover {
+            background: linear-gradient(180deg, #10b981 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #023e2d, 0 12px 20px rgba(5, 150, 105, 0.4);
+        }
 
-  .guess-slots{
-    display:flex;
-    gap: 8px;
-    flex: 1;
-  }
+        .btn-start:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #023e2d;
+        }
 
-  .peg-slot{
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: var(--slot-empty);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-    cursor: pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition: transform .12s ease;
-    flex-shrink:0;
-  }
+        /* Round Utility Buttons */
+        .btn-icon {
+            background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+            border: 3px solid #94a3b8;
+            box-shadow: 0 4px 0 #64748b;
+            border-radius: 50%;
+            transition: all 0.15s ease;
+        }
 
-  .peg-slot:active{ transform: scale(0.93); }
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #64748b;
+        }
 
-  .peg{
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    box-shadow:
-      inset 0 -4px 6px rgba(0,0,0,0.25),
-      inset 0 3px 4px rgba(255,255,255,0.4),
-      0 2px 4px rgba(0,0,0,0.2);
-  }
-  .peg.peg-1{ background: var(--peg-1); }
-  .peg.peg-2{ background: var(--peg-2); }
-  .peg.peg-3{ background: var(--peg-3); }
-  .peg.peg-4{ background: var(--peg-4); }
-  .peg.peg-5{ background: var(--peg-5); }
-  .peg.peg-6{ background: var(--peg-6); }
+        .btn-icon:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #64748b;
+        }
 
-  .feedback{
-    display:grid;
-    grid-template-columns: repeat(2, 11px);
-    grid-template-rows: repeat(2, 11px);
-    gap: 4px;
-    flex-shrink: 0;
-    width: 26px;
-  }
+        /* Custom Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 20px;
+            padding: 12px 20px;
+            position: absolute;
+            z-index: 50;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
+            border: 2px solid #ffd166;
+        }
 
-  .pin{
-    width: 11px; height: 11px;
-    border-radius: 50%;
-  }
-  
-  .pin.black{ 
-    background: var(--pin-black); 
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 1px 3px rgba(0,0,0,0.5); 
-  }
-  .pin.white{ 
-    background: var(--pin-white); 
-    border: 2px solid #333333; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
-  .pin.none{ background: transparent; }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
 
-  .controls{
-    margin-top: 18px;
-  }
-
-  .palette{
-    display:flex;
-    justify-content:center;
-    gap: 10px;
-    padding: 12px;
-    background: var(--panel);
-    border-radius: 14px;
-    margin-bottom: 12px;
-    box-shadow: inset 0 1px 4px rgba(0,0,0,0.1);
-  }
-
-  .swatch{
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow:
-      inset 0 -4px 6px rgba(0,0,0,0.25),
-      inset 0 3px 4px rgba(255,255,255,0.4),
-      0 2px 5px rgba(0,0,0,0.2);
-    border: 3px solid transparent;
-    transition: transform .12s ease, border-color .12s ease;
-  }
-  .swatch:hover{ transform: translateY(-2px); }
-  .swatch:active{ transform: scale(0.88); }
-  .swatch.selected{ border-color: #2c2a26; box-shadow: 0 0 8px var(--gold-bright); }
-
-  .action-row, .mode-row{
-    display:flex;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  button{
-    font-family: 'Vazirmatn', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 12px 10px;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    transition: filter .15s ease, transform .1s ease, background .15s ease, border-color .15s ease;
-  }
-
-  button.submit-btn{
-    flex: 2;
-    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
-    color: #ffffff;
-    box-shadow: 0 4px 0 #8a6e1a, 0 6px 14px rgba(0,0,0,0.15);
-  }
-  button.submit-btn:disabled{
-    background: #d3ccbe;
-    color: #9c9586;
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-  button.submit-btn:not(:disabled):active{ transform: translateY(3px); box-shadow: 0 1px 0 #8a6e1a; }
-
-  button.clear-btn, button.reset-btn{
-    flex: 1;
-    background: #fff;
-    color: var(--text-onbg);
-    border: 1.5px solid #d3ccbe;
-  }
-  button.clear-btn:hover, button.reset-btn:hover{
-    background: #f7f4ee;
-    border-color: #b5ad9e;
-  }
-
-  .mode-btn{
-    flex: 1;
-    background: #efeae1;
-    color: var(--muted-onbg);
-    border: 1.5px solid #d3ccbe;
-    font-size: 13px;
-    padding: 9px;
-  }
-  .mode-btn.active{
-    background: var(--text-onbg);
-    color: #ffffff;
-    border-color: var(--text-onbg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  }
-
-  .status{
-    text-align:center;
-    margin-top: 14px;
-    font-size: 15px;
-    font-weight: 700;
-    min-height: 22px;
-    color: var(--accent-onbg);
-  }
-  .status.win{ color: var(--peg-3); }
-  .status.lose{ color: var(--danger); }
-
-  .legend{
-    text-align:center;
-    color: var(--muted-onbg);
-    font-size: 13px;
-    margin-top: 16px;
-    line-height: 1.9;
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    align-items: center;
-  }
-  .legend-item{
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .covered{ filter: brightness(0.6) saturate(0); }
-
-  @media (max-width: 380px){
-    .peg-slot{ width: 29px; height: 29px; }
-    .swatch{ width: 33px; height: 33px; }
-  }
-</style>
+        /* Badge design */
+        .number-badge {
+            background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
+            border: 2px solid #64748b;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+    </style>
 </head>
 <body>
 
-<div class="stage">
-  <header>
-    <h1>فکر بکر</h1>
-    <p id="gameDesc">رمز ۴ رنگی را حدس بزنید</p>
-  </header>
+    <!-- Phone Main Frame -->
+    <div class="phone-frame p-4 sm:p-5 flex flex-col justify-between min-h-[680px]">
+        
+        <div>
+            <!-- Phone Notch Decor -->
+            <div class="phone-notch mb-4">
+                <div class="notch-camera"></div>
+                <div class="notch-speaker"></div>
+            </div>
 
-  <div class="board">
-    <div class="secret-slot" id="secretSlot"></div>
-    <div class="rows" id="rows"></div>
-  </div>
+            <!-- Header Section -->
+            <div class="wood-title-banner px-4 py-3 mb-6 text-center relative flex items-center justify-center">
+                <i class="fa-solid fa-compass text-yellow-300 text-2xl absolute left-3 animate-spin-slow"></i>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black tracking-wide">بازی‌های فکری و جذاب</h1>
+                    <p class="text-xs text-amber-200 font-semibold mt-0.5">مجموعه سرگرمی‌های فکری</p>
+                </div>
+                <i class="fa-solid fa-sparkles text-yellow-300 text-lg absolute right-4"></i>
+            </div>
 
-  <div class="controls">
-    <div class="palette" id="palette"></div>
-    
-    <div class="action-row">
-      <button class="submit-btn" id="submitBtn" disabled>ثبت حدس</button>
-      <button class="clear-btn" id="clearBtn">پاک‌کردن</button>
-      <button class="reset-btn" id="resetBtn">بازی جدید</button>
+            <!-- Game Grid Layout (2 Columns) -->
+            <div class="grid grid-cols-2 gap-3.5 mb-6">
+                
+                <!-- Game 1: Mind / Mastermind (Unlocked) -->
+                <div class="game-card unlocked selected p-2.5 flex flex-col items-center text-center relative" 
+                     onclick="selectGame('pretty mind.html', this)">
+                    <div class="w-full h-24 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center relative overflow-hidden mb-2 shadow-inner">
+                        <!-- Background Pattern -->
+                        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px]"></div>
+                        <!-- Mini Graphics -->
+                        <div class="relative z-10 flex gap-1.5 items-center">
+                            <span class="w-6 h-6 rounded-full bg-red-400 border-2 border-white shadow-md inline-block animate-bounce" style="animation-delay: 0.1s"></span>
+                            <span class="w-6 h-6 rounded-full bg-yellow-400 border-2 border-white shadow-md inline-block animate-bounce" style="animation-delay: 0.2s"></span>
+                            <span class="w-6 h-6 rounded-full bg-emerald-400 border-2 border-white shadow-md inline-block animate-bounce" style="animation-delay: 0.3s"></span>
+                        </div>
+                        <span class="absolute top-1 right-1 text-[10px] bg-yellow-400 text-amber-950 font-bold px-1.5 py-0.5 rounded-full shadow">فعال</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-700">۱</span>
+                        <span class="font-extrabold text-amber-950 text-sm">فکر بکر</span>
+                    </div>
+                    <p class="text-[11px] text-amber-800 font-medium mt-0.5">حدس رمز رنگ‌ها</p>
+                </div>
+
+                <!-- Game 2: Checkers (Unlocked) -->
+                <div class="game-card unlocked p-2.5 flex flex-col items-center text-center relative" 
+                     onclick="selectGame('Checkers.html', this)">
+                    <div class="w-full h-24 rounded-xl bg-gradient-to-br from-amber-600 to-red-700 flex items-center justify-center relative overflow-hidden mb-2 shadow-inner">
+                        <!-- Checkerboard Pattern Overlay -->
+                        <div class="absolute inset-0 opacity-25 bg-[linear-gradient(45deg,#000_25%,transparent_25%),linear-gradient(-45deg,#000_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#000_75%),linear-gradient(-45deg,transparent_75%,#000_75%)] [background-size:16px_16px]"></div>
+                        <!-- Graphics -->
+                        <div class="relative z-10 flex items-center justify-center">
+                            <i class="fa-solid fa-chess-board text-4xl text-amber-100 drop-shadow-md"></i>
+                        </div>
+                        <span class="absolute top-1 right-1 text-[10px] bg-yellow-400 text-amber-950 font-bold px-1.5 py-0.5 rounded-full shadow">فعال</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-700">۲</span>
+                        <span class="font-extrabold text-amber-950 text-sm">بازی چکرز</span>
+                    </div>
+                    <p class="text-[11px] text-amber-800 font-medium mt-0.5">استراتژیک و دو نفره</p>
+                </div>
+
+                <!-- Game 3: Locked -->
+                <div class="game-card locked p-2.5 flex flex-col items-center text-center relative" 
+                     onclick="showLockedMessage('اژدهای جادویی')">
+                    <div class="w-full h-24 rounded-xl bg-slate-400 flex items-center justify-center relative overflow-hidden mb-2">
+                        <i class="fa-solid fa-dragon text-4xl text-slate-600"></i>
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fa-solid fa-lock text-3xl text-amber-200 drop-shadow-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-500">۳</span>
+                        <span class="font-extrabold text-slate-700 text-sm">قلمرو اژدها</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">به‌زودی...</p>
+                </div>
+
+                <!-- Game 4: Locked -->
+                <div class="game-card locked p-2.5 flex flex-col items-center text-center relative" 
+                     onclick="showLockedMessage('شب‌های ستاره‌ای')">
+                    <div class="w-full h-24 rounded-xl bg-slate-400 flex items-center justify-center relative overflow-hidden mb-2">
+                        <i class="fa-solid fa-moon text-4xl text-slate-600"></i>
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fa-solid fa-lock text-3xl text-amber-200 drop-shadow-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-500">۴</span>
+                        <span class="font-extrabold text-slate-700 text-sm">شب‌های ستاره‌ای</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">به‌زودی...</p>
+                </div>
+
+                <!-- Game 5: Locked -->
+                <div class="game-card locked p-2.5 flex flex-col items-center text-center relative" 
+                     onclick="showLockedMessage('باغ اسرارآمیز')">
+                    <div class="w-full h-24 rounded-xl bg-slate-400 flex items-center justify-center relative overflow-hidden mb-2">
+                        <i class="fa-solid fa-leaf text-4xl text-slate-600"></i>
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fa-solid fa-lock text-3xl text-amber-200 drop-shadow-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-500">۵</span>
+                        <span class="font-extrabold text-slate-700 text-sm">باغ اسرارآمیز</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">به‌زودی...</p>
+                </div>
+
+                <!-- Game 6: Locked -->
+                <div class="game-card locked p-2.5 flex flex-col items-center text-center relative" 
+                     onclick="showLockedMessage('گنج پنهان')">
+                    <div class="w-full h-24 rounded-xl bg-slate-400 flex items-center justify-center relative overflow-hidden mb-2">
+                        <i class="fa-solid fa-gem text-4xl text-slate-600"></i>
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <i class="fa-solid fa-lock text-3xl text-amber-200 drop-shadow-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-500">۶</span>
+                        <span class="font-extrabold text-slate-700 text-sm">گنج پنهان</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">به‌زودی...</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer Action Area -->
+        <div class="pt-2 pb-1 flex items-center justify-between gap-3">
+            <!-- Settings Button -->
+            <button class="btn-icon w-12 h-12 flex items-center justify-center text-slate-700 text-xl" 
+                    onclick="toggleSettings()" 
+                    title="تنظیمات">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+
+            <!-- Main Play / Launch Button -->
+            <button id="launchBtn" 
+                    class="btn-start flex-1 py-3 px-6 text-white text-lg font-black tracking-wide flex items-center justify-center gap-2"
+                    onclick="launchSelectedGame()">
+                <span>شروع بازی</span>
+                <i class="fa-solid fa-play text-sm"></i>
+            </button>
+
+            <!-- Audio/Sound Effect Toggle -->
+            <button id="soundBtn" 
+                    class="btn-icon w-12 h-12 flex items-center justify-center text-slate-700 text-xl" 
+                    onclick="toggleSound()" 
+                    title="صدا">
+                <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+            </button>
+        </div>
+
     </div>
 
-    <div class="mode-row">
-      <button class="mode-btn active" id="easyBtn">آسان (بدون تکرار)</button>
-      <button class="mode-btn" id="hardBtn">سخت (با تکرار)</button>
+    <!-- Notification Toast Message -->
+    <div id="toast">
+        <i class="fa-solid fa-lock text-yellow-400 ml-1"></i>
+        <span id="toastText">این بازی هنوز قفل است!</span>
     </div>
-  </div>
 
-  <div class="status" id="status"></div>
+    <script>
+        // Store selected game URL (default to first game)
+        let selectedGameUrl = 'pretty mind.html';
+        let isSoundOn = true;
 
-  <div class="legend">
-    <div class="legend-item">
-      <span class="pin black"></span>
-      <span>رنگ درست، جای درست</span>
-    </div>
-    <div class="legend-item">
-      <span class="pin white"></span>
-      <span>رنگ درست، جای غلط</span>
-    </div>
-  </div>
-</div>
+        // Sound Effects using Web Audio API (No external sound files required)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-<script>
-(function(){
-  const COLORS = ['peg-1','peg-2','peg-3','peg-4','peg-5','peg-6'];
-  const COLOR_HEX = {
-    'peg-1': '#d64545',
-    'peg-2': '#3f88c5',
-    'peg-3': '#4fa66b',
-    'peg-4': '#e0b93c',
-    'peg-5': '#9b6bd0',
-    'peg-6': '#e08a3c'
-  };
-  const CODE_LENGTH = 4;
-  const MAX_ROWS = 10;
+        function playSound(type) {
+            if (!isSoundOn) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-  let secret = [];
-  let rows = [];
-  let currentGuess = [];
-  let selectedColor = COLORS[0];
-  let gameOver = false;
-  let allowDuplicates = false;
-
-  const secretSlotEl = document.getElementById('secretSlot');
-  const rowsEl = document.getElementById('rows');
-  const paletteEl = document.getElementById('palette');
-  const submitBtn = document.getElementById('submitBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const easyBtn = document.getElementById('easyBtn');
-  const hardBtn = document.getElementById('hardBtn');
-  const statusEl = document.getElementById('status');
-  const gameDescEl = document.getElementById('gameDesc');
-
-  function randomSecret(){
-    const arr = [];
-    if (!allowDuplicates) {
-      const available = [...COLORS];
-      for(let i=0; i<CODE_LENGTH; i++){
-        const randomIndex = Math.floor(Math.random() * available.length);
-        arr.push(available[randomIndex]);
-        available.splice(randomIndex, 1);
-      }
-    } else {
-      for(let i=0; i<CODE_LENGTH; i++){
-        arr.push(COLORS[Math.floor(Math.random()*COLORS.length)]);
-      }
-    }
-    return arr;
-  }
-
-  function initGame(){
-    secret = randomSecret();
-    rows = [];
-    for(let i=0;i<MAX_ROWS;i++){
-      rows.push({guess: [null,null,null,null], locked:false, feedback:null});
-    }
-    currentGuess = [null,null,null,null];
-    selectedColor = COLORS[0];
-    gameOver = false;
-    statusEl.textContent = '';
-    statusEl.className = 'status';
-    
-    gameDescEl.textContent = allowDuplicates 
-      ? 'رمز ۴ رنگی (با احتمال رنگ تکراری) را حدس بزنید' 
-      : 'رمز ۴ رنگی (بدون رنگ تکراری) را حدس بزنید';
-
-    renderSecret(false);
-    renderPalette();
-    renderRows();
-    updateSubmitState();
-  }
-
-  function renderSecret(reveal){
-    secretSlotEl.innerHTML = '';
-    for(let i=0;i<CODE_LENGTH;i++){
-      const slot = document.createElement('div');
-      slot.className = 'peg-slot';
-      slot.style.cursor = 'default';
-      const peg = document.createElement('div');
-      if(reveal){
-        peg.className = 'peg ' + secret[i];
-      } else {
-        peg.className = 'peg covered';
-        peg.style.background = '#8c8273';
-      }
-      slot.appendChild(peg);
-      secretSlotEl.appendChild(slot);
-    }
-  }
-
-  function renderPalette(){
-    paletteEl.innerHTML = '';
-    COLORS.forEach(c => {
-      const sw = document.createElement('div');
-      sw.className = 'swatch ' + c + (c === selectedColor ? ' selected' : '');
-      sw.style.background = COLOR_HEX[c];
-      sw.addEventListener('click', () => {
-        selectedColor = c;
-        const emptyIdx = currentGuess.findIndex(val => val === null);
-        if(emptyIdx !== -1 && !gameOver){
-          currentGuess[emptyIdx] = c;
-        }
-        renderPalette();
-        renderRows();
-        updateSubmitState();
-      });
-      paletteEl.appendChild(sw);
-    });
-  }
-
-  function activeRowIndex(){
-    return rows.findIndex(r => !r.locked);
-  }
-
-  function renderRows(){
-    rowsEl.innerHTML = '';
-    const active = activeRowIndex();
-    rows.forEach((row, idx) => {
-      const rowEl = document.createElement('div');
-      rowEl.className = 'row' + (idx === active && !gameOver ? ' active' : '');
-
-      const numEl = document.createElement('div');
-      numEl.className = 'row-num';
-      numEl.textContent = idx + 1;
-      rowEl.appendChild(numEl);
-
-      const slotsEl = document.createElement('div');
-      slotsEl.className = 'guess-slots';
-      const guessArr = row.locked ? row.guess : (idx === active ? currentGuess : row.guess);
-
-      for(let i=0;i<CODE_LENGTH;i++){
-        const slot = document.createElement('div');
-        slot.className = 'peg-slot';
-        const val = guessArr[i];
-        if(val){
-          slot.classList.add('filled');
-          const peg = document.createElement('div');
-          peg.className = 'peg ' + val;
-          slot.appendChild(peg);
-        }
-
-        if(idx === active && !gameOver && !row.locked){
-          slot.addEventListener('click', () => {
-            if (currentGuess[i] === selectedColor) {
-              currentGuess[i] = null;
-            } else {
-              currentGuess[i] = selectedColor;
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'locked') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(140, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                } else if (type === 'launch') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch (e) {
+                console.log('Audio error:', e);
             }
-            renderRows();
-            updateSubmitState();
-          });
         }
-        slotsEl.appendChild(slot);
-      }
-      rowEl.appendChild(slotsEl);
 
-      const fbEl = document.createElement('div');
-      fbEl.className = 'feedback';
-      if(row.locked && row.feedback){
-        const pins = [];
-        for(let i=0;i<row.feedback.black;i++) pins.push('black');
-        for(let i=0;i<row.feedback.white;i++) pins.push('white');
-        while(pins.length < CODE_LENGTH) pins.push('none');
-        pins.forEach(p => {
-          const pin = document.createElement('div');
-          pin.className = 'pin ' + p;
-          fbEl.appendChild(pin);
-        });
-      } else {
-        for(let i=0;i<CODE_LENGTH;i++){
-          const pin = document.createElement('div');
-          pin.className = 'pin none';
-          fbEl.appendChild(pin);
+        // Select an active game
+        function selectGame(url, cardElement) {
+            playSound('click');
+            selectedGameUrl = url;
+
+            // Update UI selection outline
+            const cards = document.querySelectorAll('.game-card.unlocked');
+            cards.forEach(card => card.classList.remove('selected'));
+            cardElement.classList.add('selected');
         }
-      }
-      rowEl.appendChild(fbEl);
 
-      rowsEl.appendChild(rowEl);
-    });
-  }
-
-  function updateSubmitState(){
-    const filled = currentGuess.every(c => c !== null);
-    submitBtn.disabled = !filled || gameOver;
-  }
-
-  // تابع محاسباتی دقیق و استاندارد بازی
-  function computeFeedback(guess){
-    let black = 0;
-    let white = 0;
-
-    const secretCopy = [...secret];
-    const guessCopy = [...guess];
-
-    // ۱. محاسبه میخ‌های مشکی (رنگ درست، جای درست)
-    for(let i = 0; i < CODE_LENGTH; i++){
-      if(guessCopy[i] === secretCopy[i]){
-        black++;
-        secretCopy[i] = null;
-        guessCopy[i] = null;
-      }
-    }
-
-    // ۲. محاسبه میخ‌های سفید (رنگ درست، جای غلط)
-    for(let i = 0; i < CODE_LENGTH; i++){
-      if(guessCopy[i] !== null){
-        const foundIndex = secretCopy.findIndex(color => color === guessCopy[i]);
-        if(foundIndex !== -1){
-          white++;
-          secretCopy[foundIndex] = null;
+        // Launch selected game
+        function launchSelectedGame() {
+            if (!selectedGameUrl) {
+                showToast("لطفاً یک بازی را انتخاب کنید");
+                return;
+            }
+            playSound('launch');
+            
+            // Short delay for sound effect to play
+            setTimeout(() => {
+                window.location.href = selectedGameUrl;
+            }, 180);
         }
-      }
-    }
 
-    return {black, white};
-  }
+        // Handle locked games click
+        function showLockedMessage(gameTitle) {
+            playSound('locked');
+            showToast(`بازی «${gameTitle}» به‌زودی فعال می‌شود!`);
+        }
 
-  function triggerConfetti(){
-    if (typeof confetti === 'function') {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    }
-  }
+        // Toast Message Handler
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            const toastText = document.getElementById("toastText");
+            
+            toastText.textContent = message;
+            toast.classList.add("show");
 
-  submitBtn.addEventListener('click', () => {
-    if(gameOver) return;
-    const idx = activeRowIndex();
-    if(idx === -1) return;
-    if(!currentGuess.every(c => c !== null)) return;
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2500);
+        }
 
-    const feedback = computeFeedback(currentGuess);
-    rows[idx].guess = [...currentGuess];
-    rows[idx].locked = true;
-    rows[idx].feedback = feedback;
+        // Toggle Sound Mute
+        function toggleSound() {
+            isSoundOn = !isSoundOn;
+            const icon = document.getElementById("soundIcon");
+            if (isSoundOn) {
+                icon.className = "fa-solid fa-volume-high";
+                playSound('click');
+            } else {
+                icon.className = "fa-solid fa-volume-xmark";
+            }
+        }
 
-    if(feedback.black === CODE_LENGTH){
-      gameOver = true;
-      renderSecret(true);
-      statusEl.textContent = 'آفرین! رمز رو شکستی! 🎉';
-      statusEl.className = 'status win';
-      triggerConfetti();
-    } else if(idx === MAX_ROWS - 1){
-      gameOver = true;
-      renderSecret(true);
-      statusEl.textContent = 'نوبت‌ها تموم شد. رمز فاش شد.';
-      statusEl.className = 'status lose';
-    } else {
-      currentGuess = [null,null,null,null];
-    }
-    renderRows();
-    updateSubmitState();
-  });
-
-  clearBtn.addEventListener('click', () => {
-    if(gameOver) return;
-    currentGuess = [null,null,null,null];
-    renderRows();
-    updateSubmitState();
-  });
-
-  resetBtn.addEventListener('click', initGame);
-
-  easyBtn.addEventListener('click', () => {
-    if (!allowDuplicates) return;
-    allowDuplicates = false;
-    easyBtn.classList.add('active');
-    hardBtn.classList.remove('active');
-    initGame();
-  });
-
-  hardBtn.addEventListener('click', () => {
-    if (allowDuplicates) return;
-    allowDuplicates = true;
-    hardBtn.classList.add('active');
-    easyBtn.classList.remove('active');
-    initGame();
-  });
-
-  initGame();
-})();
-</script>
-
+        // Settings Button Placeholder
+        function toggleSettings() {
+            playSound('click');
+            showToast("تنظیمات بازی به زودی اضافه خواهد شد.");
+        }
+    </script>
 </body>
 </html>
