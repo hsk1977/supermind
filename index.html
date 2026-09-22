@@ -3,491 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منوی بازی‌های فکری</title>
-    
-    <!-- FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Vazirmatn Font for Persian -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800;900&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+    <title>رویاهای ذهن - بازی‌های فکری</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #f6e8d0;
+            --card-bg: #fffbf3;
+            --frame-border: #b8860b;
+            --primary: #6b4423;
+            --accent: #ff9800;
+            --text-dark: #3e2723;
+            --lock-bg: #8d6e63;
+        }
+
         * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: 'Vazirmatn', sans-serif;
             user-select: none;
-            -webkit-user-select: none;
         }
 
-        /* Cozy room background effect */
         body {
-            background: radial-gradient(circle at center, #fdf6e2 0%, #e2d2b4 60%, #b89b72 100%);
+            background-color: #2c1d11;
+            background-image: radial-gradient(#4a3222 1px, transparent 0);
+            background-size: 24px 24px;
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            margin: 0;
-            padding: 12px;
-            overflow-x: hidden;
+            align-items: center;
+            padding: 15px;
         }
 
-        /* Mobile Frame Styling */
-        .phone-frame {
-            background: #fff8eb;
-            border: 10px solid #7c4d30;
-            border-radius: 42px;
-            box-shadow: 
-                0 20px 50px rgba(0,0,0,0.3),
-                inset 0 0 15px rgba(124, 77, 48, 0.4),
-                0 0 0 4px #d4a373;
-            max-width: 440px;
+        .device-container {
             width: 100%;
+            max-width: 420px;
+            background: #fff8eb;
+            border: 8px solid #d4a359;
+            border-radius: 40px;
+            box-shadow: 
+                0 0 0 6px #5c3a21,
+                0 20px 40px rgba(0, 0, 0, 0.6),
+                inset 0 0 15px rgba(184, 134, 11, 0.2);
+            padding: 24px 18px;
             position: relative;
-            overflow: hidden;
-            background-image: 
-                radial-gradient(#e0c3fc 0.5px, transparent 0.5px), 
-                radial-gradient(#e5d9f2 0.5px, #fff8eb 0.5px);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
-        }
-
-        /* Top phone notch/bar */
-        .phone-notch {
-            width: 120px;
-            height: 18px;
-            background: #7c4d30;
-            margin: 0 auto;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .notch-camera {
-            width: 8px;
-            height: 8px;
-            background: #3e2723;
-            border-radius: 50%;
-        }
-
-        .notch-speaker {
-            width: 35px;
-            height: 4px;
-            background: #3e2723;
-            border-radius: 4px;
-        }
-
-        /* Wood frame title block */
-        .wood-title-banner {
-            background: linear-gradient(180deg, #b07d4f 0%, #83522b 100%);
-            border: 3px solid #5a3517;
-            box-shadow: 0 5px 0 #3d210b, inset 0 2px 4px rgba(255,255,255,0.4);
-            border-radius: 20px;
-            color: #fff8e7;
-            text-shadow: 2px 2px 0px #3d210b;
-        }
-
-        /* Game Card Styles */
-        .game-card {
+        .header {
+            text-align: center;
             position: relative;
+            padding-bottom: 10px;
+        }
+
+        .title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #d84315;
+            text-shadow: 2px 2px 0px #fff, 4px 4px 0px #5d4037;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #8d6e63;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .game-card {
+            background: linear-gradient(145deg, #ffffff, #f5e6ce);
+            border: 3px solid #c8963e;
             border-radius: 20px;
-            border: 4px solid #8d5b34;
-            background: #fefae0;
-            box-shadow: 0 6px 0 #5c3a1e, 0 10px 15px rgba(0,0,0,0.15);
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            position: relative;
+            box-shadow: 0 6px 0 #8c6227, 0 10px 15px rgba(0,0,0,0.15);
+            transition: all 0.15s ease;
             cursor: pointer;
             overflow: hidden;
         }
 
-        .game-card.unlocked:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 10px 0 #5c3a1e, 0 15px 20px rgba(0,0,0,0.2);
+        .game-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #8c6227, 0 4px 6px rgba(0,0,0,0.15);
         }
 
-        .game-card.unlocked:active {
-            transform: translateY(2px) scale(0.98);
-            box-shadow: 0 2px 0 #5c3a1e;
+        .game-card.active {
+            border-color: #ff9800;
+            background: linear-gradient(145deg, #fff3e0, #ffe0b2);
+            box-shadow: 0 6px 0 #e65100, 0 0 15px rgba(255, 152, 0, 0.4);
         }
 
-        .game-card.selected {
-            border-color: #ffd166;
-            box-shadow: 0 0 0 4px #ffd166, 0 6px 0 #5c3a1e;
-        }
-
-        /* Locked Card Styling */
         .game-card.locked {
             filter: grayscale(0.85);
             opacity: 0.8;
-            background: #e0d8c3;
-            border-color: #928374;
-            box-shadow: 0 5px 0 #665c54;
+            cursor: not-allowed;
+            background: #e0e0e0;
+            border-color: #9e9e9e;
+            box-shadow: 0 6px 0 #616161;
         }
 
-        .game-card.locked:hover {
-            transform: shake;
-            animation: shake 0.4s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-4px); }
-            40%, 80% { transform: translateX(4px); }
-        }
-
-        /* Start Button */
-        .btn-start {
-            background: linear-gradient(180deg, #06d6a0 0%, #059669 100%);
-            border: 4px solid #04664a;
-            box-shadow: 0 6px 0 #023e2d, 0 10px 15px rgba(5, 150, 105, 0.3);
-            text-shadow: 1px 2px 0px #023e2d;
-            border-radius: 25px;
-            transition: all 0.15s ease;
-        }
-
-        .btn-start:hover {
-            background: linear-gradient(180deg, #10b981 0%, #047857 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 0 #023e2d, 0 12px 20px rgba(5, 150, 105, 0.4);
-        }
-
-        .btn-start:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 #023e2d;
-        }
-
-        /* Round Utility Buttons */
-        .btn-icon {
-            background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
-            border: 3px solid #94a3b8;
-            box-shadow: 0 4px 0 #64748b;
-            border-radius: 50%;
-            transition: all 0.15s ease;
-        }
-
-        .btn-icon:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 0 #64748b;
-        }
-
-        .btn-icon:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #64748b;
-        }
-
-        /* Custom Toast Notification */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 20px;
-            padding: 12px 20px;
+        .badge-number {
             position: absolute;
-            z-index: 50;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
-            border: 2px solid #ffd166;
+            top: 6px;
+            right: 8px;
+            background: #d84315;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 50px;
+        .icon-container {
+            width: 70px;
+            height: 70px;
+            background: #fff;
+            border-radius: 16px;
+            border: 2px solid #e0c097;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0 8px 0;
+            font-size: 2.2rem;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Badge design */
-        .number-badge {
-            background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
-            border: 2px solid #64748b;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        .game-title {
+            color: var(--text-dark);
+            font-weight: 900;
+            font-size: 1rem;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .game-sub {
+            font-size: 0.75rem;
+            color: #6d4c41;
+            margin-top: 2px;
+        }
+
+        .lock-icon {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            font-size: 1.1rem;
+        }
+
+        .footer-action {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .start-btn {
+            background: linear-gradient(180deg, #4caf50, #2e7d32);
+            color: white;
+            border: 3px solid #a5d6a7;
+            border-radius: 30px;
+            padding: 12px 36px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            box-shadow: 0 6px 0 #1b5e20, 0 10px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            display: block;
+        }
+
+        .start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #1b5e20;
         }
     </style>
 </head>
 <body>
 
-    <!-- Phone Main Frame -->
-    <div class="phone-frame p-4 sm:p-5 flex flex-col justify-between min-h-[680px]">
-        
-        <div>
-            <!-- Phone Notch Decor -->
-            <div class="phone-notch mb-4">
-                <div class="notch-camera"></div>
-                <div class="notch-speaker"></div>
+    <div class="device-container">
+        <div class="header">
+            <h1 class="title">بازی‌های فکری</h1>
+            <p class="subtitle">یک بازی انتخاب کنید</p>
+        </div>
+
+        <div class="games-grid">
+            <!-- بازی ۱: فکر بکر -->
+            <a href="pretty%20mind.html" class="game-card active">
+                <span class="badge-number">۱</span>
+                <div class="icon-container">🧠</div>
+                <div class="game-title">فکر بکر</div>
+                <div class="game-sub">Pretty Mind</div>
+            </a>
+
+            <!-- بازی ۲: چکرز -->
+            <a href="Checkers.html" class="game-card active">
+                <span class="badge-number">۲</span>
+                <div class="icon-container">🏁</div>
+                <div class="game-title">چکرز</div>
+                <div class="game-sub">Checkers</div>
+            </a>
+
+            <!-- بازی‌های قفل شده (برای آینده) -->
+            <div class="game-card locked">
+                <span class="badge-number">۳</span>
+                <div class="icon-container">🐉</div>
+                <div class="game-title">اژدها</div>
+                <div class="game-sub">Dragon</div>
+                <span class="lock-icon">🔒</span>
             </div>
 
-            <!-- Header Section -->
-            <div class="wood-title-banner px-4 py-3 mb-6 text-center relative flex items-center justify-center">
-                <i class="fa-solid fa-compass text-yellow-300 text-2xl absolute left-3 animate-spin-slow"></i>
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-black tracking-wide">بازی‌های فکری و جذاب</h1>
-                    <p class="text-xs text-amber-200 font-semibold mt-0.5">مجموعه سرگرمی‌های فکری</p>
-                </div>
-                <i class="fa-solid fa-sparkles text-yellow-300 text-lg absolute right-4"></i>
+            <div class="game-card locked">
+                <span class="badge-number">۴</span>
+                <div class="icon-container">🌙</div>
+                <div class="game-title">شب‌های ستاره‌ای</div>
+                <div class="game-sub">Starry Nights</div>
+                <span class="lock-icon">🔒</span>
             </div>
 
-            <!-- Game Grid Layout (2 Columns) -->
-            <div class="grid grid-cols-2 gap-3.5 mb-6">
-                
-                <!-- Game 1: Mind / Mastermind (Unlocked) -->
-                <div class="game-card unlocked selected p-2.5 flex flex-col items-center text-center relative" 
-                     onclick="selectGame('pretty mind.html', this)">
-                    <div class="w-full h-24 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center relative overflow-hidden mb-2 shadow-inner">
-                        <!-- Background Pattern -->
-                        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px]"></div>
-                        <!-- Mini Graphics -->
-                        <div class="relative z-10 flex gap-1.5 items-center">
-                            <span class="w-6 h-6 rounded-full bg-red-400 border-2 border-white shadow-md inline-block animate-bounce" style="animation-delay: 0.1s"></span>
-                            <span class="w-6 h-6 rounded-full bg-yellow-400 border-2 border-white shadow-md inline-block animate-bounce" style="animation-delay: 0.2s"></span>
-                            <span class="w-6 h-6 rounded-full bg-emerald-400 border-2 border-white shadow-md inline-block animate-bounce" style="animation-delay: 0.3s"></span>
-                        </div>
-                        <span class="absolute top-1 right-1 text-[10px] bg-yellow-400 text-amber-950 font-bold px-1.5 py-0.5 rounded-full shadow">فعال</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-700">۱</span>
-                        <span class="font-extrabold text-amber-950 text-sm">فکر بکر</span>
-                    </div>
-                    <p class="text-[11px] text-amber-800 font-medium mt-0.5">حدس رمز رنگ‌ها</p>
-                </div>
+            <div class="game-card locked">
+                <span class="badge-number">۵</span>
+                <div class="icon-container">🌻</div>
+                <div class="game-title">باغ مخفی</div>
+                <div class="game-sub">Secret Garden</div>
+                <span class="lock-icon">🔒</span>
+            </div>
 
-                <!-- Game 2: Checkers (Unlocked) -->
-                <div class="game-card unlocked p-2.5 flex flex-col items-center text-center relative" 
-                     onclick="selectGame('Checkers.html', this)">
-                    <div class="w-full h-24 rounded-xl bg-gradient-to-br from-amber-600 to-red-700 flex items-center justify-center relative overflow-hidden mb-2 shadow-inner">
-                        <!-- Checkerboard Pattern Overlay -->
-                        <div class="absolute inset-0 opacity-25 bg-[linear-gradient(45deg,#000_25%,transparent_25%),linear-gradient(-45deg,#000_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#000_75%),linear-gradient(-45deg,transparent_75%,#000_75%)] [background-size:16px_16px]"></div>
-                        <!-- Graphics -->
-                        <div class="relative z-10 flex items-center justify-center">
-                            <i class="fa-solid fa-chess-board text-4xl text-amber-100 drop-shadow-md"></i>
-                        </div>
-                        <span class="absolute top-1 right-1 text-[10px] bg-yellow-400 text-amber-950 font-bold px-1.5 py-0.5 rounded-full shadow">فعال</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-700">۲</span>
-                        <span class="font-extrabold text-amber-950 text-sm">بازی چکرز</span>
-                    </div>
-                    <p class="text-[11px] text-amber-800 font-medium mt-0.5">استراتژیک و دو نفره</p>
-                </div>
-
-                <!-- Game 3: Locked -->
-                <div class="game-card locked p-2.5 flex flex-col items-center text-center relative" 
-                     onclick="showLockedMessage('اژدهای جادویی')">
-                    <div class="w-full h-24 rounded-xl bg-slate-400 flex items-center justify-center relative overflow-hidden mb-2">
-                        <i class="fa-solid fa-dragon text-4xl text-slate-600"></i>
-                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
-                            <i class="fa-solid fa-lock text-3xl text-amber-200 drop-shadow-lg"></i>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-500">۳</span>
-                        <span class="font-extrabold text-slate-700 text-sm">قلمرو اژدها</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">به‌زودی...</p>
-                </div>
-
-                <!-- Game 4: Locked -->
-                <div class="game-card locked p-2.5 flex flex-col items-center text-center relative" 
-                     onclick="showLockedMessage('شب‌های ستاره‌ای')">
-                    <div class="w-full h-24 rounded-xl bg-slate-400 flex items-center justify-center relative overflow-hidden mb-2">
-                        <i class="fa-solid fa-moon text-4xl text-slate-600"></i>
-                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
-                            <i class="fa-solid fa-lock text-3xl text-amber-200 drop-shadow-lg"></i>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-500">۴</span>
-                        <span class="font-extrabold text-slate-700 text-sm">شب‌های ستاره‌ای</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">به‌زودی...</p>
-                </div>
-
-                <!-- Game 5: Locked -->
-                <div class="game-card locked p-2.5 flex flex-col items-center text-center relative" 
-                     onclick="showLockedMessage('باغ اسرارآمیز')">
-                    <div class="w-full h-24 rounded-xl bg-slate-400 flex items-center justify-center relative overflow-hidden mb-2">
-                        <i class="fa-solid fa-leaf text-4xl text-slate-600"></i>
-                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
-                            <i class="fa-solid fa-lock text-3xl text-amber-200 drop-shadow-lg"></i>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-500">۵</span>
-                        <span class="font-extrabold text-slate-700 text-sm">باغ اسرارآمیز</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">به‌زودی...</p>
-                </div>
-
-                <!-- Game 6: Locked -->
-                <div class="game-card locked p-2.5 flex flex-col items-center text-center relative" 
-                     onclick="showLockedMessage('گنج پنهان')">
-                    <div class="w-full h-24 rounded-xl bg-slate-400 flex items-center justify-center relative overflow-hidden mb-2">
-                        <i class="fa-solid fa-gem text-4xl text-slate-600"></i>
-                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
-                            <i class="fa-solid fa-lock text-3xl text-amber-200 drop-shadow-lg"></i>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="number-badge w-5 h-5 rounded-full text-xs font-black flex items-center justify-center text-slate-500">۶</span>
-                        <span class="font-extrabold text-slate-700 text-sm">گنج پنهان</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">به‌زودی...</p>
-                </div>
-
+            <div class="game-card locked">
+                <span class="badge-number">۶</span>
+                <div class="icon-container">💎</div>
+                <div class="game-title">گنج پنهان</div>
+                <div class="game-sub">Hidden Treasure</div>
+                <span class="lock-icon">🔒</span>
             </div>
         </div>
 
-        <!-- Footer Action Area -->
-        <div class="pt-2 pb-1 flex items-center justify-between gap-3">
-            <!-- Settings Button -->
-            <button class="btn-icon w-12 h-12 flex items-center justify-center text-slate-700 text-xl" 
-                    onclick="toggleSettings()" 
-                    title="تنظیمات">
-                <i class="fa-solid fa-gear"></i>
-            </button>
-
-            <!-- Main Play / Launch Button -->
-            <button id="launchBtn" 
-                    class="btn-start flex-1 py-3 px-6 text-white text-lg font-black tracking-wide flex items-center justify-center gap-2"
-                    onclick="launchSelectedGame()">
-                <span>شروع بازی</span>
-                <i class="fa-solid fa-play text-sm"></i>
-            </button>
-
-            <!-- Audio/Sound Effect Toggle -->
-            <button id="soundBtn" 
-                    class="btn-icon w-12 h-12 flex items-center justify-center text-slate-700 text-xl" 
-                    onclick="toggleSound()" 
-                    title="صدا">
-                <i class="fa-solid fa-volume-high" id="soundIcon"></i>
-            </button>
+        <div class="footer-action">
+            <a href="pretty%20mind.html" class="start-btn">شروع بازی</a>
         </div>
-
     </div>
 
-    <!-- Notification Toast Message -->
-    <div id="toast">
-        <i class="fa-solid fa-lock text-yellow-400 ml-1"></i>
-        <span id="toastText">این بازی هنوز قفل است!</span>
-    </div>
-
-    <script>
-        // Store selected game URL (default to first game)
-        let selectedGameUrl = 'pretty mind.html';
-        let isSoundOn = true;
-
-        // Sound Effects using Web Audio API (No external sound files required)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playSound(type) {
-            if (!isSoundOn) return;
-            try {
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === 'click') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
-                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.08);
-                } else if (type === 'locked') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(140, audioCtx.currentTime + 0.1);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.25);
-                } else if (type === 'launch') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.2);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.2);
-                }
-            } catch (e) {
-                console.log('Audio error:', e);
-            }
-        }
-
-        // Select an active game
-        function selectGame(url, cardElement) {
-            playSound('click');
-            selectedGameUrl = url;
-
-            // Update UI selection outline
-            const cards = document.querySelectorAll('.game-card.unlocked');
-            cards.forEach(card => card.classList.remove('selected'));
-            cardElement.classList.add('selected');
-        }
-
-        // Launch selected game
-        function launchSelectedGame() {
-            if (!selectedGameUrl) {
-                showToast("لطفاً یک بازی را انتخاب کنید");
-                return;
-            }
-            playSound('launch');
-            
-            // Short delay for sound effect to play
-            setTimeout(() => {
-                window.location.href = selectedGameUrl;
-            }, 180);
-        }
-
-        // Handle locked games click
-        function showLockedMessage(gameTitle) {
-            playSound('locked');
-            showToast(`بازی «${gameTitle}» به‌زودی فعال می‌شود!`);
-        }
-
-        // Toast Message Handler
-        let toastTimeout;
-        function showToast(message) {
-            const toast = document.getElementById("toast");
-            const toastText = document.getElementById("toastText");
-            
-            toastText.textContent = message;
-            toast.classList.add("show");
-
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.classList.remove("show");
-            }, 2500);
-        }
-
-        // Toggle Sound Mute
-        function toggleSound() {
-            isSoundOn = !isSoundOn;
-            const icon = document.getElementById("soundIcon");
-            if (isSoundOn) {
-                icon.className = "fa-solid fa-volume-high";
-                playSound('click');
-            } else {
-                icon.className = "fa-solid fa-volume-xmark";
-            }
-        }
-
-        // Settings Button Placeholder
-        function toggleSettings() {
-            playSound('click');
-            showToast("تنظیمات بازی به زودی اضافه خواهد شد.");
-        }
-    </script>
 </body>
 </html>
