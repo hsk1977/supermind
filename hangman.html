@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی حدس کلمه</title>
+    <style>
+        :root {
+            --bg-color: #fdf6e3;
+            --card-bg: #f5e8c7;
+            --text-color: #4a3b32;
+            --primary-color: #d97706;
+            --primary-hover: #b45309;
+            --disabled-color: #d1d5db;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --home-btn-bg: #dc2626;
+            --home-btn-hover: #991b1b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        header {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            margin-bottom: 5px;
+        }
+
+        .home-btn {
+            background-color: var(--home-btn-bg);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            transition: background-color 0.2s;
+        }
+
+        .home-btn:hover {
+            background-color: var(--home-btn-hover);
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .hangman-box {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        svg {
+            width: 160px;
+            height: 180px;
+            stroke: var(--text-color);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .figure-part {
+            display: none;
+        }
+
+        .status-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .hint-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 18px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .hint-btn:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+            opacity: 0.6;
+            box-shadow: none;
+        }
+
+        .hint-text {
+            font-size: 14px;
+            background-color: #fff8e7;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px dashed var(--primary-color);
+            display: none;
+            text-align: center;
+            width: 90%;
+        }
+
+        .word-display {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+            direction: rtl;
+        }
+
+        .letter-slot {
+            width: 36px;
+            height: 45px;
+            border-bottom: 3px solid var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            width: 100%;
+            max-width: 480px;
+            direction: rtl;
+            margin-top: auto;
+            padding-bottom: 10px;
+        }
+
+        .key {
+            background-color: #ffffff;
+            border: 1px solid #dcd1b4;
+            border-radius: 6px;
+            width: calc(100% / 8 - 6px);
+            height: 42px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 0 #dcd1b4;
+            transition: all 0.1s;
+        }
+
+        .key:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .key:disabled {
+            background-color: var(--disabled-color);
+            color: #888;
+            border-color: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .key.correct {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .key.wrong {
+            background-color: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            width: 85%;
+            max-width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .restart-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        @media (max-width: 360px) {
+            .key {
+                height: 38px;
+                font-size: 14px;
+            }
+            .letter-slot {
+                width: 30px;
+                height: 40px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="home-btn" title="بازگشت به صفحه اصلی">
+            🏠 خانه
+        </a>
+        <div class="title">بازی حدس کلمه</div>
+    </header>
+
+    <div class="main-container">
+        <div class="hangman-box">
+            <svg viewBox="0 0 100 120">
+                <line x1="10" y1="110" x2="90" y2="110" />
+                <line x1="30" y1="110" x2="30" y2="10" />
+                <line x1="30" y1="10" x2="70" y2="10" />
+                <line x1="70" y1="10" x2="70" y2="25" />
+
+                <circle cx="70" cy="35" r="10" class="figure-part" />
+                <line x1="70" y1="45" x2="70" y2="75" class="figure-part" />
+                <line x1="70" y1="55" x2="55" y2="65" class="figure-part" />
+                <line x1="70" y1="55" x2="85" y2="65" class="figure-part" />
+                <line x1="70" y1="75" x2="55" y2="95" class="figure-part" />
+                <line x1="70" y1="75" x2="85" y2="95" class="figure-part" />
+            </svg>
+        </div>
+
+        <div class="status-box">
+            <button id="hint-btn" class="hint-btn" disabled>
+                💡 راهنمایی
+            </button>
+            <div id="hint-text" class="hint-text"></div>
+        </div>
+
+        <div id="word-display" class="word-display"></div>
+        <div id="keyboard" class="keyboard"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-message"></p>
+            <button class="restart-btn" onclick="initGame()">بازی مجدد</button>
+        </div>
+    </div>
+
+    <script>
+        const persianAlphabet = [
+            'آ', 'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ',
+            'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط',
+            'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن',
+            'و', 'ه', 'ی'
+        ];
+
+        let wordList = [];
+        let currentWordObj = {};
+        let guessedLetters = [];
+        let wrongGuesses = 0;
+        let totalGuesses = 0;
+        const maxWrong = 6;
+
+        const wordDisplay = document.getElementById('word-display');
+        const keyboardContainer = document.getElementById('keyboard');
+        const figureParts = document.querySelectorAll('.figure-part');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintText = document.getElementById('hint-text');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+
+        // فراخوانی مستقیم از فایل words.json
+        async function loadWords() {
+            try {
+                const response = await fetch('./words.json');
+                if (!response.ok) throw new Error('فایل words.json یافت نشد');
+                wordList = await response.json();
+                initGame();
+            } catch (error) {
+                console.error('خطا در دریافت فایل words.json:', error);
+                alert('خطا در دریافت فایل کلمات! لطفاً از وجود فایل words.json در گیت‌هاب مطمئن شوید.');
+            }
+        }
+
+        // شروع/بازنشانی بازی و انتخاب کلمه تصادفی
+        function initGame() {
+            if (wordList.length === 0) return;
+
+            guessedLetters = [];
+            wrongGuesses = 0;
+            totalGuesses = 0;
+
+            // انتخاب کاملاً تصادفی کلمه از فایل JSON
+            const randomIndex = Math.floor(Math.random() * wordList.length);
+            currentWordObj = wordList[randomIndex];
+
+            figureParts.forEach(part => part.style.display = 'none');
+
+            hintBtn.disabled = true;
+            hintText.style.display = 'none';
+            hintText.textContent = '';
+
+            modal.classList.remove('show');
+
+            renderWord();
+            renderKeyboard();
+        }
+
+        function renderWord() {
+            wordDisplay.innerHTML = '';
+            const word = currentWordObj.word;
+
+            for (let char of word) {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                
+                const isGuessed = guessedLetters.includes(char) || 
+                    (char === 'آ' && guessedLetters.includes('ا')) || 
+                    (char === 'ا' && guessedLetters.includes('آ'));
+
+                slot.textContent = isGuessed ? char : '';
+                wordDisplay.appendChild(slot);
+            }
+
+            checkWin();
+        }
+
+        function renderKeyboard() {
+            keyboardContainer.innerHTML = '';
+            persianAlphabet.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = 'key';
+                btn.textContent = letter;
+                btn.id = `key-${letter}`;
+                btn.onclick = () => handleGuess(letter);
+                keyboardContainer.appendChild(btn);
+            });
+        }
+
+        function handleGuess(letter) {
+            if (guessedLetters.includes(letter)) return;
+
+            guessedLetters.push(letter);
+            totalGuesses++;
+
+            const btn = document.getElementById(`key-${letter}`);
+            btn.disabled = true;
+
+            const word = currentWordObj.word;
+            const isCorrect = word.includes(letter) || 
+                (letter === 'ا' && word.includes('آ')) || 
+                (letter === 'آ' && word.includes('ا'));
+
+            if (isCorrect) {
+                btn.classList.add('correct');
+            } else {
+                btn.classList.add('wrong');
+                wrongGuesses++;
+                if (wrongGuesses <= maxWrong) {
+                    figureParts[wrongGuesses - 1].style.display = 'block';
+                }
+            }
+
+            // روشن شدن دکمه راهنما پس از ۳ حدس با حداقل ۲ اشتباه
+            if (totalGuesses >= 3 && wrongGuesses >= 2) {
+                hintBtn.disabled = false;
+            }
+
+            renderWord();
+            checkLoss();
+        }
+
+        hintBtn.onclick = () => {
+            hintText.textContent = currentWordObj.hint || "راهنمایی برای این کلمه ثبت نشده است.";
+            hintText.style.display = 'block';
+        };
+
+        function checkWin() {
+            const word = currentWordObj.word;
+            const isWon = [...word].every(char => 
+                guessedLetters.includes(char) || 
+                (char === 'آ' && guessedLetters.includes('ا')) || 
+                (char === 'ا' && guessedLetters.includes('آ'))
+            );
+
+            if (isWon && word.length > 0) {
+                setTimeout(() => {
+                    modalTitle.textContent = "🎉 آفرین! برنده شدی";
+                    modalMessage.textContent = `کلمه درست: "${word}"`;
+                    modal.classList.add('show');
+                }, 200);
+            }
+        }
+
+        function checkLoss() {
+            if (wrongGuesses >= maxWrong) {
+                setTimeout(() => {
+                    modalTitle.textContent = "😞 متأسفانه باختی!";
+                    modalMessage.textContent = `کلمه صحیح "${currentWordObj.word}" بود.`;
+                    modal.classList.add('show');
+                }, 200);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (persianAlphabet.includes(key)) {
+                handleGuess(key);
+            } else if (key === 'ک') {
+                handleGuess('ک');
+            } else if (key === 'ی') {
+                handleGuess('ی');
+            }
+        });
+
+        loadWords();
+    </script>
+</body>
+</html>
