@@ -1,0 +1,12 @@
+[
+  { "word": "airplane", "hint": "A vehicle that flies in the sky" },
+  { "word": "hospital", "hint": "A place where sick people get medical care" },
+  { "word": "computer", "hint": "An electronic device for storing and processing data" },
+  { "word": "rainbow", "hint": "A colorful arch in the sky after rain" },
+  { "word": "elephant", "hint": "A very large animal with a long trunk" },
+  { "word": "sandwich", "hint": "Food made with two slices of bread" },
+  { "word": "umbrella", "hint": "Used to protect yourself from rain or sun" },
+  { "word": "guitar", "hint": "A musical string instrument" },
+  { "word": "bicycle", "hint": "A two-wheeled vehicle powered by pedaling" },
+  { "word": "sunflower", "hint": "A tall yellow flower that faces the sun" }
+]
