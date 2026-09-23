@@ -9,4 +9,20 @@
   { "word": "guitar", "hint": "A musical string instrument" },
   { "word": "bicycle", "hint": "A two-wheeled vehicle powered by pedaling" },
   { "word": "sunflower", "hint": "A tall yellow flower that faces the sun" }
+  { "word": "Hunt", "hint": "Catching wild animals" },
+  { "word": "Elbow", "hint": "Arm joint" },
+  { "word": "Treatment", "hint": "Medical care" },
+  { "word": "Animal", "hint": "Living creature" },
+  { "word": "Album", "hint": "Photo collection" },
+  { "word": "Elevator", "hint": "Building lift" },
+  { "word": "Geometry", "hint": "Math of shapes" },
+  { "word": "Hammer", "hint": "Nail-driving tool" },
+  { "word": "Sled", "hint": "Snow vehicle" },
+  { "word": "Spice", "hint": "Food seasoning" },
+  { "word": "Gorilla", "hint": "Large ape" },
+     { "word": "Bride", "hint": "Woman on wedding day" },
+  { "word": "England", "hint": "European country" },
+  { "word": "Raisin", "hint": "Dried grape" }
+	
+
 ]
