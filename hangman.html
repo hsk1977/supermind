@@ -141,9 +141,13 @@
             document.getElementById('lang-toggle-btn').textContent = t.langToggle;
         }
 
-        // خواندن مستقیم کلمات فقط از فایل JSON
         async function loadWords() {
-            const fileName = currentLang === 'fa' ? './words.json' : './words_en.json';
+            // ایجاد کد زمان جهت دور زدن کش گوگل کروم (Anti-Cache)
+            const timeStamp = new Date().getTime();
+            const fileName = currentLang === 'fa' 
+                ? `./words.json?v=${timeStamp}` 
+                : `./words_en.json?v=${timeStamp}`;
+
             try {
                 const response = await fetch(fileName);
                 if (!response.ok) throw new Error('File not found');
@@ -151,7 +155,8 @@
                 remainingWords = [...wordList];
                 initGame();
             } catch (error) {
-                alert('خطا در دریافت فایل کلمات! لطفاً پروژه را روی وب‌سرور (مثل Live Server یا GitHub Pages) اجرا کنید.');
+                console.error('Error loading JSON:', error);
+                alert('خطا در دریافت فایل کلمات!');
             }
         }
 
