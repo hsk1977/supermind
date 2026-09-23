@@ -3,320 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بازی حدس کلمه / Hangman Game</title>
+    <title>بازی حدس کلمه</title>
     <style>
         :root {
             --bg-color: #fdf6e3;
             --card-bg: #f5e8c7;
             --text-color: #4a3b32;
             --primary-color: #d97706;
-            --primary-hover: #b45309;
             --disabled-color: #d1d5db;
             --error-color: #ef4444;
             --success-color: #10b981;
             --home-btn-bg: #dc2626;
-            --home-btn-hover: #991b1b;
             --lang-btn-bg: #2563eb;
-            --lang-btn-hover: #1d4ed8;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px;
-            transition: direction 0.3s;
-        }
-
-        header {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 10px;
-            margin-bottom: 5px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .home-btn {
-            background-color: var(--home-btn-bg);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 14px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            transition: background-color 0.2s;
-        }
-
-        .home-btn:hover {
-            background-color: var(--home-btn-hover);
-        }
-
-        .lang-btn {
-            background-color: var(--lang-btn-bg);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            transition: background-color 0.2s;
-        }
-
-        .lang-btn:hover {
-            background-color: var(--lang-btn-hover);
-        }
-
-        .title {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            flex-grow: 1;
-        }
-
-        .hangman-box {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 10px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        svg {
-            width: 160px;
-            height: 180px;
-            stroke: var(--text-color);
-            stroke-width: 4;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: none;
-        }
-
-        .figure-part {
-            display: none;
-        }
-
-        .status-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .hint-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 8px 18px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-        }
-
-        .hint-btn:disabled {
-            background-color: var(--disabled-color);
-            cursor: not-allowed;
-            opacity: 0.6;
-            box-shadow: none;
-        }
-
-        .hint-text {
-            font-size: 14px;
-            background-color: #fff8e7;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px dashed var(--primary-color);
-            display: none;
-            text-align: center;
-            width: 90%;
-        }
-
-        .word-display {
-            display: flex;
-            gap: 8px;
-            margin: 10px 0;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .letter-slot {
-            width: 36px;
-            height: 45px;
-            border-bottom: 3px solid var(--text-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .keyboard {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            justify-content: center;
-            width: 100%;
-            max-width: 480px;
-            margin-top: auto;
-            padding-bottom: 10px;
-        }
-
-        .key {
-            background-color: #ffffff;
-            border: 1px solid #dcd1b4;
-            border-radius: 6px;
-            width: calc(100% / 8 - 6px);
-            height: 42px;
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--text-color);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 0 #dcd1b4;
-            transition: all 0.1s;
-            text-transform: uppercase;
-        }
-
-        .key:active:not(:disabled) {
-            transform: translateY(2px);
-            box-shadow: none;
-        }
-
-        .key:disabled {
-            background-color: var(--disabled-color);
-            color: #888;
-            border-color: #ccc;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        .key.correct {
-            background-color: var(--success-color);
-            color: white;
-            border-color: var(--success-color);
-        }
-
-        .key.wrong {
-            background-color: var(--error-color);
-            color: white;
-            border-color: var(--error-color);
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 100;
-        }
-
-        .modal.show {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background-color: var(--bg-color);
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            width: 85%;
-            max-width: 350px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .restart-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        @media (max-width: 360px) {
-            .key {
-                height: 38px;
-                font-size: 14px;
-            }
-            .letter-slot {
-                width: 30px;
-                height: 40px;
-                font-size: 18px;
-            }
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; user-select: none; }
+        body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px; }
+        header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; }
+        .header-actions { display: flex; gap: 8px; }
+        .home-btn { background-color: var(--home-btn-bg); color: white; border: none; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .lang-btn { background-color: var(--lang-btn-bg); color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .title { font-size: 18px; font-weight: bold; }
+        .main-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; gap: 15px; flex-grow: 1; }
+        .hangman-box { background-color: var(--card-bg); border-radius: 12px; padding: 10px; width: 100%; display: flex; justify-content: center; }
+        svg { width: 160px; height: 180px; stroke: var(--text-color); stroke-width: 4; stroke-linecap: round; fill: none; }
+        .figure-part { display: none; }
+        .status-box { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+        .hint-btn { background-color: var(--primary-color); color: white; border: none; border-radius: 20px; padding: 8px 18px; font-size: 14px; cursor: pointer; }
+        .hint-btn:disabled { background-color: var(--disabled-color); cursor: not-allowed; }
+        .hint-text { font-size: 14px; background-color: #fff8e7; padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--primary-color); display: none; text-align: center; width: 90%; }
+        .word-display { display: flex; gap: 8px; margin: 10px 0; justify-content: center; flex-wrap: wrap; }
+        .letter-slot { width: 36px; height: 45px; border-bottom: 3px solid var(--text-color); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; }
+        .keyboard { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; width: 100%; max-width: 480px; margin-top: auto; padding-bottom: 10px; }
+        .key { background-color: #ffffff; border: 1px solid #dcd1b4; border-radius: 6px; width: calc(100% / 8 - 6px); height: 42px; font-size: 16px; font-weight: bold; color: var(--text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; text-transform: uppercase; }
+        .key:disabled { background-color: var(--disabled-color); color: #888; cursor: not-allowed; }
+        .key.correct { background-color: var(--success-color); color: white; }
+        .key.wrong { background-color: var(--error-color); color: white; }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: all 0.3s; }
+        .modal.show { visibility: visible; opacity: 1; }
+        .modal-content { background-color: var(--bg-color); padding: 25px; border-radius: 12px; text-align: center; width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; }
+        .restart-btn { background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <header>
         <div class="header-actions">
-            <a href="index.html" class="home-btn" id="home-btn" title="خانه / Home">
-                🏠 <span id="home-text">خانه</span>
-            </a>
-            <button class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">
-                🌐 English
-            </button>
+            <a href="index.html" class="home-btn">🏠 <span id="home-text">خانه</span></a>
+            <button class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">🌐 English</button>
         </div>
         <div class="title" id="game-title">حدس کلمه</div>
     </header>
@@ -328,7 +62,6 @@
                 <line x1="30" y1="110" x2="30" y2="10" />
                 <line x1="30" y1="10" x2="70" y2="10" />
                 <line x1="70" y1="10" x2="70" y2="25" />
-
                 <circle cx="70" cy="35" r="10" class="figure-part" />
                 <line x1="70" y1="45" x2="70" y2="75" class="figure-part" />
                 <line x1="70" y1="55" x2="55" y2="65" class="figure-part" />
@@ -339,9 +72,7 @@
         </div>
 
         <div class="status-box">
-            <button id="hint-btn" class="hint-btn" disabled>
-                💡 <span id="hint-btn-text">راهنمایی</span>
-            </button>
+            <button id="hint-btn" class="hint-btn" disabled>💡 <span id="hint-btn-text">راهنمایی</span></button>
             <div id="hint-text" class="hint-text"></div>
         </div>
 
@@ -358,46 +89,12 @@
     </div>
 
     <script>
-        const persianAlphabet = [
-            'آ', 'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ',
-            'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط',
-            'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن',
-            'و', 'ه', 'ی'
-        ];
-
-        const englishAlphabet = [
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-            'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-            'U', 'V', 'W', 'X', 'Y', 'Z'
-        ];
+        const persianAlphabet = ['آ', 'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه', 'ی'];
+        const englishAlphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
         const translations = {
-            fa: {
-                title: "حدس کلمه",
-                home: "خانه",
-                hintBtn: "راهنمایی",
-                noHint: "راهنمایی برای این کلمه ثبت نشده است.",
-                winTitle: "🎉 آفرین! برنده شدی",
-                winMsg: "کلمه درست:",
-                lossTitle: "😞 متأسفانه باختی!",
-                lossMsg: "کلمه صحیح:",
-                restart: "بازی مجدد",
-                langToggle: "🌐 English",
-                noWordsError: "خطا در دریافت فایل کلمات!"
-            },
-            en: {
-                title: "Hangman",
-                home: "Home",
-                hintBtn: "Hint",
-                noHint: "No hint available for this word.",
-                winTitle: "🎉 You Won!",
-                winMsg: "The word was:",
-                lossTitle: "😞 Game Over!",
-                lossMsg: "The correct word was:",
-                restart: "Play Again",
-                langToggle: "🌐 فارسی",
-                noWordsError: "Error loading words file!"
-            }
+            fa: { title: "حدس کلمه", home: "خانه", hintBtn: "راهنمایی", winTitle: "🎉 آفرین! برنده شدی", winMsg: "کلمه درست:", lossTitle: "😞 متأسفانه باختی!", lossMsg: "کلمه صحیح:", restart: "بازی مجدد", langToggle: "🌐 English" },
+            en: { title: "Hangman", home: "Home", hintBtn: "Hint", winTitle: "🎉 You Won!", winMsg: "The word was:", lossTitle: "😞 Game Over!", lossMsg: "The correct word was:", restart: "Play Again", langToggle: "🌐 فارسی" }
         };
 
         let currentLang = 'fa';
@@ -422,10 +119,7 @@
             if (!char) return '';
             let c = char.toLowerCase().trim();
             if (currentLang === 'fa') {
-                c = c
-                    .replace(/[يىئية]/g, 'ی')
-                    .replace(/[كک]/g, 'ک')
-                    .replace(/[آأإا]/g, 'ا');
+                c = c.replace(/[يىئية]/g, 'ی').replace(/[كک]/g, 'ک').replace(/[آأإا]/g, 'ا');
             }
             return c;
         }
@@ -440,7 +134,6 @@
             const t = translations[currentLang];
             document.documentElement.lang = currentLang;
             document.documentElement.dir = currentLang === 'fa' ? 'rtl' : 'ltr';
-
             document.getElementById('game-title').textContent = t.title;
             document.getElementById('home-text').textContent = t.home;
             document.getElementById('hint-btn-text').textContent = t.hintBtn;
@@ -448,45 +141,35 @@
             document.getElementById('lang-toggle-btn').textContent = t.langToggle;
         }
 
+        // خواندن مستقیم کلمات فقط از فایل JSON
         async function loadWords() {
             const fileName = currentLang === 'fa' ? './words.json' : './words_en.json';
             try {
                 const response = await fetch(fileName);
                 if (!response.ok) throw new Error('File not found');
                 wordList = await response.json();
-                remainingWords = [...wordList]; // مقداردهی مجدد لیست کلمات باقی‌مانده
+                remainingWords = [...wordList];
                 initGame();
             } catch (error) {
-                console.error('Error loading words:', error);
-                alert(translations[currentLang].noWordsError);
+                alert('خطا در دریافت فایل کلمات! لطفاً پروژه را روی وب‌سرور (مثل Live Server یا GitHub Pages) اجرا کنید.');
             }
         }
 
         function initGame() {
             if (wordList.length === 0) return;
-
-            // اگر تمام کلمات لیست بازی شدند، دوباره لیست را شارژ کن
-            if (remainingWords.length === 0) {
-                remainingWords = [...wordList];
-            }
+            if (remainingWords.length === 0) remainingWords = [...wordList];
 
             guessedLetters = [];
             wrongGuesses = 0;
             totalGuesses = 0;
 
-            // انتخاب تصادفی یک کلمه از بین کلمات باقی‌مانده
             const randomIndex = Math.floor(Math.random() * remainingWords.length);
             currentWordObj = remainingWords[randomIndex];
-
-            // حذف کلمه انتخاب‌شده از لیست کلمات باقی‌مانده تا دوباره تکرار نشود
             remainingWords.splice(randomIndex, 1);
 
             figureParts.forEach(part => part.style.display = 'none');
-
             hintBtn.disabled = true;
             hintText.style.display = 'none';
-            hintText.textContent = '';
-
             modal.classList.remove('show');
 
             renderWord();
@@ -501,21 +184,15 @@
             for (let char of word) {
                 const slot = document.createElement('div');
                 slot.className = 'letter-slot';
-                
-                const cleanedChar = cleanChar(char);
-                const isGuessed = cleanedGuessed.includes(cleanedChar);
-
-                slot.textContent = isGuessed ? char : '';
+                slot.textContent = cleanedGuessed.includes(cleanChar(char)) ? char : '';
                 wordDisplay.appendChild(slot);
             }
-
             checkWin();
         }
 
         function renderKeyboard() {
             keyboardContainer.innerHTML = '';
             const alphabet = currentLang === 'fa' ? persianAlphabet : englishAlphabet;
-            
             alphabet.forEach(letter => {
                 const btn = document.createElement('button');
                 btn.className = 'key';
@@ -536,45 +213,32 @@
             const btn = document.getElementById(`key-${letter.toLowerCase()}`);
             if (btn) btn.disabled = true;
 
-            const word = currentWordObj.word;
-            const cleanedWord = [...word].map(cleanChar);
-
-            const isCorrect = cleanedWord.includes(cleanL);
+            const isCorrect = [...currentWordObj.word].map(cleanChar).includes(cleanL);
 
             if (isCorrect) {
                 if (btn) btn.classList.add('correct');
             } else {
                 if (btn) btn.classList.add('wrong');
                 wrongGuesses++;
-                if (wrongGuesses <= maxWrong) {
-                    figureParts[wrongGuesses - 1].style.display = 'block';
-                }
+                if (wrongGuesses <= maxWrong) figureParts[wrongGuesses - 1].style.display = 'block';
             }
 
-            if (totalGuesses >= 3 && wrongGuesses >= 2) {
-                hintBtn.disabled = false;
-            }
+            if (totalGuesses >= 3 && wrongGuesses >= 2) hintBtn.disabled = false;
 
             renderWord();
             checkLoss();
         }
 
         hintBtn.onclick = () => {
-            const t = translations[currentLang];
-            hintText.textContent = currentWordObj.hint || t.noHint;
+            hintText.textContent = currentWordObj.hint || 'راهنمایی موجود نیست.';
             hintText.style.display = 'block';
         };
 
         function checkWin() {
             const word = currentWordObj.word;
             if (!word) return;
-
-            const cleanedGuessed = guessedLetters.map(cleanChar);
-            const isWon = [...word].every(char => 
-                cleanedGuessed.includes(cleanChar(char))
-            );
-
-            if (isWon && word.length > 0) {
+            const isWon = [...word].every(char => guessedLetters.map(cleanChar).includes(cleanChar(char)));
+            if (isWon) {
                 const t = translations[currentLang];
                 setTimeout(() => {
                     modalTitle.textContent = t.winTitle;
@@ -594,13 +258,6 @@
                 }, 200);
             }
         }
-
-        document.addEventListener('keydown', (e) => {
-            const key = e.key;
-            if (key) {
-                handleGuess(key);
-            }
-        });
 
         updateUI();
         loadWords();
