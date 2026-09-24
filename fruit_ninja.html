@@ -534,9 +534,12 @@
         this.x = customX !== null ? customX : Math.random() * (canvas.width - 200) + 100;
         this.y = canvas.height + 50;
         
+        // Adjust launch speed based on screen height for higher mobile throws
+        const heightMultiplier = Math.sqrt(canvas.height / 800);
+        
         this.vx = customVX !== null ? customVX : (Math.random() - 0.5) * 4;
-        this.vy = customVY !== null ? customVY : -(Math.random() * 3 + 11);
-        this.gravity = 0.22;
+        this.vy = customVY !== null ? customVY : -(Math.random() * 3.5 + 14.5) * heightMultiplier;
+        this.gravity = 0.19; // Lower gravity so fruits hang longer in the air
         this.rotation = Math.random() * Math.PI * 2;
         this.vRot = (Math.random() - 0.5) * 0.08;
 
@@ -792,7 +795,8 @@
           const clusterSize = Math.floor(Math.random() * 3) + 2;
           const baseX = Math.random() * (canvas.width - 300) + 150;
           const baseVX = (Math.random() - 0.5) * 3;
-          const baseVY = -(Math.random() * 2 + 11);
+          const heightMultiplier = Math.sqrt(canvas.height / 800);
+          const baseVY = -(Math.random() * 2.5 + 14.5) * heightMultiplier;
 
           for (let i = 0; i < clusterSize; i++) {
             const offsetX = (i - (clusterSize - 1) / 2) * 45;
