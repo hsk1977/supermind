@@ -172,27 +172,6 @@
             font-weight: 700;
         }
 
-        .game-card.locked {
-            filter: grayscale(0.9);
-            opacity: 0.7;
-            cursor: not-allowed;
-            background: #f0f0f0;
-            border-color: #bdbdbd;
-            box-shadow: 0 5px 0 #757575;
-        }
-
-        .game-card.locked:hover {
-            transform: none;
-            box-shadow: 0 5px 0 #757575;
-        }
-
-        .lock-icon {
-            position: absolute;
-            bottom: 8px;
-            left: 8px;
-            font-size: 1rem;
-        }
-
         .footer-action {
             margin-top: 5px;
         }
@@ -281,20 +260,19 @@
             <!-- بازی ۵: فروت نینجا -->
             <a href="./fruit_ninja.html" class="game-card">
                 <span class="badge-number">۵</span>
-                <span class="badge-tag">جدید</span>
                 <div class="icon-container">🍉⚔️</div>
                 <div class="game-title">فروت نینجا</div>
                 <div class="game-sub">Fruit Ninja</div>
             </a>
 
-            <!-- بازی ۶: قفل شده -->
-            <div class="game-card locked">
+            <!-- بازی ۶: کارت‌های حافظه -->
+            <a href="./memory_game.html" class="game-card">
                 <span class="badge-number">۶</span>
-                <div class="icon-container">💎</div>
-                <div class="game-title">گنج پنهان</div>
-                <div class="game-sub">به زودی...</div>
-                <span class="lock-icon">🔒</span>
-            </div>
+                <span class="badge-tag">جدید</span>
+                <div class="icon-container">🃏🧠</div>
+                <div class="game-title">بازی حافظه</div>
+                <div class="game-sub">Memory Game</div>
+            </a>
         </div>
 
         <div class="footer-action">

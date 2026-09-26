@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flip & Match - Memory Game</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* 3D Flip Card Effect */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card.matched .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 0.75rem;
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Pulse/Shake Animations for feedback */
+    @keyframes pulseMatch {
+      0% { transform: rotateY(180deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.08); }
+      100% { transform: rotateY(180deg) scale(1); }
+    }
+
+    @keyframes shakeMismatch {
+      0%, 100% { transform: rotateY(180deg) translateX(0); }
+      20%, 60% { transform: rotateY(180deg) translateX(-6px); }
+      40%, 80% { transform: rotateY(180deg) translateX(6px); }
+    }
+
+    .animate-match {
+      animation: pulseMatch 0.5s ease-in-out;
+    }
+
+    .animate-mismatch {
+      animation: shakeMismatch 0.5s ease-in-out;
+    }
+
+    .card-front {
+      background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 50%, #db2777 100%);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      border: 2px solid #ffffff;
+    }
+
+    .active-turn {
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+      border-color: #ef4444;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-rose-500 selection:text-white">
+
+  <!-- HEADER -->
+  <header class="w-full bg-slate-800/90 backdrop-blur border-b border-slate-700 px-4 py-3 sticky top-0 z-30 shadow-md">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      
+      <!-- Red Home Button -->
+      <button id="homeBtn" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition duration-200">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="hidden sm:inline">Home</span>
+      </button>
+
+      <!-- Game Title -->
+      <div class="text-center">
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-wide bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">
+          MEMORY MATCH
+        </h1>
+        <p id="modeBadge" class="text-xs font-semibold text-slate-400 uppercase tracking-widest hidden">Solo Mode</p>
+      </div>
+
+      <!-- Audio Mute Toggle -->
+      <button id="soundToggleBtn" class="flex items-center justify-center w-10 h-10 bg-slate-700 hover:bg-slate-600 active:scale-95 text-amber-400 rounded-xl shadow transition duration-200">
+        <i id="soundIcon" class="fa-solid fa-volume-high text-lg"></i>
+      </button>
+
+    </div>
+  </header>
+
+  <main class="flex-grow flex flex-col items-center justify-center p-3 sm:p-6 w-full max-w-4xl mx-auto">
+
+    <!-- SCREEN 1: HOME / MODE SELECTOR -->
+    <div id="homeScreen" class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 text-center shadow-2xl space-y-6 my-auto">
+      <div class="space-y-2">
+        <div class="inline-block p-4 bg-gradient-to-tr from-amber-500 to-rose-500 rounded-2xl shadow-lg mb-2">
+          <i class="fa-solid fa-brain text-4xl text-white"></i>
+        </div>
+        <h2 class="text-3xl font-black text-white">Select Game Mode</h2>
+        <p class="text-slate-400 text-sm">Test your memory against yourself or a smart opponent!</p>
+      </div>
+
+      <div class="space-y-4 pt-2">
+        <!-- Single Player Button -->
+        <button id="startSoloBtn" class="w-full flex items-center justify-between bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-user text-2xl"></i>
+            <div class="text-left">
+              <div class="text-lg leading-tight">1 Player (Solo)</div>
+              <div class="text-xs text-emerald-100 opacity-80 font-normal">Track your speed & moves</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <!-- Bot Mode Button -->
+        <button id="startBotBtn" class="w-full flex items-center justify-between bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-robot text-2xl"></i>
+            <div class="text-left">
+              <div class="text-lg leading-tight">Vs Bot (Medium)</div>
+              <div class="text-xs text-indigo-100 opacity-80 font-normal">Medium AI strategy opponent</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-500 pt-2 border-t border-slate-700/60">
+        20 Cards • 10 Matching Pairs (5 Rows) • Sound & Visual Feedback
+      </div>
+    </div>
+
+    <!-- SCREEN 2: GAME BOARD -->
+    <div id="gameScreen" class="w-full flex flex-col items-center gap-4 hidden">
+      
+      <!-- STATS BOARD -->
+      <div class="w-full max-w-lg bg-slate-800/80 border border-slate-700 rounded-2xl p-3 sm:p-4 shadow-lg">
+        
+        <!-- SOLO STATS -->
+        <div id="soloStats" class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
+            <div class="text-xs text-slate-400 font-medium">Time</div>
+            <div id="timerDisplay" class="text-lg sm:text-xl font-bold text-amber-400">00:00</div>
+          </div>
+          <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
+            <div class="text-xs text-slate-400 font-medium">Moves</div>
+            <div id="movesDisplay" class="text-lg sm:text-xl font-bold text-sky-400">0</div>
+          </div>
+          <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
+            <div class="text-xs text-slate-400 font-medium">Pairs</div>
+            <div id="pairsDisplay" class="text-lg sm:text-xl font-bold text-emerald-400">0 / 10</div>
+          </div>
+        </div>
+
+        <!-- BOT VS STATS -->
+        <div id="botStats" class="grid grid-cols-2 gap-3 text-center hidden">
+          <!-- Player Score Card -->
+          <div id="playerScoreCard" class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700 transition-all duration-300">
+            <div class="text-xs text-slate-400 font-semibold uppercase flex items-center justify-center gap-1">
+              <i class="fa-solid fa-user text-emerald-400"></i> YOU
+            </div>
+            <div id="playerPairsDisplay" class="text-2xl font-black text-emerald-400">0</div>
+          </div>
+
+          <!-- Bot Score Card -->
+          <div id="botScoreCard" class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700 transition-all duration-300">
+            <div class="text-xs text-slate-400 font-semibold uppercase flex items-center justify-center gap-1">
+              <i class="fa-solid fa-robot text-purple-400"></i> BOT (Medium)
+            </div>
+            <div id="botPairsDisplay" class="text-2xl font-black text-purple-400">0</div>
+          </div>
+        </div>
+
+        <!-- Turn Banner (Vs Bot) -->
+        <div id="turnBanner" class="mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-slate-900 text-slate-300 hidden">
+          Your Turn!
+        </div>
+      </div>
+
+      <!-- CARD GRID (4 Columns x 5 Rows = 20 Cards) -->
+      <div id="cardGrid" class="grid grid-cols-4 gap-2.5 sm:gap-3.5 w-full max-w-md p-2">
+        <!-- Cards generated dynamically via JavaScript -->
+      </div>
+
+      <!-- Action Footer -->
+      <div class="flex items-center gap-3">
+        <button id="restartBtn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-600 font-semibold py-2 px-4 rounded-xl shadow transition">
+          <i class="fa-solid fa-rotate-right"></i> Restart Game
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- VICTORY / RESULTS MODAL -->
+  <div id="victoryModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl transform scale-95 transition duration-300">
+      
+      <div class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-500/40">
+        <i id="victoryIcon" class="fa-solid fa-trophy text-4xl"></i>
+      </div>
+
+      <h3 id="victoryTitle" class="text-2xl font-black text-white mb-1">Congratulations!</h3>
+      <p id="victorySubtitle" class="text-slate-400 text-sm mb-6">You matched all the cards!</p>
+
+      <!-- Results Summary -->
+      <div id="modalSummary" class="bg-slate-900/80 rounded-2xl p-4 mb-6 text-left space-y-2 text-sm border border-slate-700/60">
+        <!-- Filled dynamically -->
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <button id="modalPlayAgainBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+          Play Again
+        </button>
+        <button id="modalHomeBtn" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl transition">
+          Back to Home
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="w-full py-3 text-center text-xs text-slate-500">
+    Memory Game • Built with HTML, CSS & JS
+  </footer>
+
+  <script>
+    class SoundEffects {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      }
+
+      playFlip() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+
+      playMatch() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 major chord
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.25);
+        });
+      }
+
+      playMismatch() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.2);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+
+      playWin() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const tune = [440, 554.37, 659.25, 880];
+        tune.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+          gain.gain.setValueAtTime(0.25, now + idx * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.12);
+          osc.stop(now + idx * 0.12 + 0.35);
+        });
+      }
+    }
+
+    const sound = new SoundEffects();
+
+    // 10 Emoji icons for 20 cards total (5 rows of 4)
+    const CARD_EMOJIS = ['🐶', '🐱', '🦊', '🦁', '🐸', '🚀', '🎨', '🍕', '🍩', '🥑'];
+    const TOTAL_PAIRS = CARD_EMOJIS.length; // 10 pairs
+
+    // Game Variables
+    let gameMode = 'solo';
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let moves = 0;
+    let isBoardLocked = false;
+
+    // Timer Variables
+    let timerInterval = null;
+    let secondsElapsed = 0;
+
+    // Bot State Variables
+    let currentTurn = 'player';
+    let playerScore = 0;
+    let botScore = 0;
+    let botMemory = {};
+
+    // DOM Elements
+    const homeScreen = document.getElementById('homeScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const cardGrid = document.getElementById('cardGrid');
+    const modeBadge = document.getElementById('modeBadge');
+    
+    // Buttons
+    const homeBtn = document.getElementById('homeBtn');
+    const startSoloBtn = document.getElementById('startSoloBtn');
+    const startBotBtn = document.getElementById('startBotBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    
+    // Stats Displays
+    const soloStats = document.getElementById('soloStats');
+    const botStats = document.getElementById('botStats');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const movesDisplay = document.getElementById('movesDisplay');
+    const pairsDisplay = document.getElementById('pairsDisplay');
+    const playerPairsDisplay = document.getElementById('playerPairsDisplay');
+    const botPairsDisplay = document.getElementById('botPairsDisplay');
+    const turnBanner = document.getElementById('turnBanner');
+    const playerScoreCard = document.getElementById('playerScoreCard');
+    const botScoreCard = document.getElementById('botScoreCard');
+
+    // Victory Modal Elements
+    const victoryModal = document.getElementById('victoryModal');
+    const victoryIcon = document.getElementById('victoryIcon');
+    const victoryTitle = document.getElementById('victoryTitle');
+    const victorySubtitle = document.getElementById('victorySubtitle');
+    const modalSummary = document.getElementById('modalSummary');
+    const modalPlayAgainBtn = document.getElementById('modalPlayAgainBtn');
+    const modalHomeBtn = document.getElementById('modalHomeBtn');
+
+    // Audio Toggle
+    soundToggleBtn.addEventListener('click', () => {
+      sound.muted = !sound.muted;
+      if (sound.muted) {
+        soundIcon.className = 'fa-solid fa-volume-xmark text-lg text-slate-500';
+      } else {
+        soundIcon.className = 'fa-solid fa-volume-high text-lg text-amber-400';
+      }
+    });
+
+    // Event Listeners
+    homeBtn.addEventListener('click', showHomeScreen);
+    startSoloBtn.addEventListener('click', () => startGame('solo'));
+    startBotBtn.addEventListener('click', () => startGame('bot'));
+    restartBtn.addEventListener('click', () => startGame(gameMode));
+    
+    modalPlayAgainBtn.addEventListener('click', () => {
+      hideVictoryModal();
+      startGame(gameMode);
+    });
+    
+    modalHomeBtn.addEventListener('click', () => {
+      hideVictoryModal();
+      showHomeScreen();
+    });
+
+    function showHomeScreen() {
+      stopTimer();
+      gameScreen.classList.add('hidden');
+      homeScreen.classList.remove('hidden');
+      modeBadge.classList.add('hidden');
+      hideVictoryModal();
+    }
+
+    function startGame(mode) {
+      gameMode = mode;
+      homeScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+      modeBadge.classList.remove('hidden');
+      modeBadge.textContent = mode === 'solo' ? 'Solo Mode' : 'Vs Bot (Medium)';
+      
+      matchedPairs = 0;
+      moves = 0;
+      flippedCards = [];
+      isBoardLocked = false;
+      botMemory = {};
+      playerScore = 0;
+      botScore = 0;
+      currentTurn = 'player';
+
+      if (gameMode === 'solo') {
+        soloStats.classList.remove('hidden');
+        botStats.classList.add('hidden');
+        turnBanner.classList.add('hidden');
+        movesDisplay.textContent = '0';
+        pairsDisplay.textContent = `0 / ${TOTAL_PAIRS}`;
+        resetTimer();
+        startTimer();
+      } else {
+        soloStats.classList.add('hidden');
+        botStats.classList.remove('hidden');
+        turnBanner.classList.remove('hidden');
+        playerPairsDisplay.textContent = '0';
+        botPairsDisplay.textContent = '0';
+        updateTurnUI();
+      }
+
+      // Generate & Shuffle 20 Cards (10 Pairs)
+      const deck = [...CARD_EMOJIS, ...CARD_EMOJIS];
+      shuffleArray(deck);
+      
+      cards = deck.map((emoji, index) => ({
+        id: index,
+        emoji: emoji,
+        isFlipped: false,
+        isMatched: false
+      }));
+
+      renderBoard();
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function renderBoard() {
+      cardGrid.innerHTML = '';
+      cards.forEach((card) => {
+        const cardElem = document.createElement('div');
+        cardElem.className = 'card perspective-1000 h-20 sm:h-24 cursor-pointer';
+        cardElem.dataset.id = card.id;
+
+        cardElem.innerHTML = `
+          <div class="card-inner w-full h-full">
+            <div class="card-front flex items-center justify-center rounded-2xl shadow-md border-2 border-white/30 text-white font-bold text-2xl">
+              <i class="fa-solid fa-star opacity-40 text-amber-200"></i>
+            </div>
+            <div class="card-back bg-slate-800 border-2 border-amber-400/80 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl shadow-xl">
+              ${card.emoji}
+            </div>
+          </div>
+        `;
+
+        cardElem.addEventListener('click', () => handleCardClick(card.id));
+        cardGrid.appendChild(cardElem);
+      });
+    }
+
+    function handleCardClick(id) {
+      if (isBoardLocked) return;
+      if (gameMode === 'bot' && currentTurn !== 'player') return;
+
+      const card = cards[id];
+      if (card.isFlipped || card.isMatched) return;
+
+      flipCard(id);
+
+      if (flippedCards.length === 2) {
+        processTurn();
+      }
+    }
+
+    function flipCard(id) {
+      const card = cards[id];
+      card.isFlipped = true;
+      flippedCards.push(card);
+
+      sound.playFlip();
+
+      const cardElem = cardGrid.children[id];
+      cardElem.classList.add('flipped');
+
+      if (Math.random() < 0.85) {
+        botMemory[id] = card.emoji;
+      }
+    }
+
+    function processTurn() {
+      isBoardLocked = true;
+      moves++;
+
+      if (gameMode === 'solo') {
+        movesDisplay.textContent = moves;
+      }
+
+      const [card1, card2] = flippedCards;
+
+      if (card1.emoji === card2.emoji) {
+        // MATCH FOUND
+        setTimeout(() => {
+          card1.isMatched = true;
+          card2.isMatched = true;
+
+          const elem1 = cardGrid.children[card1.id];
+          const elem2 = cardGrid.children[card2.id];
+
+          elem1.classList.add('matched', 'animate-match');
+          elem2.classList.add('matched', 'animate-match');
+
+          delete botMemory[card1.id];
+          delete botMemory[card2.id];
+
+          sound.playMatch();
+          matchedPairs++;
+
+          if (gameMode === 'solo') {
+            pairsDisplay.textContent = `${matchedPairs} / ${TOTAL_PAIRS}`;
+          } else {
+            if (currentTurn === 'player') {
+              playerScore++;
+              playerPairsDisplay.textContent = playerScore;
+            } else {
+              botScore++;
+              botPairsDisplay.textContent = botScore;
+            }
+          }
+
+          flippedCards = [];
+
+          if (matchedPairs === TOTAL_PAIRS) {
+            setTimeout(handleWin, 600);
+          } else {
+            isBoardLocked = false;
+            if (gameMode === 'bot' && currentTurn === 'bot') {
+              setTimeout(botTurn, 800);
+            }
+          }
+        }, 500);
+
+      } else {
+        // MISMATCH
+        setTimeout(() => {
+          sound.playMismatch();
+
+          const elem1 = cardGrid.children[card1.id];
+          const elem2 = cardGrid.children[card2.id];
+
+          elem1.classList.add('animate-mismatch');
+          elem2.classList.add('animate-mismatch');
+
+          setTimeout(() => {
+            card1.isFlipped = false;
+            card2.isFlipped = false;
+
+            elem1.classList.remove('flipped', 'animate-mismatch');
+            elem2.classList.remove('flipped', 'animate-mismatch');
+
+            flippedCards = [];
+            isBoardLocked = false;
+
+            if (gameMode === 'bot') {
+              currentTurn = currentTurn === 'player' ? 'bot' : 'player';
+              updateTurnUI();
+
+              if (currentTurn === 'bot') {
+                setTimeout(botTurn, 900);
+              }
+            }
+          }, 400);
+
+        }, 700);
+      }
+    }
+
+    function botTurn() {
+      if (matchedPairs === TOTAL_PAIRS || currentTurn !== 'bot') return;
+
+      isBoardLocked = true;
+
+      const availableIndices = cards
+        .filter(c => !c.isFlipped && !c.isMatched)
+        .map(c => c.id);
+
+      if (availableIndices.length === 0) return;
+
+      let firstChoice = null;
+      let secondChoice = null;
+
+      const memoryPairs = findPairInMemory();
+
+      if (memoryPairs) {
+        if (Math.random() < 0.75) {
+          firstChoice = memoryPairs[0];
+          secondChoice = memoryPairs[1];
+        }
+      }
+
+      if (firstChoice === null) {
+        firstChoice = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      }
+
+      flipCard(firstChoice);
+
+      setTimeout(() => {
+        const flippedEmoji = cards[firstChoice].emoji;
+
+        if (secondChoice === null) {
+          for (let id in botMemory) {
+            id = parseInt(id);
+            if (id !== firstChoice && botMemory[id] === flippedEmoji && !cards[id].isMatched) {
+              if (Math.random() < 0.75) {
+                secondChoice = id;
+                break;
+              }
+            }
+          }
+        }
+
+        if (secondChoice === null) {
+          const remainingIndices = availableIndices.filter(id => id !== firstChoice);
+          secondChoice = remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
+        }
+
+        flipCard(secondChoice);
+        processTurn();
+
+      }, 800);
+    }
+
+    function findPairInMemory() {
+      const emojiMap = {};
+      for (let id in botMemory) {
+        id = parseInt(id);
+        if (cards[id].isMatched) continue;
+
+        const emoji = botMemory[id];
+        if (emojiMap[emoji] !== undefined) {
+          return [emojiMap[emoji], id];
+        } else {
+          emojiMap[emoji] = id;
+        }
+      }
+      return null;
+    }
+
+    function updateTurnUI() {
+      if (currentTurn === 'player') {
+        turnBanner.textContent = "Your Turn! Tap a card.";
+        turnBanner.className = "mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        playerScoreCard.classList.add('active-turn');
+        botScoreCard.classList.remove('active-turn');
+      } else {
+        turnBanner.textContent = "Bot is thinking...";
+        turnBanner.className = "mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 animate-pulse";
+        botScoreCard.classList.add('active-turn');
+        playerScoreCard.classList.remove('active-turn');
+      }
+    }
+
+    function startTimer() {
+      secondsElapsed = 0;
+      timerDisplay.textContent = "00:00";
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+        const secs = String(secondsElapsed % 60).padStart(2, '0');
+        timerDisplay.textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function resetTimer() {
+      stopTimer();
+      secondsElapsed = 0;
+      timerDisplay.textContent = "00:00";
+    }
+
+    function handleWin() {
+      stopTimer();
+      sound.playWin();
+
+      if (gameMode === 'solo') {
+        victoryIcon.className = "fa-solid fa-trophy text-4xl text-amber-400";
+        victoryTitle.textContent = "Awesome Job!";
+        victorySubtitle.textContent = "You cleared all 10 pairs!";
+        
+        modalSummary.innerHTML = `
+          <div class="flex justify-between items-center text-slate-300">
+            <span><i class="fa-solid fa-clock text-amber-400 mr-2"></i>Time Taken:</span>
+            <span class="font-bold text-white">${timerDisplay.textContent}</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-300">
+            <span><i class="fa-solid fa-hand text-sky-400 mr-2"></i>Total Moves:</span>
+            <span class="font-bold text-white">${moves}</span>
+          </div>
+        `;
+      } else {
+        if (playerScore > botScore) {
+          victoryIcon.className = "fa-solid fa-trophy text-4xl text-amber-400";
+          victoryTitle.textContent = "You Won!";
+          victorySubtitle.textContent = "You defeated the Medium Bot!";
+        } else if (botScore > playerScore) {
+          victoryIcon.className = "fa-solid fa-robot text-4xl text-purple-400";
+          victoryTitle.textContent = "Bot Won!";
+          victorySubtitle.textContent = "Better luck next time!";
+        } else {
+          victoryIcon.className = "fa-solid fa-handshake text-4xl text-sky-400";
+          victoryTitle.textContent = "It's a Tie!";
+          victorySubtitle.textContent = "Great match between both of you!";
+        }
+
+        modalSummary.innerHTML = `
+          <div class="flex justify-between items-center text-slate-300">
+            <span><i class="fa-solid fa-user text-emerald-400 mr-2"></i>Your Score:</span>
+            <span class="font-bold text-white text-base">${playerScore} Pairs</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-300">
+            <span><i class="fa-solid fa-robot text-purple-400 mr-2"></i>Bot Score:</span>
+            <span class="font-bold text-white text-base">${botScore} Pairs</span>
+          </div>
+        `;
+      }
+
+      victoryModal.classList.remove('hidden');
+    }
+
+    function hideVictoryModal() {
+      victoryModal.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
