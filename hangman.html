@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بازی حدس کلمات - هنگ من</title>
+    <title>بازی حدس کلمات - Hangman</title>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -27,7 +27,7 @@
 
         .game-container {
             width: 100%;
-            max-width: 430px;
+            max-width: 440px;
             background: #fff8eb;
             border: 6px solid #d4a359;
             border-radius: 36px;
@@ -36,7 +36,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             position: relative;
         }
 
@@ -64,9 +64,40 @@
             color: #3e2723;
         }
 
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .lang-btn, .hint-btn {
+            background: #8d6e63;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #4e342e;
+            transition: all 0.1s;
+        }
+
+        .hint-btn {
+            background: #f57c00;
+            box-shadow: 0 3px 0 #b26a00;
+        }
+
+        .lang-btn:active, .hint-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #000;
+        }
+
         .svg-container {
-            width: 180px;
-            height: 180px;
+            width: 160px;
+            height: 160px;
             background: #fff8eb;
             border: 2px dashed #b8860b;
             border-radius: 20px;
@@ -76,33 +107,32 @@
         }
 
         .hangman-svg {
-            width: 140px;
-            height: 140px;
+            width: 130px;
+            height: 130px;
         }
 
         .category {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #8d6e63;
             font-weight: 700;
         }
 
         .word-display {
             display: flex;
-            gap: 8px;
-            margin: 10px 0;
+            gap: 6px;
+            margin: 8px 0;
             flex-wrap: wrap;
             justify-content: center;
-            direction: ltr;
         }
 
         .letter-box {
-            width: 36px;
-            height: 44px;
+            width: 34px;
+            height: 42px;
             border-bottom: 3px solid #3e2723;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 900;
             color: #3e2723;
         }
@@ -110,28 +140,22 @@
         .keyboard {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 5px;
             justify-content: center;
             width: 100%;
         }
 
         .key-btn {
-            width: 36px;
-            height: 40px;
+            width: 34px;
+            height: 38px;
             background: #ffffff;
             border: 2px solid #e0c097;
-            border-radius: 10px;
-            font-size: 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
             font-weight: 700;
             color: #3e2723;
             cursor: pointer;
             box-shadow: 0 3px 0 #b8860b;
-            transition: all 0.1s;
-        }
-
-        .key-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #b8860b;
         }
 
         .key-btn.correct {
@@ -152,9 +176,9 @@
         }
 
         .message {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 900;
-            min-height: 28px;
+            min-height: 26px;
             text-align: center;
         }
 
@@ -162,9 +186,9 @@
             background: linear-gradient(180deg, #4caf50, #2e7d32);
             color: white;
             border: none;
-            padding: 10px 24px;
-            border-radius: 20px;
-            font-size: 1rem;
+            padding: 8px 20px;
+            border-radius: 18px;
+            font-size: 0.95rem;
             font-weight: 900;
             cursor: pointer;
             box-shadow: 0 4px 0 #1b5e20;
@@ -175,8 +199,13 @@
 
     <div class="game-container">
         <div class="header">
-            <a href="./index.html" class="back-btn">⬅ بازگشت</a>
-            <div class="title">حدس کلمات</div>
+            <a href="./index.html" class="back-btn" id="back-txt">⬅ بازگشت</a>
+            <div class="title" id="game-title">حدس کلمات</div>
+        </div>
+
+        <div class="controls-bar">
+            <button class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">🌐 English</button>
+            <button class="hint-btn" id="hint-btn" onclick="useHint()">💡 راهنمایی (1)</button>
         </div>
 
         <div class="svg-container">
@@ -206,34 +235,62 @@
     </div>
 
     <script>
-        const wordsList = [
-            { word: 'ایران', cat: 'کشور' },
-            { word: 'فردوسی', cat: 'شاعر نامدار' },
-            { word: 'سیب', cat: 'میوه' },
-            { word: 'تهران', cat: 'پایتخت' },
-            { word: 'خورشید', cat: 'طبیعت' },
-            { word: 'کامپیوتر', cat: 'تکنولوژی' },
-            { word: 'کهکشان', cat: 'فضا' }
-        ];
+        const wordsData = {
+            fa: [
+                { word: 'ایران', cat: 'کشور' },
+                { word: 'فردوسی', cat: 'شاعر نامدار' },
+                { word: 'سیب', cat: 'میوه' },
+                { word: 'تهران', cat: 'پایتخت' },
+                { word: 'خورشید', cat: 'طبیعت' },
+                { word: 'کامپیوتر', cat: 'تکنولوژی' },
+                { word: 'کهکشان', cat: 'فضا' },
+                { word: 'زمستان', cat: 'فصل' }
+            ],
+            en: [
+                { word: 'IRAN', cat: 'Country' },
+                { word: 'APPLE', cat: 'Fruit' },
+                { word: 'TEHRAN', cat: 'Capital' },
+                { word: 'COMPUTER', cat: 'Technology' },
+                { word: 'GALAXY', cat: 'Space' },
+                { word: 'WINTER', cat: 'Season' },
+                { word: 'GIRAFFE', cat: 'Animal' }
+            ]
+        };
 
         const faLetters = ['آ','ا','ب','پ','ت','ث','ج','چ','ح','خ','د','ذ','ر','ز','ژ','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ک','گ','ل','م','ن','و','ه','ی'];
+        const enLetters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 
+        let currentLang = 'fa';
         let selectedWord = '';
         let guessedLetters = [];
         let wrongGuesses = 0;
         const maxWrong = 6;
+        let hintsLeft = 1;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'fa' ? 'en' : 'fa';
+            document.documentElement.dir = currentLang === 'fa' ? 'rtl' : 'ltr';
+            document.getElementById('lang-toggle-btn').textContent = currentLang === 'fa' ? '🌐 English' : '🌐 فارسی';
+            document.getElementById('game-title').textContent = currentLang === 'fa' ? 'حدس کلمات' : 'Hangman';
+            document.getElementById('back-txt').textContent = currentLang === 'fa' ? '⬅ بازگشت' : '⬅ Back';
+            initGame();
+        }
 
         function initGame() {
-            const randomItem = wordsList[Math.floor(Math.random() * wordsList.length)];
+            const list = wordsData[currentLang];
+            const randomItem = list[Math.floor(Math.random() * list.length)];
             selectedWord = randomItem.word;
-            document.getElementById('category').textContent = `دسته‌بندی: ${randomItem.cat}`;
+            
+            const catLabel = currentLang === 'fa' ? 'دسته‌بندی' : 'Category';
+            document.getElementById('category').textContent = `${catLabel}: ${randomItem.cat}`;
             
             guessedLetters = [];
             wrongGuesses = 0;
+            hintsLeft = 1;
+            
+            updateHintButtonText();
             document.getElementById('message').textContent = '';
-            document.getElementById('message').style.color = '#3e2723';
 
-            // مخفی کردن تمام بخش‌های آدمک
             for (let i = 0; i < maxWrong; i++) {
                 document.getElementById(`part-${i}`).style.display = 'none';
             }
@@ -260,7 +317,9 @@
         function renderKeyboard() {
             const kb = document.getElementById('keyboard');
             kb.innerHTML = '';
-            faLetters.forEach(letter => {
+            const letters = currentLang === 'fa' ? faLetters : enLetters;
+            
+            letters.forEach(letter => {
                 const btn = document.createElement('button');
                 btn.className = 'key-btn';
                 btn.textContent = letter;
@@ -286,11 +345,38 @@
             }
         }
 
+        function useHint() {
+            if (hintsLeft <= 0 || wrongGuesses >= maxWrong) return;
+
+            const remainingLetters = [...selectedWord].filter(char => !guessedLetters.includes(char) && char !== ' ');
+            if (remainingLetters.length > 0) {
+                const randomLetter = remainingLetters[Math.floor(Math.random() * remainingLetters.length)];
+                
+                // یافتن دکمه مربوطه در کیبورد
+                const btns = document.querySelectorAll('.key-btn');
+                btns.forEach(btn => {
+                    if (btn.textContent === randomLetter) {
+                        handleGuess(randomLetter, btn);
+                    }
+                });
+
+                hintsLeft--;
+                updateHintButtonText();
+            }
+        }
+
+        function updateHintButtonText() {
+            const btn = document.getElementById('hint-btn');
+            const txt = currentLang === 'fa' ? '💡 راهنمایی' : '💡 Hint';
+            btn.textContent = `${txt} (${hintsLeft})`;
+            btn.style.opacity = hintsLeft > 0 ? '1' : '0.5';
+        }
+
         function checkWin() {
             const isWon = [...selectedWord].every(char => guessedLetters.includes(char) || char === ' ');
             if (isWon) {
                 const msg = document.getElementById('message');
-                msg.textContent = '🎉 آفرین! درست حدس زدی!';
+                msg.textContent = currentLang === 'fa' ? '🎉 آفرین! درست حدس زدی!' : '🎉 You Won!';
                 msg.style.color = '#2e7d32';
                 disableKeyboard();
             }
@@ -299,7 +385,8 @@
         function checkLoss() {
             if (wrongGuesses >= maxWrong) {
                 const msg = document.getElementById('message');
-                msg.textContent = `باختی! کلمه: ${selectedWord}`;
+                const loseTxt = currentLang === 'fa' ? 'باختی! کلمه:' : 'Game Over! Word:';
+                msg.textContent = `${loseTxt} ${selectedWord}`;
                 msg.style.color = '#e53935';
                 disableKeyboard();
             }
