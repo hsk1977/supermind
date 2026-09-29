@@ -22,5 +22,22 @@
   { "word": "Gorilla", "hint": "Large ape" },
   { "word": "Bride", "hint": "Woman on wedding day" },
   { "word": "England", "hint": "European country" },
-  { "word": "Raisin", "hint": "Dried grape" }
+  { "word": "Raisin", "hint": "Dried grape" },
+{ "word": "Riddle", "hint": "A puzzling question" },
+  { "word": "Embrace", "hint": "Holding someone close" },
+  { "word": "Trench", "hint": "A military ditch" },
+  { "word": "Remorse", "hint": "Deep regret" },
+  { "word": "Blossom", "hint": "A flower before opening" },
+  { "word": "Torch", "hint": "A flaming stick for light" },
+  { "word": "Lantern", "hint": "A portable lamp" },
+  { "word": "Blacksmith", "hint": "A metalworker" },
+  { "word": "Pizza", "hint": "An Italian cheese dish" },
+  { "word": "Nurse", "hint": "A medical caregiver" },
+  { "word": "Travel", "hint": "Taking a journey" },
+  { "word": "Duck", "hint": "An aquatic bird" },
+  { "word": "Fossil", "hint": "Ancient remains in stone" },
+  { "word": "Soap", "hint": "A cleaning substance" },
+  { "word": "Shot", "hint": "Firing a weapon" },
+  { "word": "Missile", "hint": "A guided projectile" },
+  { "word": "Satan", "hint": "The devil" }
 ]
