@@ -82,12 +82,33 @@
             font-size: 0.85rem;
             cursor: pointer;
             box-shadow: 0 3px 0 #4e342e;
-            transition: all 0.1s;
+            transition: all 0.2s;
         }
 
         .hint-btn {
             background: #f57c00;
             box-shadow: 0 3px 0 #b26a00;
+        }
+
+        /* انیمیشن چشمک‌زن برای دکمه راهنما */
+        @keyframes pulse-glow {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 3px 0 #b26a00, 0 0 0px rgba(245, 124, 0, 0.7);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 0 3px 0 #b26a00, 0 0 12px rgba(245, 124, 0, 0.9);
+                background-color: #ff9800;
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 3px 0 #b26a00, 0 0 0px rgba(245, 124, 0, 0.7);
+            }
+        }
+
+        .hint-btn.pulsing {
+            animation: pulse-glow 1.2s infinite ease-in-out;
         }
 
         .lang-btn:active, .hint-btn:active {
@@ -205,7 +226,7 @@
 
         <div class="controls-bar">
             <button class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">🌐 English</button>
-            <button class="hint-btn" id="hint-btn" onclick="useHint()">💡 راهنمایی (1)</button>
+            <button class="hint-btn pulsing" id="hint-btn" onclick="useHint()">💡 راهنمایی (1)</button>
         </div>
 
         <div class="svg-container">
@@ -343,6 +364,7 @@
                 wrongGuesses++;
                 checkLoss();
             }
+            updateHintButtonText();
         }
 
         function useHint() {
@@ -352,7 +374,6 @@
             if (remainingLetters.length > 0) {
                 const randomLetter = remainingLetters[Math.floor(Math.random() * remainingLetters.length)];
                 
-                // یافتن دکمه مربوطه در کیبورد
                 const btns = document.querySelectorAll('.key-btn');
                 btns.forEach(btn => {
                     if (btn.textContent === randomLetter) {
@@ -369,7 +390,17 @@
             const btn = document.getElementById('hint-btn');
             const txt = currentLang === 'fa' ? '💡 راهنمایی' : '💡 Hint';
             btn.textContent = `${txt} (${hintsLeft})`;
-            btn.style.opacity = hintsLeft > 0 ? '1' : '0.5';
+
+            // فعال کردن انیمیشن چشمک‌زن وقتی راهنما وجود دارد و بازی تمام نشده است
+            if (hintsLeft > 0 && wrongGuesses < maxWrong) {
+                btn.classList.add('pulsing');
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.classList.remove('pulsing');
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
         }
 
         function checkWin() {
@@ -379,6 +410,7 @@
                 msg.textContent = currentLang === 'fa' ? '🎉 آفرین! درست حدس زدی!' : '🎉 You Won!';
                 msg.style.color = '#2e7d32';
                 disableKeyboard();
+                updateHintButtonText();
             }
         }
 
@@ -389,6 +421,7 @@
                 msg.textContent = `${loseTxt} ${selectedWord}`;
                 msg.style.color = '#e53935';
                 disableKeyboard();
+                updateHintButtonText();
             }
         }
 
