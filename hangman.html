@@ -72,6 +72,13 @@
         .figure-part { display: none; }
         .status-box { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 
+        /* انیمیشن چشمک‌زن برای دکمه راهنما */
+        @keyframes btnBlink {
+            0% { opacity: 1; transform: scale(1); box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3); }
+            50% { opacity: 0.5; transform: scale(0.95); box-shadow: 0 0 0 rgba(217, 119, 6, 0); }
+            100% { opacity: 1; transform: scale(1); box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3); }
+        }
+
         .hint-btn { 
             background: linear-gradient(135deg, #f59e0b, #d97706); 
             color: white; 
@@ -84,42 +91,36 @@
             box-shadow: 0 4px 8px rgba(217, 119, 6, 0.25);
             transition: all 0.25s ease;
         }
+
+        /* چشمک زدن دکمه فقط زمانی که فعال (روشن) می‌شود */
+        .hint-btn:not(:disabled) {
+            animation: btnBlink 1.2s infinite ease-in-out;
+        }
+
         .hint-btn:not(:disabled):hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 6px 14px rgba(217, 119, 6, 0.35);
+            animation: none; /* هنگام رفتن ماوس روی دکمه، چشمک زدن متوقف شود */
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 14px rgba(217, 119, 6, 0.4);
         }
-        .hint-btn:not(:disabled):active {
-            transform: translateY(0) scale(1);
-        }
+
         .hint-btn:disabled { 
             background: var(--disabled-color); 
             color: #888;
             cursor: not-allowed; 
             box-shadow: none;
             opacity: 0.7;
-        }
-
-        @keyframes pulseBlink {
-            0% { opacity: 0.3; transform: scale(0.98); }
-            50% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0.3; transform: scale(0.98); }
+            animation: none;
         }
 
         .hint-text { 
             font-size: 14px; 
             background-color: #fff8e7; 
-            padding: 10px 14px; 
-            border-radius: 10px; 
-            border: 2px dashed var(--primary-color); 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            border: 1px dashed var(--primary-color); 
             display: none; 
             text-align: center; 
             width: 90%; 
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .hint-text.active-blink {
-            display: block !important;
-            animation: pulseBlink 1.5s infinite ease-in-out;
         }
 
         .word-display { display: flex; gap: 8px; margin: 10px 0; justify-content: center; flex-wrap: wrap; }
@@ -329,7 +330,6 @@
 
             figureParts.forEach(part => part.style.display = 'none');
             hintBtn.disabled = true;
-            hintText.classList.remove('active-blink');
             hintText.style.display = 'none';
             modal.classList.remove('show');
 
@@ -393,7 +393,6 @@
         hintBtn.onclick = () => {
             hintText.textContent = currentWordObj.hint || 'راهنمایی موجود نیست.';
             hintText.style.display = 'block';
-            hintText.classList.add('active-blink');
         };
 
         function checkWin() {
