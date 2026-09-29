@@ -72,44 +72,53 @@
         .figure-part { display: none; }
         .status-box { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 
-        /* انیمیشن چشمک‌زن برای دکمه راهنما */
+        /* انیمیشن چشمک‌زن جذاب‌تر برای دکمه راهنما */
         @keyframes btnBlink {
-            0% { opacity: 1; transform: scale(1); box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3); }
-            50% { opacity: 0.5; transform: scale(0.95); box-shadow: 0 0 0 rgba(217, 119, 6, 0); }
-            100% { opacity: 1; transform: scale(1); box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3); }
+            0% { opacity: 1; transform: scale(1); box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4); }
+            50% { opacity: 0.65; transform: scale(0.96); box-shadow: 0 2px 6px rgba(217, 119, 6, 0.1); }
+            100% { opacity: 1; transform: scale(1); box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4); }
         }
 
+        /* طراحی جدید و شکیل‌تر دکمه راهنما */
         .hint-btn { 
-            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            background: linear-gradient(135deg, #fbbf24, #d97706); 
             color: white; 
-            border: none; 
-            border-radius: 20px; 
-            padding: 10px 22px; 
-            font-size: 14px; 
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            border-radius: 25px; 
+            padding: 10px 24px; 
+            font-size: 15px; 
             font-weight: bold; 
+            letter-spacing: 0.5px;
             cursor: pointer; 
-            box-shadow: 0 4px 8px rgba(217, 119, 6, 0.25);
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             transition: all 0.25s ease;
         }
 
-        /* چشمک زدن دکمه فقط زمانی که فعال (روشن) می‌شود */
+        /* چشمک زدن هنگام فعال شدن */
         .hint-btn:not(:disabled) {
             animation: btnBlink 1.2s infinite ease-in-out;
         }
 
         .hint-btn:not(:disabled):hover {
-            animation: none; /* هنگام رفتن ماوس روی دکمه، چشمک زدن متوقف شود */
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 14px rgba(217, 119, 6, 0.4);
+            animation: none;
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 6px 16px rgba(217, 119, 6, 0.45);
+        }
+
+        .hint-btn:not(:disabled):active {
+            transform: translateY(0) scale(1);
         }
 
         .hint-btn:disabled { 
-            background: var(--disabled-color); 
-            color: #888;
+            background: #e5e7eb; 
+            color: #9ca3af; 
+            border: none;
             cursor: not-allowed; 
             box-shadow: none;
             opacity: 0.7;
             animation: none;
+            text-shadow: none;
         }
 
         .hint-text { 
