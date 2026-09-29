@@ -21,28 +21,190 @@
         body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px; }
         header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; }
         .header-actions { display: flex; gap: 8px; }
-        .home-btn { background-color: var(--home-btn-bg); color: white; border: none; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-size: 14px; font-weight: bold; }
-        .lang-btn { background-color: var(--lang-btn-bg); color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        
+        /* بهبود دکمه خانه */
+        .home-btn { 
+            background: linear-gradient(135deg, #ef4444, #b91c1c); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            padding: 8px 16px; 
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(220, 38, 38, 0.25);
+        }
+        .home-btn:active {
+            transform: translateY(0);
+        }
+
+        /* بهبود دکمه تغییر زبان */
+        .lang-btn { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            padding: 8px 14px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .lang-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
+        }
+        .lang-btn:active {
+            transform: translateY(0);
+        }
+
         .title { font-size: 18px; font-weight: bold; }
         .main-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; gap: 15px; flex-grow: 1; }
         .hangman-box { background-color: var(--card-bg); border-radius: 12px; padding: 10px; width: 100%; display: flex; justify-content: center; }
         svg { width: 160px; height: 180px; stroke: var(--text-color); stroke-width: 4; stroke-linecap: round; fill: none; }
         .figure-part { display: none; }
         .status-box { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-        .hint-btn { background-color: var(--primary-color); color: white; border: none; border-radius: 20px; padding: 8px 18px; font-size: 14px; cursor: pointer; }
-        .hint-btn:disabled { background-color: var(--disabled-color); cursor: not-allowed; }
-        .hint-text { font-size: 14px; background-color: #fff8e7; padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--primary-color); display: none; text-align: center; width: 90%; }
+
+        /* بهبود دکمه راهنما */
+        .hint-btn { 
+            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            color: white; 
+            border: none; 
+            border-radius: 20px; 
+            padding: 10px 22px; 
+            font-size: 14px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 4px 8px rgba(217, 119, 6, 0.25);
+            transition: all 0.25s ease;
+        }
+        .hint-btn:not(:disabled):hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 14px rgba(217, 119, 6, 0.35);
+        }
+        .hint-btn:not(:disabled):active {
+            transform: translateY(0) scale(1);
+        }
+        .hint-btn:disabled { 
+            background: var(--disabled-color); 
+            color: #888;
+            cursor: not-allowed; 
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        /* چشمک‌زن شدن کادر راهنما */
+        @keyframes pulseBlink {
+            0% { opacity: 0.3; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.3; transform: scale(0.98); }
+        }
+
+        .hint-text { 
+            font-size: 14px; 
+            background-color: #fff8e7; 
+            padding: 10px 14px; 
+            border-radius: 10px; 
+            border: 2px dashed var(--primary-color); 
+            display: none; 
+            text-align: center; 
+            width: 90%; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        /* کلاس فعال‌سازی انیمیشن چشمک‌زن */
+        .hint-text.active-blink {
+            display: block;
+            animation: pulseBlink 1.5s infinite ease-in-out;
+        }
+
         .word-display { display: flex; gap: 8px; margin: 10px 0; justify-content: center; flex-wrap: wrap; }
         .letter-slot { width: 36px; height: 45px; border-bottom: 3px solid var(--text-color); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; }
-        .keyboard { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; width: 100%; max-width: 480px; margin-top: auto; padding-bottom: 10px; }
-        .key { background-color: #ffffff; border: 1px solid #dcd1b4; border-radius: 6px; width: calc(100% / 8 - 6px); height: 42px; font-size: 16px; font-weight: bold; color: var(--text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; text-transform: uppercase; }
-        .key:disabled { background-color: var(--disabled-color); color: #888; cursor: not-allowed; }
-        .key.correct { background-color: var(--success-color); color: white; }
-        .key.wrong { background-color: var(--error-color); color: white; }
+        
+        .keyboard { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; max-width: 480px; margin-top: auto; padding-bottom: 10px; }
+        
+        /* بهبود دکمه‌های کیبورد */
+        .key { 
+            background-color: #ffffff; 
+            border: 1px solid #dcd1b4; 
+            border-radius: 8px; 
+            width: calc(100% / 8 - 6px); 
+            height: 44px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            color: var(--text-color); 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-transform: uppercase; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s ease;
+        }
+        .key:not(:disabled):hover {
+            background-color: #fff8e7;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .key:not(:disabled):active {
+            transform: translateY(0);
+        }
+        .key:disabled { 
+            background-color: var(--disabled-color); 
+            color: #888; 
+            border-color: transparent;
+            cursor: not-allowed; 
+            box-shadow: none;
+            opacity: 0.6;
+        }
+        .key.correct { 
+            background: linear-gradient(135deg, #10b981, #059669); 
+            color: white; 
+            border: none;
+            box-shadow: 0 3px 6px rgba(16, 185, 129, 0.3);
+            opacity: 1;
+        }
+        .key.wrong { 
+            background: linear-gradient(135deg, #ef4444, #dc2626); 
+            color: white; 
+            border: none;
+            box-shadow: 0 3px 6px rgba(239, 68, 68, 0.3);
+            opacity: 1;
+        }
+
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: all 0.3s; }
         .modal.show { visibility: visible; opacity: 1; }
-        .modal-content { background-color: var(--bg-color); padding: 25px; border-radius: 12px; text-align: center; width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; }
-        .restart-btn { background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .modal-content { background-color: var(--bg-color); padding: 25px; border-radius: 16px; text-align: center; width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        
+        /* بهبود دکمه شروع مجدد */
+        .restart-btn { 
+            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+            transition: all 0.2s ease;
+        }
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(217, 119, 6, 0.4);
+        }
+        .restart-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -174,6 +336,7 @@
 
             figureParts.forEach(part => part.style.display = 'none');
             hintBtn.disabled = true;
+            hintText.classList.remove('active-blink');
             hintText.style.display = 'none';
             modal.classList.remove('show');
 
@@ -236,7 +399,7 @@
 
         hintBtn.onclick = () => {
             hintText.textContent = currentWordObj.hint || 'راهنمایی موجود نیست.';
-            hintText.style.display = 'block';
+            hintText.classList.add('active-blink');
         };
 
         function checkWin() {
