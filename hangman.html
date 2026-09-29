@@ -3,269 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بازی حدس کلمه</title>
+    <title>رویاهای ذهن - بازی‌های فکری</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #fdf6e3;
-            --card-bg: #f5e8c7;
-            --text-color: #4a3b32;
-            --primary-color: #d97706;
-            --disabled-color: #d1d5db;
-            --error-color: #ef4444;
-            --success-color: #10b981;
-            --home-btn-bg: #dc2626;
-            --lang-btn-bg: #2563eb;
+            --bg-color: #2c1d11;
+            --text-dark: #2b1810;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; user-select: none; }
-        body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px; }
-        header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; }
-        .header-actions { display: flex; gap: 8px; }
-        .home-btn { background-color: var(--home-btn-bg); color: white; border: none; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-size: 14px; font-weight: bold; }
-        .lang-btn { background-color: var(--lang-btn-bg); color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .title { font-size: 18px; font-weight: bold; }
-        .main-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; gap: 15px; flex-grow: 1; }
-        .hangman-box { background-color: var(--card-bg); border-radius: 12px; padding: 10px; width: 100%; display: flex; justify-content: center; }
-        svg { width: 160px; height: 180px; stroke: var(--text-color); stroke-width: 4; stroke-linecap: round; fill: none; }
-        .figure-part { display: none; }
-        .status-box { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-        .hint-btn { background-color: var(--primary-color); color: white; border: none; border-radius: 20px; padding: 8px 18px; font-size: 14px; cursor: pointer; }
-        .hint-btn:disabled { background-color: var(--disabled-color); cursor: not-allowed; }
-        .hint-text { font-size: 14px; background-color: #fff8e7; padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--primary-color); display: none; text-align: center; width: 90%; }
-        .word-display { display: flex; gap: 8px; margin: 10px 0; justify-content: center; flex-wrap: wrap; }
-        .letter-slot { width: 36px; height: 45px; border-bottom: 3px solid var(--text-color); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; }
-        .keyboard { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; width: 100%; max-width: 480px; margin-top: auto; padding-bottom: 10px; }
-        .key { background-color: #ffffff; border: 1px solid #dcd1b4; border-radius: 6px; width: calc(100% / 8 - 6px); height: 42px; font-size: 16px; font-weight: bold; color: var(--text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; text-transform: uppercase; }
-        .key:disabled { background-color: var(--disabled-color); color: #888; cursor: not-allowed; }
-        .key.correct { background-color: var(--success-color); color: white; }
-        .key.wrong { background-color: var(--error-color); color: white; }
-        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: all 0.3s; }
-        .modal.show { visibility: visible; opacity: 1; }
-        .modal-content { background-color: var(--bg-color); padding: 25px; border-radius: 12px; text-align: center; width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; }
-        .restart-btn { background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#4a3222 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .device-container {
+            width: 100%;
+            max-width: 430px;
+            background: #fff8eb;
+            border: 6px solid #d4a359;
+            border-radius: 36px;
+            box-shadow: 
+                0 0 0 5px #5c3a21,
+                0 25px 50px rgba(0, 0, 0, 0.7),
+                inset 0 0 20px rgba(184, 134, 11, 0.2);
+            padding: 24px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .header {
+            text-align: center;
+            padding-bottom: 5px;
+        }
+
+        .title {
+            font-size: 1.9rem;
+            font-weight: 900;
+            color: #d84315;
+            text-shadow: 2px 2px 0px #fff, 3px 3px 0px #5d4037;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: #8d6e63;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .game-card {
+            background: #ffffff;
+            border: 3px solid #e0c097;
+            border-radius: 22px;
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            position: relative;
+            box-shadow: 0 6px 0 #b8860b, 0 8px 15px rgba(0,0,0,0.1);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .game-card:hover, .game-card.selected {
+            transform: translateY(-5px);
+            border-color: #ff9800;
+            box-shadow: 0 10px 0 #e65100, 0 12px 20px rgba(255, 152, 0, 0.25);
+            background: #fffdf9;
+        }
+
+        .game-card:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e65100, 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* نشانگر شماره بازی */
+        .badge-number {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #2b1810;
+            color: #ffca28;
+            font-size: 0.7rem;
+            font-weight: 900;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        /* برچسب جدید */
+        .badge-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #e53935;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .icon-container {
+            width: 68px;
+            height: 68px;
+            background: #fff8eb;
+            border-radius: 18px;
+            border: 2px solid #e0c097;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 12px 0 6px 0;
+            font-size: 2.2rem;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+            transition: transform 0.2s ease;
+        }
+
+        .game-card:hover .icon-container {
+            transform: scale(1.08) rotate(-3deg);
+        }
+
+        .hangman-svg {
+            width: 42px;
+            height: 42px;
+        }
+
+        .game-title {
+            color: var(--text-dark);
+            font-weight: 900;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .game-sub {
+            font-size: 0.7rem;
+            color: #8d6e63;
+            margin-top: 1px;
+            font-weight: 700;
+        }
+
+        /* بخش رکوردها */
+        .highscore-bar {
+            margin-top: 6px;
+            font-size: 0.68rem;
+            color: #2e7d32;
+            background: #e8f5e9;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .footer-action {
+            margin-top: 5px;
+        }
+
+        .start-btn {
+            background: linear-gradient(180deg, #4caf50, #2e7d32);
+            color: white;
+            border: 3px solid #81c784;
+            border-radius: 25px;
+            padding: 14px;
+            font-size: 1.15rem;
+            font-weight: 900;
+            box-shadow: 0 6px 0 #1b5e20, 0 8px 15px rgba(0,0,0,0.25);
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: block;
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(180deg, #66bb6a, #388e3c);
+        }
+
+        .start-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #1b5e20;
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="header-actions">
-            <a href="index.html" class="home-btn">🏠 <span id="home-text">خانه</span></a>
-            <button class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">🌐 English</button>
-        </div>
-        <div class="title" id="game-title">حدس کلمه</div>
-    </header>
-
-    <div class="main-container">
-        <div class="hangman-box">
-            <svg viewBox="0 0 100 120">
-                <line x1="10" y1="110" x2="90" y2="110" />
-                <line x1="30" y1="110" x2="30" y2="10" />
-                <line x1="30" y1="10" x2="70" y2="10" />
-                <line x1="70" y1="10" x2="70" y2="25" />
-                <circle cx="70" cy="35" r="10" class="figure-part" />
-                <line x1="70" y1="45" x2="70" y2="75" class="figure-part" />
-                <line x1="70" y1="55" x2="55" y2="65" class="figure-part" />
-                <line x1="70" y1="55" x2="85" y2="65" class="figure-part" />
-                <line x1="70" y1="75" x2="55" y2="95" class="figure-part" />
-                <line x1="70" y1="75" x2="85" y2="95" class="figure-part" />
-            </svg>
+    <div class="device-container">
+        <div class="header">
+            <h1 class="title">رویاهای ذهن</h1>
+            <p class="subtitle">انتخاب بازی و شروع سرگرمی</p>
         </div>
 
-        <div class="status-box">
-            <button id="hint-btn" class="hint-btn" disabled>💡 <span id="hint-btn-text">راهنمایی</span></button>
-            <div id="hint-text" class="hint-text"></div>
+        <div class="games-grid">
+            <!-- بازی ۱: فکر بکر -->
+            <a href="./pretty-mind.html" class="game-card" data-title="فکر بکر" data-url="./pretty-mind.html">
+                <span class="badge-number">۱</span>
+                <div class="icon-container">🧠</div>
+                <div class="game-title">فکر بکر</div>
+                <div class="game-sub">Pretty Mind</div>
+                <div class="highscore-bar">🏆 رکورد: <span id="score-pretty-mind">۰</span></div>
+            </a>
+
+            <!-- بازی ۲: چکرز -->
+            <a href="./Checkers.html" class="game-card" data-title="چکرز" data-url="./Checkers.html">
+                <span class="badge-number">۲</span>
+                <div class="icon-container">🏁</div>
+                <div class="game-title">چکرز</div>
+                <div class="game-sub">Checkers</div>
+                <div class="highscore-bar">🏆 رکورد: <span id="score-checkers">۰</span></div>
+            </a>
+
+            <!-- بازی ۳: ریورسی -->
+            <a href="./reversi_game.html" class="game-card" data-title="ریورسی" data-url="./reversi_game.html">
+                <span class="badge-number">۳</span>
+                <div class="icon-container">⚪⚫</div>
+                <div class="game-title">ریورسی</div>
+                <div class="game-sub">Reversi</div>
+                <div class="highscore-bar">🏆 رکورد: <span id="score-reversi">۰</span></div>
+            </a>
+
+            <!-- بازی ۴: حدس کلمات -->
+            <a href="./hangman.html" class="game-card" data-title="حدس کلمات" data-url="./hangman.html">
+                <span class="badge-number">۴</span>
+                <div class="icon-container">
+                    <svg class="hangman-svg" viewBox="0 0 64 64" fill="none" stroke="#5d4037" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="56" x2="36" y2="56" />
+                        <line x1="20" y1="56" x2="20" y2="12" />
+                        <line x1="20" y1="12" x2="42" y2="12" />
+                        <line x1="42" y1="12" x2="42" y2="20" />
+                        <circle cx="42" cy="25" r="5" />
+                        <line x1="42" y1="30" x2="42" y2="42" />
+                        <line x1="42" y1="34" x2="36" y2="39" />
+                        <line x1="42" y1="34" x2="48" y2="39" />
+                        <line x1="42" y1="42" x2="37" y2="50" />
+                        <line x1="42" y1="42" x2="47" y2="50" />
+                    </svg>
+                </div>
+                <div class="game-title">حدس کلمات</div>
+                <div class="game-sub">Hangman</div>
+                <div class="highscore-bar">🏆 رکورد: <span id="score-hangman">۰</span></div>
+            </a>
+
+            <!-- بازی ۵: فروت نینجا -->
+            <a href="./fruit_ninja.html" class="game-card" data-title="فروت نینجا" data-url="./fruit_ninja.html">
+                <span class="badge-number">۵</span>
+                <div class="icon-container">🍉⚔️</div>
+                <div class="game-title">فروت نینجا</div>
+                <div class="game-sub">Fruit Ninja</div>
+                <div class="highscore-bar">🏆 رکورد: <span id="score-fruit-ninja">۰</span></div>
+            </a>
+
+            <!-- بازی ۶: کارت‌های حافظه -->
+            <a href="./memory_game.html" class="game-card" data-title="بازی حافظه" data-url="./memory_game.html">
+                <span class="badge-number">۶</span>
+                <span class="badge-tag">جدید</span>
+                <div class="icon-container">🃏🧠</div>
+                <div class="game-title">بازی حافظه</div>
+                <div class="game-sub">Memory Game</div>
+                <div class="highscore-bar">🏆 رکورد: <span id="score-memory">۰</span></div>
+            </a>
         </div>
 
-        <div id="word-display" class="word-display"></div>
-        <div id="keyboard" class="keyboard"></div>
-    </div>
-
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <h2 id="modal-title"></h2>
-            <p id="modal-message"></p>
-            <button class="restart-btn" id="restart-btn-text" onclick="initGame()">بازی مجدد</button>
+        <div class="footer-action">
+            <a href="./pretty-mind.html" id="main-start-btn" class="start-btn">شروع فکر بکر 🎮</a>
         </div>
     </div>
 
     <script>
-        const persianAlphabet = ['آ', 'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه', 'ی'];
-        const englishAlphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+        // تعویض عنوان دکمه اصلی بر اساس انتخاب کارت‌ها
+        const cards = document.querySelectorAll('.game-card');
+        const startBtn = document.getElementById('main-start-btn');
 
-        const translations = {
-            fa: { title: "حدس کلمه", home: "خانه", hintBtn: "راهنمایی", winTitle: "🎉 آفرین! برنده شدی", winMsg: "کلمه درست:", lossTitle: "😞 متأسفانه باختی!", lossMsg: "کلمه صحیح:", restart: "بازی مجدد", langToggle: "🌐 English" },
-            en: { title: "Hangman", home: "Home", hintBtn: "Hint", winTitle: "🎉 You Won!", winMsg: "The word was:", lossTitle: "😞 Game Over!", lossMsg: "The correct word was:", restart: "Play Again", langToggle: "🌐 فارسی" }
-        };
-
-        let currentLang = 'fa';
-        let wordList = [];
-        let remainingWords = [];
-        let currentWordObj = {};
-        let guessedLetters = [];
-        let wrongGuesses = 0;
-        let totalGuesses = 0;
-        const maxWrong = 6;
-
-        const wordDisplay = document.getElementById('word-display');
-        const keyboardContainer = document.getElementById('keyboard');
-        const figureParts = document.querySelectorAll('.figure-part');
-        const hintBtn = document.getElementById('hint-btn');
-        const hintText = document.getElementById('hint-text');
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-
-        function cleanChar(char) {
-            if (!char) return '';
-            let c = char.toLowerCase().trim();
-            if (currentLang === 'fa') {
-                c = c.replace(/[يىئية]/g, 'ی').replace(/[كک]/g, 'ک').replace(/[آأإا]/g, 'ا');
-            }
-            return c;
-        }
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'fa' ? 'en' : 'fa';
-            updateUI();
-            loadWords();
-        }
-
-        function updateUI() {
-            const t = translations[currentLang];
-            document.documentElement.lang = currentLang;
-            document.documentElement.dir = currentLang === 'fa' ? 'rtl' : 'ltr';
-            document.getElementById('game-title').textContent = t.title;
-            document.getElementById('home-text').textContent = t.home;
-            document.getElementById('hint-btn-text').textContent = t.hintBtn;
-            document.getElementById('restart-btn-text').textContent = t.restart;
-            document.getElementById('lang-toggle-btn').textContent = t.langToggle;
-        }
-
-        async function loadWords() {
-            // ایجاد کد زمان جهت دور زدن کش گوگل کروم (Anti-Cache)
-            const timeStamp = new Date().getTime();
-            const fileName = currentLang === 'fa' 
-                ? `./words.json?v=${timeStamp}` 
-                : `./words_en.json?v=${timeStamp}`;
-
-            try {
-                const response = await fetch(fileName);
-                if (!response.ok) throw new Error('File not found');
-                wordList = await response.json();
-                remainingWords = [...wordList];
-                initGame();
-            } catch (error) {
-                console.error('Error loading JSON:', error);
-                alert('خطا در دریافت فایل کلمات!');
-            }
-        }
-
-        function initGame() {
-            if (wordList.length === 0) return;
-            if (remainingWords.length === 0) remainingWords = [...wordList];
-
-            guessedLetters = [];
-            wrongGuesses = 0;
-            totalGuesses = 0;
-
-            const randomIndex = Math.floor(Math.random() * remainingWords.length);
-            currentWordObj = remainingWords[randomIndex];
-            remainingWords.splice(randomIndex, 1);
-
-            figureParts.forEach(part => part.style.display = 'none');
-            hintBtn.disabled = true;
-            hintText.style.display = 'none';
-            modal.classList.remove('show');
-
-            renderWord();
-            renderKeyboard();
-        }
-
-        function renderWord() {
-            wordDisplay.innerHTML = '';
-            const word = currentWordObj.word;
-            const cleanedGuessed = guessedLetters.map(cleanChar);
-
-            for (let char of word) {
-                const slot = document.createElement('div');
-                slot.className = 'letter-slot';
-                slot.textContent = cleanedGuessed.includes(cleanChar(char)) ? char : '';
-                wordDisplay.appendChild(slot);
-            }
-            checkWin();
-        }
-
-        function renderKeyboard() {
-            keyboardContainer.innerHTML = '';
-            const alphabet = currentLang === 'fa' ? persianAlphabet : englishAlphabet;
-            alphabet.forEach(letter => {
-                const btn = document.createElement('button');
-                btn.className = 'key';
-                btn.textContent = letter;
-                btn.id = `key-${letter.toLowerCase()}`;
-                btn.onclick = () => handleGuess(letter);
-                keyboardContainer.appendChild(btn);
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const title = card.getAttribute('data-title');
+                const url = card.getAttribute('data-url');
+                startBtn.textContent = `شروع ${title} 🎮`;
+                startBtn.href = url;
             });
-        }
+        });
 
-        function handleGuess(letter) {
-            const cleanL = cleanChar(letter);
-            if (guessedLetters.map(cleanChar).includes(cleanL)) return;
-
-            guessedLetters.push(letter);
-            totalGuesses++;
-
-            const btn = document.getElementById(`key-${letter.toLowerCase()}`);
-            if (btn) btn.disabled = true;
-
-            const isCorrect = [...currentWordObj.word].map(cleanChar).includes(cleanL);
-
-            if (isCorrect) {
-                if (btn) btn.classList.add('correct');
-            } else {
-                if (btn) btn.classList.add('wrong');
-                wrongGuesses++;
-                if (wrongGuesses <= maxWrong) figureParts[wrongGuesses - 1].style.display = 'block';
-            }
-
-            if (totalGuesses >= 3 && wrongGuesses >= 2) hintBtn.disabled = false;
-
-            renderWord();
-            checkLoss();
-        }
-
-        hintBtn.onclick = () => {
-            hintText.textContent = currentWordObj.hint || 'راهنمایی موجود نیست.';
-            hintText.style.display = 'block';
-        };
-
-        function checkWin() {
-            const word = currentWordObj.word;
-            if (!word) return;
-            const isWon = [...word].every(char => guessedLetters.map(cleanChar).includes(cleanChar(char)));
-            if (isWon) {
-                const t = translations[currentLang];
-                setTimeout(() => {
-                    modalTitle.textContent = t.winTitle;
-                    modalMessage.textContent = `${t.winMsg} "${word}"`;
-                    modal.classList.add('show');
-                }, 200);
-            }
-        }
-
-        function checkLoss() {
-            if (wrongGuesses >= maxWrong) {
-                const t = translations[currentLang];
-                setTimeout(() => {
-                    modalTitle.textContent = t.lossTitle;
-                    modalMessage.textContent = `${t.lossMsg} "${currentWordObj.word}"`;
-                    modal.classList.add('show');
-                }, 200);
-            }
-        }
-
-        updateUI();
-        loadWords();
+        // بارگذاری رکوردها از LocalStorage در صورت وجود
+        const games = ['pretty-mind', 'checkers', 'reversi', 'hangman', 'fruit-ninja', 'memory'];
+        games.forEach(game => {
+            const savedScore = localStorage.getItem(`highscore_${game}`) || 0;
+            const scoreEl = document.getElementById(`score-${game}`);
+            if (scoreEl) scoreEl.textContent = Number(savedScore).toLocaleString('fa-IR');
+        });
     </script>
 </body>
 </html>
