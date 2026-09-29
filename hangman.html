@@ -22,7 +22,6 @@
         header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; }
         .header-actions { display: flex; gap: 8px; }
         
-        /* بهبود دکمه خانه */
         .home-btn { 
             background: linear-gradient(135deg, #ef4444, #b91c1c); 
             color: white; 
@@ -46,7 +45,6 @@
             transform: translateY(0);
         }
 
-        /* بهبود دکمه تغییر زبان */
         .lang-btn { 
             background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
             color: white; 
@@ -74,7 +72,6 @@
         .figure-part { display: none; }
         .status-box { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 
-        /* بهبود دکمه راهنما */
         .hint-btn { 
             background: linear-gradient(135deg, #f59e0b, #d97706); 
             color: white; 
@@ -102,7 +99,6 @@
             opacity: 0.7;
         }
 
-        /* چشمک‌زن شدن کادر راهنما */
         @keyframes pulseBlink {
             0% { opacity: 0.3; transform: scale(0.98); }
             50% { opacity: 1; transform: scale(1); }
@@ -120,9 +116,9 @@
             width: 90%; 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
-        /* کلاس فعال‌سازی انیمیشن چشمک‌زن */
+        
         .hint-text.active-blink {
-            display: block;
+            display: block !important;
             animation: pulseBlink 1.5s infinite ease-in-out;
         }
 
@@ -131,7 +127,6 @@
         
         .keyboard { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; max-width: 480px; margin-top: auto; padding-bottom: 10px; }
         
-        /* بهبود دکمه‌های کیبورد */
         .key { 
             background-color: #ffffff; 
             border: 1px solid #dcd1b4; 
@@ -185,7 +180,6 @@
         .modal.show { visibility: visible; opacity: 1; }
         .modal-content { background-color: var(--bg-color); padding: 25px; border-radius: 16px; text-align: center; width: 85%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         
-        /* بهبود دکمه شروع مجدد */
         .restart-btn { 
             background: linear-gradient(135deg, #f59e0b, #d97706); 
             color: white; 
@@ -304,7 +298,6 @@
         }
 
         async function loadWords() {
-            // ایجاد کد زمان جهت دور زدن کش گوگل کروم (Anti-Cache)
             const timeStamp = new Date().getTime();
             const fileName = currentLang === 'fa' 
                 ? `./words.json?v=${timeStamp}` 
@@ -399,6 +392,7 @@
 
         hintBtn.onclick = () => {
             hintText.textContent = currentWordObj.hint || 'راهنمایی موجود نیست.';
+            hintText.style.display = 'block';
             hintText.classList.add('active-blink');
         };
 
