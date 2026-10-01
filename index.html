@@ -13,12 +13,16 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رویاهای ذهن - بازی‌های فکری</title>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>رویاهای ذهن - مرکز بازی‌های فکری</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #2c1d11;
+            --bg-color: #1a100a;
+            --card-bg: #ffffff;
             --text-dark: #2b1810;
+            --accent-gold: #d4a359;
+            --accent-orange: #ff5722;
+            --primary-green: #2e7d32;
         }
 
         * {
@@ -27,189 +31,226 @@
             padding: 0;
             font-family: 'Vazirmatn', sans-serif;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-color);
-            background-image: radial-gradient(#4a3222 1.5px, transparent 1.5px);
-            background-size: 24px 24px;
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(212, 163, 89, 0.15) 0%, transparent 50%),
+                radial-gradient(#3a2517 1.5px, transparent 1.5px);
+            background-size: 100% 100%, 24px 24px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 10px 8px;
         }
 
         .device-container {
             width: 100%;
-            max-width: 430px;
-            background: #fff8eb;
-            border: 6px solid #d4a359;
-            border-radius: 36px;
+            max-width: 320px;
+            background: rgba(255, 248, 235, 0.96);
+            backdrop-filter: blur(10px);
+            border: 3px solid var(--accent-gold);
+            border-radius: 20px;
             box-shadow: 
-                0 0 0 5px #5c3a21,
-                0 25px 50px rgba(0, 0, 0, 0.7),
-                inset 0 0 20px rgba(184, 134, 11, 0.2);
-            padding: 24px 18px;
+                0 0 0 3px #422616,
+                0 10px 20px rgba(0, 0, 0, 0.8),
+                inset 0 0 10px rgba(212, 163, 89, 0.25);
+            padding: 12px 10px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
-            animation: fadeIn 0.6s ease-out;
+            gap: 8px;
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            from { opacity: 0; transform: translateY(10px) scale(0.96); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .header {
             text-align: center;
-            padding-bottom: 5px;
+            position: relative;
         }
 
         .title {
-            font-size: 1.9rem;
+            font-size: 1.2rem;
             font-weight: 900;
-            color: #d84315;
-            text-shadow: 2px 2px 0px #fff, 3px 3px 0px #5d4037;
+            background: linear-gradient(180deg, #ff7043 0%, #d84315 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 1px 0px rgba(255,255,255,0.8)) drop-shadow(0 1px 1px rgba(93, 64, 55, 0.4));
             line-height: 1.2;
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
-            font-size: 0.85rem;
+            font-size: 0.65rem;
             color: #8d6e63;
             font-weight: 700;
-            margin-top: 4px;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .subtitle::before, .subtitle::after {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 1px;
+            background: #d7ccc8;
+            border-radius: 1px;
         }
 
         .games-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
+            gap: 6px;
         }
 
         .game-card {
-            background: #ffffff;
-            border: 3px solid #e0c097;
-            border-radius: 22px;
-            padding: 12px 10px;
+            background: var(--card-bg);
+            border: 1.5px solid #ebd3b0;
+            border-radius: 10px;
+            padding: 4px 3px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-decoration: none;
             position: relative;
-            box-shadow: 0 6px 0 #b8860b, 0 8px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 0 #c29547, 0 3px 6px rgba(0, 0, 0, 0.08);
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: pointer;
             overflow: hidden;
         }
 
         .game-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 0 #b8860b, 0 12px 20px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            border-color: #d4a359;
+            box-shadow: 0 4px 0 #c29547, 0 5px 9px rgba(212, 163, 89, 0.25);
         }
 
         .game-card:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #b8860b, 0 4px 6px rgba(0,0,0,0.1);
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #c29547, 0 2px 3px rgba(0, 0, 0, 0.1);
         }
 
         /* تگ‌های تزئینی */
         .badge-number {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #2b1810;
+            top: 3px;
+            right: 3px;
+            background: #3e2723;
             color: #ffca28;
-            font-size: 0.7rem;
+            font-size: 0.5rem;
             font-weight: 900;
-            width: 22px;
-            height: 22px;
+            width: 12px;
+            height: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
         }
 
         .badge-tag {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #e53935;
+            top: 3px;
+            left: 3px;
+            background: linear-gradient(135deg, #ff5252, #d32f2f);
             color: white;
-            font-size: 0.65rem;
+            font-size: 0.45rem;
             font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            padding: 1px 4px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(211, 47, 47, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .icon-container {
-            width: 68px;
-            height: 68px;
-            background: #fff8eb;
-            border-radius: 18px;
-            border: 2px solid #e0c097;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(145deg, #ffffff, #fff3e0);
+            border-radius: 8px;
+            border: 1px solid #f5e1c8;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 12px 0 8px 0;
-            font-size: 2.2rem;
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
-            transition: transform 0.2s ease;
+            margin: 3px 0 2px 0;
+            font-size: 0.9rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.04);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .game-card:hover .icon-container {
             transform: scale(1.08) rotate(-3deg);
+            background: linear-gradient(145deg, #fff3e0, #ffe0b2);
         }
 
         .hangman-svg {
-            width: 42px;
-            height: 42px;
+            width: 18px;
+            height: 18px;
         }
 
         .game-title {
             color: var(--text-dark);
             font-weight: 900;
-            font-size: 0.95rem;
+            font-size: 0.6rem;
             text-align: center;
+            margin-top: 1px;
         }
 
         .game-sub {
-            font-size: 0.7rem;
-            color: #8d6e63;
-            margin-top: 1px;
-            font-weight: 700;
+            font-size: 0.45rem;
+            color: #a1887f;
+            margin-top: 0px;
+            font-weight: 600;
+            letter-spacing: 0.1px;
         }
 
         .footer-action {
-            margin-top: 5px;
+            margin-top: 2px;
         }
 
         .start-btn {
-            background: linear-gradient(180deg, #4caf50, #2e7d32);
+            background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%);
             color: white;
-            border: 3px solid #81c784;
-            border-radius: 25px;
-            padding: 13px;
-            font-size: 1.15rem;
+            border: 1.5px solid #81c784;
+            border-radius: 12px;
+            padding: 5px 6px;
+            font-size: 0.65rem;
             font-weight: 900;
-            box-shadow: 0 6px 0 #1b5e20, 0 8px 15px rgba(0,0,0,0.25);
+            box-shadow: 0 2.5px 0 #1b5e20, 0 4px 8px rgba(46, 125, 50, 0.3);
             cursor: pointer;
             width: 100%;
             text-align: center;
             text-decoration: none;
-            transition: all 0.15s ease;
-            display: block;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         .start-btn:hover {
-            background: linear-gradient(180deg, #66bb6a, #388e3c);
+            background: linear-gradient(180deg, #66bb6a 0%, #388e3c 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 3.5px 0 #1b5e20, 0 5px 9px rgba(46, 125, 50, 0.35);
         }
 
         .start-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 3px 0 #1b5e20;
+            transform: translateY(1.5px);
+            box-shadow: 0 1px 0 #1b5e20, 0 2px 3px rgba(0,0,0,0.2);
         }
     </style>
 </head>
@@ -270,7 +311,7 @@
             <!-- بازی ۵: فروت نینجا -->
             <a href="./fruit_ninja.html" class="game-card">
                 <span class="badge-number">۵</span>
-                <div class="icon-keyword">🍉⚔️</div>
+                <div class="icon-container">🍉⚔️</div>
                 <div class="game-title">فروت نینجا</div>
                 <div class="game-sub">Fruit Ninja</div>
             </a>
@@ -278,15 +319,26 @@
             <!-- بازی ۶: کارت‌های حافظه -->
             <a href="./memory_game.html" class="game-card">
                 <span class="badge-number">۶</span>
-                <span class="badge-tag">جدید</span>
                 <div class="icon-container">🃏🧠</div>
                 <div class="game-title">بازی حافظه</div>
                 <div class="game-sub">Memory Game</div>
             </a>
+
+            <!-- بازی ۷: اسنیک -->
+            <a href="./snake_game.html" class="game-card">
+                <span class="badge-number">۷</span>
+                <span class="badge-tag">جدید</span>
+                <div class="icon-container">🐍🍎</div>
+                <div class="game-title">بازی اسنیک</div>
+                <div class="game-sub">Snake Game</div>
+            </a>
         </div>
 
         <div class="footer-action">
-            <a href="./pretty-mind.html" class="start-btn">اتاق بازی‌ها 🎮</a>
+            <a href="./pretty-mind.html" class="start-btn">
+                <span>ورود به اتاق بازی‌ها</span>
+                <span>🎮</span>
+            </a>
         </div>
     </div>
 
