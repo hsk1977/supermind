@@ -67,8 +67,21 @@
 
         .title { font-size: 18px; font-weight: bold; }
         .main-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; gap: 15px; flex-grow: 1; }
-        .hangman-box { background-color: var(--card-bg); border-radius: 12px; padding: 10px; width: 100%; display: flex; justify-content: center; }
-        svg { width: 160px; height: 180px; stroke: var(--text-color); stroke-width: 4; stroke-linecap: round; fill: none; }
+        .hangman-box { background-color: var(--card-bg); border-radius: 12px; padding: 10px; width: 100%; display: flex; justify-content: center; perspective: 600px; }
+        svg {
+            width: 160px; height: 180px; stroke: var(--text-color); stroke-width: 4; stroke-linecap: round; fill: none;
+            transform-style: preserve-3d;
+            filter: drop-shadow(2px 2px 0 #8b6b4a) drop-shadow(4px 4px 0 #6b4f35) drop-shadow(10px 14px 8px rgba(0,0,0,0.25));
+            animation: gallowsSwing 7s ease-in-out infinite alternate;
+        }
+        @keyframes gallowsSwing {
+            from { transform: rotateY(-22deg) rotateX(4deg); }
+            to   { transform: rotateY(22deg) rotateX(4deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            svg { animation: none; transform: rotateY(-12deg) rotateX(4deg); }
+            .hint-btn:not(:disabled) { animation: none; }
+        }
         .figure-part { display: none; }
         .status-box { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 
@@ -135,55 +148,54 @@
         .word-display { display: flex; gap: 8px; margin: 10px 0; justify-content: center; flex-wrap: wrap; }
         .letter-slot { width: 36px; height: 45px; border-bottom: 3px solid var(--text-color); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; }
         
-        .keyboard { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; max-width: 480px; margin-top: auto; padding-bottom: 10px; }
-        
-        .key { 
-            background-color: #ffffff; 
-            border: 1px solid #dcd1b4; 
-            border-radius: 8px; 
-            width: calc(100% / 8 - 6px); 
-            height: 44px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            color: var(--text-color); 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            text-transform: uppercase; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
-            transition: all 0.15s ease;
+        /* ===== کیبورد سه‌بعدی ===== */
+        .keyboard {
+            width: 100%; max-width: 480px; margin-top: auto; padding: 6px 0 14px;
+            perspective: 700px; direction: ltr;
+        }
+        .kb-board {
+            display: flex; flex-direction: column; gap: 9px; align-items: center;
+            padding: 12px 8px 14px;
+            background: linear-gradient(180deg, #e8d7ab, #d9c48f);
+            border-radius: 14px;
+            box-shadow: 0 10px 0 #b79f66, 0 18px 22px rgba(74, 59, 50, 0.35);
+            transform: rotateX(22deg);
+            transform-origin: 50% 100%;
+            transform-style: preserve-3d;
+        }
+        .kb-row { display: flex; gap: 6px; justify-content: center; width: 100%; }
+
+        .key {
+            flex: 1 1 0; max-width: 44px; min-width: 0; height: 44px;
+            background: linear-gradient(180deg, #ffffff, #f3ecd8);
+            border: 1px solid #dcd1b4; border-radius: 8px;
+            font-size: 16px; font-weight: bold; color: var(--text-color);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            text-transform: uppercase;
+            transform: translateZ(8px);
+            box-shadow: 0 5px 0 #b9a674, 0 8px 10px rgba(0, 0, 0, 0.22);
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
         }
         .key:not(:disabled):hover {
-            background-color: #fff8e7;
+            background: linear-gradient(180deg, #fffdf4, #ffeab8);
             border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateZ(14px) translateY(-2px);
+            box-shadow: 0 7px 0 #b9a674, 0 12px 14px rgba(0, 0, 0, 0.25);
         }
-        .key:not(:disabled):active {
-            transform: translateY(0);
+        .key:not(:disabled):active { transform: translateZ(2px) translateY(4px); box-shadow: 0 1px 0 #b9a674, 0 2px 4px rgba(0,0,0,0.2); }
+        .key:disabled {
+            background: var(--disabled-color); color: #888; border-color: transparent;
+            cursor: not-allowed; opacity: 0.65;
+            transform: translateZ(0) translateY(5px);
+            box-shadow: 0 0 0 #9ca3af, inset 0 2px 4px rgba(0,0,0,0.15);
         }
-        .key:disabled { 
-            background-color: var(--disabled-color); 
-            color: #888; 
-            border-color: transparent;
-            cursor: not-allowed; 
-            box-shadow: none;
-            opacity: 0.6;
+        .key.correct {
+            background: linear-gradient(180deg, #34d399, #059669); color: white; border: none; opacity: 1;
+            box-shadow: 0 0 0 #047857, inset 0 2px 4px rgba(0,0,0,0.2);
         }
-        .key.correct { 
-            background: linear-gradient(135deg, #10b981, #059669); 
-            color: white; 
-            border: none;
-            box-shadow: 0 3px 6px rgba(16, 185, 129, 0.3);
-            opacity: 1;
-        }
-        .key.wrong { 
-            background: linear-gradient(135deg, #ef4444, #dc2626); 
-            color: white; 
-            border: none;
-            box-shadow: 0 3px 6px rgba(239, 68, 68, 0.3);
-            opacity: 1;
+        .key.wrong {
+            background: linear-gradient(180deg, #f87171, #dc2626); color: white; border: none; opacity: 1;
+            box-shadow: 0 0 0 #991b1b, inset 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: all 0.3s; }
@@ -256,7 +268,11 @@
 
     <script>
         const persianAlphabet = ['آ', 'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه', 'ی'];
-        const englishAlphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+        const qwertyRows = [
+            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+            ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+        ];
 
         const translations = {
             fa: { title: "حدس کلمه", home: "خانه", hintBtn: "راهنمایی", winTitle: "🎉 آفرین! برنده شدی", winMsg: "کلمه درست:", lossTitle: "😞 متأسفانه باختی!", lossMsg: "کلمه صحیح:", restart: "بازی مجدد", langToggle: "🌐 English" },
@@ -362,15 +378,32 @@
 
         function renderKeyboard() {
             keyboardContainer.innerHTML = '';
-            const alphabet = currentLang === 'fa' ? persianAlphabet : englishAlphabet;
-            alphabet.forEach(letter => {
-                const btn = document.createElement('button');
-                btn.className = 'key';
-                btn.textContent = letter;
-                btn.id = `key-${letter.toLowerCase()}`;
-                btn.onclick = () => handleGuess(letter);
-                keyboardContainer.appendChild(btn);
+            const board = document.createElement('div');
+            board.className = 'kb-board';
+
+            let rows;
+            if (currentLang === 'en') {
+                rows = qwertyRows;
+            } else {
+                rows = [];
+                for (let i = 0; i < persianAlphabet.length; i += 9) rows.push(persianAlphabet.slice(i, i + 9));
+            }
+
+            rows.forEach(rowLetters => {
+                const row = document.createElement('div');
+                row.className = 'kb-row';
+                if (currentLang === 'fa') row.style.direction = 'rtl';
+                rowLetters.forEach(letter => {
+                    const btn = document.createElement('button');
+                    btn.className = 'key';
+                    btn.textContent = letter;
+                    btn.id = `key-${letter.toLowerCase()}`;
+                    btn.onclick = () => handleGuess(letter);
+                    row.appendChild(btn);
+                });
+                board.appendChild(row);
             });
+            keyboardContainer.appendChild(board);
         }
 
         function handleGuess(letter) {
@@ -393,7 +426,7 @@
                 if (wrongGuesses <= maxWrong) figureParts[wrongGuesses - 1].style.display = 'block';
             }
 
-            if (totalGuesses >= 3 && wrongGuesses >= 2) hintBtn.disabled = false;
+            if (wrongGuesses >= 5) hintBtn.disabled = false; // وقتی اولین پای هنگ‌من کشیده شد
 
             renderWord();
             checkLoss();
