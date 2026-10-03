@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Math Crossword</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef1f8;--card:#fff;--ink:#1d2433;--cell:#fde8b0;--blank:#fff4d8;--line:#2b2b2b;--tile:#e2f7f1;--tileInk:#0b8a3c;--acc:#f58220;--mut:#6b7385;--bad:#d93a3a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141824;--card:#1e2433;--ink:#eef1f8;--cell:#6b5524;--blank:#3b3322;--line:#0d0f16;--tile:#17352d;--tileInk:#5fe39a;--mut:#9aa3b8}}
+:root[data-theme="dark"]{--bg:#141824;--card:#1e2433;--ink:#eef1f8;--cell:#6b5524;--blank:#3b3322;--line:#0d0f16;--tile:#17352d;--tileInk:#5fe39a;--mut:#9aa3b8}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:480px;padding:12px}
+.card{background:var(--card);border-radius:16px;padding:12px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mut)}
+.top b{color:var(--ink);font-size:16px}
+#levels{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-top:8px}
+#levels button{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--mut);background:none;color:var(--ink);font-weight:700;cursor:pointer}
+#levels button.cur{background:var(--acc);border-color:var(--acc);color:#fff}
+#levels button.done{border-color:var(--tileInk);color:var(--tileInk)}
+#levels button.done.cur{color:#fff;background:var(--tileInk)}
+#board{display:grid;justify-content:center;margin:8px auto}
+.c{display:flex;align-items:center;justify-content:center;font-weight:700;border:1.5px solid var(--line);background:var(--cell)}
+.c.b{background:var(--blank);cursor:pointer}
+.c.sel{outline:3px solid var(--acc);outline-offset:-3px;background:#fff}
+.c.bad{color:var(--bad)}
+#pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.t{min-width:48px;height:48px;padding:0 6px;border:1.5px solid var(--line);background:var(--tile);color:var(--tileInk);font-size:24px;font-weight:700;cursor:pointer;border-radius:4px}
+.t.used{opacity:.25;pointer-events:none}.t.sel{outline:3px solid var(--acc)}
+.bar{display:flex;justify-content:space-between;gap:8px}
+.bar button,#next{border:0;border-radius:999px;padding:10px 16px;font-weight:600;font-size:14px;background:var(--acc);color:#fff;cursor:pointer}
+.bar button.g{background:var(--mut)}
+#msg{text-align:center;min-height:22px;font-weight:600;margin:4px 0}
+#msg.ok{color:var(--tileInk)}#msg.no{color:var(--bad)}
+.hide{display:none}
+</style></head><body>
+<div id="app">
+ <div class="card">
+  <div class="top"><span id="lv"><b>Level 1</b></span><span id="diff"></span><span id="time">00:00</span></div>
+  <div id="levels"></div>
+  <div id="board"></div>
+  <div id="msg"></div>
+  <div style="text-align:center"><button id="next" class="hide">Next level ▶</button></div>
+ </div>
+ <div class="card"><div id="pool"></div></div>
+ <div class="bar"><button class="g" id="reset">↻ Restart</button><button class="g" id="undo">Clear all</button><button id="hint">💡 Hint</button></div>
+</div>
+<script>
+const CFG=[
+ {n:2,o:['+','−'],mx:15,mb:1,f:.3},{n:3,o:['+','−'],mx:20,mb:1,f:.3},{n:3,o:['+','−'],mx:30,mb:1,f:.3},
+ {n:4,o:['+','−','×'],mx:40,mb:1,f:.35},{n:5,o:['+','−','×'],mx:50,mb:2,f:.4},{n:5,o:['+','−','×','÷'],mx:60,mb:2,f:.4},
+ {n:6,o:['+','−','×','÷'],mx:80,mb:2,f:.45},{n:7,o:['+','−','×','÷'],mx:90,mb:2,f:.45},
+ {n:8,o:['+','−','×','÷'],mx:99,mb:2,f:.5},{n:9,o:['+','−','×','÷'],mx:99,mb:2,f:.5}];
+const DIFF=l=>l<=3?'Easy':l<=5?'Medium':l<=8?'Hard':'Expert';
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const ev=(a,o,b)=>o==='+'?a+b:o==='−'?a-b:o==='×'?a*b:a/b;
+
+function genEq(R,v,p,ops,mx){
+ const ri=(a,b)=>a+Math.floor(R()*(b-a+1));
+ for(let t=0;t<80;t++){
+  const op=ops[R()*ops.length|0];let a,b,c;
+  if(p===4){c=v;
+   if(op==='+'){if(v<2)continue;a=ri(1,v-1);b=v-a}
+   else if(op==='−'){b=ri(1,mx);a=v+b}
+   else if(op==='×'){const d=[];for(let i=2;i<v;i++)if(v%i===0)d.push(i);if(!d.length)continue;a=d[R()*d.length|0];b=v/a}
+   else{b=ri(2,9);a=v*b}
+  }else{
+   const o=(op==='×'||op==='÷')?ri(2,9):ri(1,mx);
+   if(p===0){a=v;b=o}else{b=v;a=o}
+   if(op==='÷'&&p===2){a=v*ri(2,9);}
+   if(op==='÷'&&a%b)continue;
+   c=ev(a,op,b);
+  }
+  if(a<1||b<1||c<1||a>mx||b>mx||c>mx)continue;
+  return[a,op,b,c];
+ }
+ return null;
+}
+
+function build(L){
+ const cf=CFG[L-1],R=rng(L*7919+13);let best=null;
+ for(let att=0;att<300;att++){
+  const cells=new Map(),eqs=[];const K=(r,c)=>r+','+c;
+  const fits=()=>{let a=99,b=-1,c=99,d=-1;cells.forEach((_,k)=>{const[r,q]=k.split(',').map(Number);a=Math.min(a,r);b=Math.max(b,r);c=Math.min(c,q);d=Math.max(d,q)});return b-a<14&&d-c<12};
+  const place=(r0,c0,dr,dc,vals)=>{
+   const ps=[];
+   if(cells.has(K(r0-dr,c0-dc))||cells.has(K(r0+5*dr,c0+5*dc)))return false;
+   for(let i=0;i<5;i++){
+    const r=r0+i*dr,c=c0+i*dc,ex=cells.get(K(r,c));
+    if(ex){if(i%2||ex.t!=='n'||ex.v!==vals[i>>1===2?3:i===0?0:2]&&0)return false;
+      const want=[vals[0],0,vals[2],0,vals[3]][i];if(ex.v!==want||ex.dirs.has(dr))return false}
+    else if(cells.has(K(r+dc,c+dr))||cells.has(K(r-dc,c-dr)))return false;
+    ps.push([r,c])}
+   const e={cells:ps,vals:[vals[0],vals[1],vals[2],'=',vals[3]],b:0};
+   ps.forEach(([r,c],i)=>{let x=cells.get(K(r,c));if(!x){x={t:i===1?'o':i===3?'e':'n',v:e.vals[i],dirs:new Set(),eqs:[]};cells.set(K(r,c),x)}x.dirs.add(dr);x.eqs.push(e);x.r=r;x.c=c});
+   eqs.push(e);return true};
+  const v0=2+Math.floor(R()*(cf.mx-2));const f=genEq(R,v0,4,cf.o,cf.mx);if(!f)continue;
+  place(30,30,0,1,f);
+  for(let t=0;t<500&&eqs.length<cf.n;t++){
+   const nums=[...cells.values()].filter(x=>x.t==='n'&&x.dirs.size===1);if(!nums.length)break;
+   const x=nums[R()*nums.length|0],hor=x.dirs.has(0),dr=hor?1:0,dc=hor?0:1;
+   const p=[0,2,4][R()*3|0],g=genEq(R,x.v,p,cf.o,cf.mx);if(!g)continue;
+   const snap=new Map([...cells].map(([k,v])=>[k,{...v,dirs:new Set(v.dirs),eqs:[...v.eqs]}])),n0=eqs.length;
+   if(!place(x.r-p*dr,x.c-p*dc,dr,dc,g)||!fits()){ // rollback
+    cells.clear();snap.forEach((v,k)=>cells.set(k,v));eqs.length=n0;
+    eqs.forEach(e=>e.cells.forEach(([r,c])=>{}));
+    // re-link eq refs
+    cells.forEach(v=>{v.eqs=v.eqs.filter(e=>eqs.includes(e))})}}
+  if(!best||eqs.length>best.eqs.length)best={cells,eqs};
+  if(eqs.length>=cf.n)break;
+ }
+ const{cells,eqs}=best;
+ const nums=[...cells.values()].filter(x=>x.t==='n');
+ for(let i=nums.length-1;i>0;i--){const j=R()*(i+1)|0;[nums[i],nums[j]]=[nums[j],nums[i]]}
+ const target=Math.max(2,Math.round(nums.length*cf.f));let h=0;
+ eqs.forEach(e=>e.b=0);
+ for(const x of nums){if(h>=target)break;if(x.eqs.every(e=>e.b<cf.mb)){x.blank=true;x.val=null;x.eqs.forEach(e=>e.b++);h++}}
+ let r0=99,c0=99,r1=0,c1=0;cells.forEach(x=>{r0=Math.min(r0,x.r);c0=Math.min(c0,x.c);r1=Math.max(r1,x.r);c1=Math.max(c1,x.c)});
+ const blanks=nums.filter(x=>x.blank);
+ const pool=blanks.map(x=>({v:x.v,used:false})).sort((a,b)=>a.v-b.v);
+ return{cells,eqs,r0,c0,rows:r1-r0+1,cols:c1-c0+1,pool,blanks};
+}
+
+let L=1,G,selB=null,selT=null,secs=0,timer,won=false;const done=new Set();
+const $=id=>document.getElementById(id);
+function start(l){L=l;G=build(l);selB=selT=null;won=false;secs=0;$('next').classList.add('hide');setMsg('');
+ clearInterval(timer);timer=setInterval(()=>{secs++;$('time').textContent=String(secs/60|0).padStart(2,'0')+':'+String(secs%60).padStart(2,'0')},1000);
+ $('time').textContent='00:00';render()}
+function setMsg(t,c){const m=$('msg');m.textContent=t;m.className=c||''}
+function render(){
+ $('lv').innerHTML='<b>Level '+L+'</b>';$('diff').textContent=DIFF(L);
+ $('levels').innerHTML='';
+ for(let i=1;i<=10;i++){const b=document.createElement('button');b.textContent=i;b.className=(i===L?'cur ':'')+(done.has(i)?'done':'');b.onclick=()=>start(i);$('levels').appendChild(b)}
+ const cs=Math.min(44,Math.floor((Math.min(innerWidth,480)-48)/G.cols)),bd=$('board');
+ bd.style.gridTemplateColumns=`repeat(${G.cols},${cs}px)`;bd.style.gridAutoRows=cs+'px';bd.innerHTML='';
+ G.cells.forEach((x,k)=>{
+  const d=document.createElement('div');d.className='c';d.style.gridColumn=x.c-G.c0+1;d.style.gridRow=x.r-G.r0+1;d.style.fontSize=(cs*(x.v>99?.4:.46))+'px';
+  if(x.blank){d.classList.add('b');d.textContent=x.val==null?'':x.val;if(selB===x)d.classList.add('sel');if(x.bad)d.classList.add('bad');d.onclick=()=>clickBlank(x)}
+  else d.textContent=x.v;
+  bd.appendChild(d)});
+ const p=$('pool');p.innerHTML='';
+ G.pool.forEach((t,i)=>{const b=document.createElement('button');b.className='t'+(t.used?' used':'')+(selT===i?' sel':'');b.textContent=t.v;b.onclick=()=>clickTile(i);p.appendChild(b)});
+}
+function put(x,i){x.val=G.pool[i].v;x.tile=i;G.pool[i].used=true;selB=selT=null;check()}
+function free(x){if(x.val!=null){G.pool[x.tile].used=false;x.val=null;x.tile=null}x.bad=false}
+function clickBlank(x){if(won)return;
+ if(x.val!=null){free(x);selB=x;setMsg('');return render()}
+ if(selT!=null){put(x,selT)}else selB=x;render()}
+function clickTile(i){if(won||G.pool[i].used)return;
+ if(selB){put(selB,i)}else selT=selT===i?null:i;render()}
+function check(){
+ G.blanks.forEach(x=>x.bad=false);setMsg('');
+ if(G.blanks.some(x=>x.val==null))return;
+ const val=(c)=>c.blank?c.val:c.v;
+ let ok=true;
+ for(const e of G.eqs){const[a,o,b,,c]=e.cells.map(([r,q])=>G.cells.get(r+','+q));
+  if(ev(val(a),o.v,val(b))!==val(c)){ok=false;[a,b,c].forEach(z=>{if(z.blank)z.bad=true})}}
+ if(ok){won=true;done.add(L);clearInterval(timer);
+  if(L<10){setMsg('🎉 Solved in '+$('time').textContent+'!','ok');$('next').classList.remove('hide')}
+  else setMsg('🏆 All 10 levels complete!','ok')}
+ else setMsg('Some equations are wrong — tap a red cell to change it.','no')}
+$('next').onclick=()=>start(L+1);
+$('reset').onclick=()=>start(L);
+$('undo').onclick=()=>{if(won)return;G.blanks.forEach(free);selB=selT=null;setMsg('');render()};
+$('hint').onclick=()=>{if(won)return;
+ const x=(selB&&selB.blank?selB:null)||G.blanks.find(z=>z.val==null)||G.blanks.find(z=>z.val!==z.v);if(!x)return;
+ if(x.val!=null)free(x);
+ let i=G.pool.findIndex(t=>!t.used&&t.v===x.v);
+ if(i<0){const o=G.blanks.find(z=>z!==x&&z.val===x.v);if(o){free(o);i=G.pool.findIndex(t=>!t.used&&t.v===x.v)}}
+ if(i>=0)put(x,i);render()};
+addEventListener('resize',()=>G&&render());
+start(1);
+</script></body></html>
