@@ -85,10 +85,10 @@
     }
   </style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-rose-500 selection:text-white">
+<body class="bg-[#FDFBF7] text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-rose-500 selection:text-white">
 
   <!-- HEADER -->
-  <header class="w-full bg-slate-800/90 backdrop-blur border-b border-slate-700 px-4 py-3 sticky top-0 z-30 shadow-md">
+  <header class="w-full bg-white/90 backdrop-blur border-b border-amber-100 px-4 py-3 sticky top-0 z-30 shadow-sm">
     <div class="max-w-4xl mx-auto flex items-center justify-between">
       
       <!-- Red Home Button -->
@@ -99,14 +99,14 @@
 
       <!-- Game Title -->
       <div class="text-center">
-        <h1 class="text-xl sm:text-2xl font-extrabold tracking-wide bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-wide bg-gradient-to-r from-amber-600 via-rose-600 to-purple-600 bg-clip-text text-transparent">
           MEMORY MATCH
         </h1>
-        <p id="modeBadge" class="text-xs font-semibold text-slate-400 uppercase tracking-widest hidden">Solo Mode</p>
+        <p id="modeBadge" class="text-xs font-semibold text-slate-500 uppercase tracking-widest hidden">Solo Mode</p>
       </div>
 
       <!-- Audio Mute Toggle -->
-      <button id="soundToggleBtn" class="flex items-center justify-center w-10 h-10 bg-slate-700 hover:bg-slate-600 active:scale-95 text-amber-400 rounded-xl shadow transition duration-200">
+      <button id="soundToggleBtn" class="flex items-center justify-center w-10 h-10 bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-600 rounded-xl shadow border border-amber-200 transition duration-200">
         <i id="soundIcon" class="fa-solid fa-volume-high text-lg"></i>
       </button>
 
@@ -116,13 +116,13 @@
   <main class="flex-grow flex flex-col items-center justify-center p-3 sm:p-6 w-full max-w-4xl mx-auto">
 
     <!-- SCREEN 1: HOME / MODE SELECTOR -->
-    <div id="homeScreen" class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 text-center shadow-2xl space-y-6 my-auto">
+    <div id="homeScreen" class="w-full max-w-md bg-white border border-amber-200 rounded-3xl p-6 sm:p-8 text-center shadow-xl space-y-6 my-auto">
       <div class="space-y-2">
         <div class="inline-block p-4 bg-gradient-to-tr from-amber-500 to-rose-500 rounded-2xl shadow-lg mb-2">
           <i class="fa-solid fa-brain text-4xl text-white"></i>
         </div>
-        <h2 class="text-3xl font-black text-white">Select Game Mode</h2>
-        <p class="text-slate-400 text-sm">Test your memory against yourself or a smart opponent!</p>
+        <h2 class="text-3xl font-black text-slate-800">Select Game Mode</h2>
+        <p class="text-slate-500 text-sm">Test your memory against yourself or a smart opponent!</p>
       </div>
 
       <div class="space-y-4 pt-2">
@@ -151,7 +151,7 @@
         </button>
       </div>
 
-      <div class="text-xs text-slate-500 pt-2 border-t border-slate-700/60">
+      <div class="text-xs text-slate-400 pt-2 border-t border-amber-100">
         20 Cards • 10 Matching Pairs (5 Rows) • Sound & Visual Feedback
       </div>
     </div>
@@ -160,45 +160,45 @@
     <div id="gameScreen" class="w-full flex flex-col items-center gap-4 hidden">
       
       <!-- STATS BOARD -->
-      <div class="w-full max-w-lg bg-slate-800/80 border border-slate-700 rounded-2xl p-3 sm:p-4 shadow-lg">
+      <div class="w-full max-w-lg bg-white/80 border border-amber-200 rounded-2xl p-3 sm:p-4 shadow-md">
         
         <!-- SOLO STATS -->
         <div id="soloStats" class="grid grid-cols-3 gap-2 text-center">
-          <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
-            <div class="text-xs text-slate-400 font-medium">Time</div>
-            <div id="timerDisplay" class="text-lg sm:text-xl font-bold text-amber-400">00:00</div>
+          <div class="bg-amber-50/60 p-2 rounded-xl border border-amber-100">
+            <div class="text-xs text-slate-500 font-medium">Time</div>
+            <div id="timerDisplay" class="text-lg sm:text-xl font-bold text-amber-600">00:00</div>
           </div>
-          <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
-            <div class="text-xs text-slate-400 font-medium">Moves</div>
-            <div id="movesDisplay" class="text-lg sm:text-xl font-bold text-sky-400">0</div>
+          <div class="bg-amber-50/60 p-2 rounded-xl border border-amber-100">
+            <div class="text-xs text-slate-500 font-medium">Moves</div>
+            <div id="movesDisplay" class="text-lg sm:text-xl font-bold text-sky-600">0</div>
           </div>
-          <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
-            <div class="text-xs text-slate-400 font-medium">Pairs</div>
-            <div id="pairsDisplay" class="text-lg sm:text-xl font-bold text-emerald-400">0 / 10</div>
+          <div class="bg-amber-50/60 p-2 rounded-xl border border-amber-100">
+            <div class="text-xs text-slate-500 font-medium">Pairs</div>
+            <div id="pairsDisplay" class="text-lg sm:text-xl font-bold text-emerald-600">0 / 10</div>
           </div>
         </div>
 
         <!-- BOT VS STATS -->
         <div id="botStats" class="grid grid-cols-2 gap-3 text-center hidden">
           <!-- Player Score Card -->
-          <div id="playerScoreCard" class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700 transition-all duration-300">
-            <div class="text-xs text-slate-400 font-semibold uppercase flex items-center justify-center gap-1">
-              <i class="fa-solid fa-user text-emerald-400"></i> YOU
+          <div id="playerScoreCard" class="bg-amber-50/60 p-2.5 rounded-xl border border-amber-200 transition-all duration-300">
+            <div class="text-xs text-slate-500 font-semibold uppercase flex items-center justify-center gap-1">
+              <i class="fa-solid fa-user text-emerald-600"></i> YOU
             </div>
-            <div id="playerPairsDisplay" class="text-2xl font-black text-emerald-400">0</div>
+            <div id="playerPairsDisplay" class="text-2xl font-black text-emerald-600">0</div>
           </div>
 
           <!-- Bot Score Card -->
-          <div id="botScoreCard" class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700 transition-all duration-300">
-            <div class="text-xs text-slate-400 font-semibold uppercase flex items-center justify-center gap-1">
-              <i class="fa-solid fa-robot text-purple-400"></i> BOT (Medium)
+          <div id="botScoreCard" class="bg-amber-50/60 p-2.5 rounded-xl border border-amber-200 transition-all duration-300">
+            <div class="text-xs text-slate-500 font-semibold uppercase flex items-center justify-center gap-1">
+              <i class="fa-solid fa-robot text-purple-600"></i> BOT (Medium)
             </div>
-            <div id="botPairsDisplay" class="text-2xl font-black text-purple-400">0</div>
+            <div id="botPairsDisplay" class="text-2xl font-black text-purple-600">0</div>
           </div>
         </div>
 
         <!-- Turn Banner (Vs Bot) -->
-        <div id="turnBanner" class="mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-slate-900 text-slate-300 hidden">
+        <div id="turnBanner" class="mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-amber-100 text-slate-700 hidden">
           Your Turn!
         </div>
       </div>
@@ -210,8 +210,11 @@
 
       <!-- Action Footer -->
       <div class="flex items-center gap-3">
-        <button id="restartBtn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-600 font-semibold py-2 px-4 rounded-xl shadow transition">
+        <button id="restartBtn" class="flex items-center gap-2 bg-white hover:bg-amber-50 active:scale-95 text-slate-700 border border-amber-200 font-semibold py-2 px-4 rounded-xl shadow transition">
           <i class="fa-solid fa-rotate-right"></i> Restart Game
+        </button>
+        <button id="backToMenuBtn" class="flex items-center gap-2 bg-white hover:bg-amber-50 active:scale-95 text-slate-700 border border-amber-200 font-semibold py-2 px-4 rounded-xl shadow transition">
+          <i class="fa-solid fa-arrow-left"></i> Back
         </button>
       </div>
 
@@ -220,18 +223,18 @@
   </main>
 
   <!-- VICTORY / RESULTS MODAL -->
-  <div id="victoryModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl transform scale-95 transition duration-300">
+  <div id="victoryModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white border border-amber-200 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl transform scale-95 transition duration-300">
       
-      <div class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-500/40">
+      <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200">
         <i id="victoryIcon" class="fa-solid fa-trophy text-4xl"></i>
       </div>
 
-      <h3 id="victoryTitle" class="text-2xl font-black text-white mb-1">Congratulations!</h3>
-      <p id="victorySubtitle" class="text-slate-400 text-sm mb-6">You matched all the cards!</p>
+      <h3 id="victoryTitle" class="text-2xl font-black text-slate-800 mb-1">Congratulations!</h3>
+      <p id="victorySubtitle" class="text-slate-500 text-sm mb-6">You matched all the cards!</p>
 
       <!-- Results Summary -->
-      <div id="modalSummary" class="bg-slate-900/80 rounded-2xl p-4 mb-6 text-left space-y-2 text-sm border border-slate-700/60">
+      <div id="modalSummary" class="bg-amber-50/70 rounded-2xl p-4 mb-6 text-left space-y-2 text-sm border border-amber-200/80">
         <!-- Filled dynamically -->
       </div>
 
@@ -239,7 +242,7 @@
         <button id="modalPlayAgainBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
           Play Again
         </button>
-        <button id="modalHomeBtn" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl transition">
+        <button id="modalHomeBtn" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition">
           Back to Home
         </button>
       </div>
@@ -248,7 +251,7 @@
   </div>
 
   <!-- FOOTER -->
-  <footer class="w-full py-3 text-center text-xs text-slate-500">
+  <footer class="w-full py-3 text-center text-xs text-slate-400">
     Memory Game • Built with HTML, CSS & JS
   </footer>
 
@@ -369,10 +372,10 @@
     const modeBadge = document.getElementById('modeBadge');
     
     // Buttons
-    const homeBtn = document.getElementById('homeBtn');
     const startSoloBtn = document.getElementById('startSoloBtn');
     const startBotBtn = document.getElementById('startBotBtn');
     const restartBtn = document.getElementById('restartBtn');
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
     const soundToggleBtn = document.getElementById('soundToggleBtn');
     const soundIcon = document.getElementById('soundIcon');
     
@@ -401,9 +404,9 @@
     soundToggleBtn.addEventListener('click', () => {
       sound.muted = !sound.muted;
       if (sound.muted) {
-        soundIcon.className = 'fa-solid fa-volume-xmark text-lg text-slate-500';
+        soundIcon.className = 'fa-solid fa-volume-xmark text-lg text-slate-400';
       } else {
-        soundIcon.className = 'fa-solid fa-volume-high text-lg text-amber-400';
+        soundIcon.className = 'fa-solid fa-volume-high text-lg text-amber-600';
       }
     });
 
@@ -411,6 +414,7 @@
     startSoloBtn.addEventListener('click', () => startGame('solo'));
     startBotBtn.addEventListener('click', () => startGame('bot'));
     restartBtn.addEventListener('click', () => startGame(gameMode));
+    backToMenuBtn.addEventListener('click', () => showHomeScreen());
     
     modalPlayAgainBtn.addEventListener('click', () => {
       hideVictoryModal();
@@ -496,7 +500,7 @@
             <div class="card-front flex items-center justify-center rounded-2xl shadow-md border-2 border-white/30 text-white font-bold text-2xl">
               <i class="fa-solid fa-star opacity-40 text-amber-200"></i>
             </div>
-            <div class="card-back bg-slate-800 border-2 border-amber-400/80 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl shadow-xl">
+            <div class="card-back bg-white border-2 border-amber-400/80 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl shadow-xl">
               ${card.emoji}
             </div>
           </div>
@@ -697,12 +701,12 @@
     function updateTurnUI() {
       if (currentTurn === 'player') {
         turnBanner.textContent = "Your Turn! Tap a card.";
-        turnBanner.className = "mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        turnBanner.className = "mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300";
         playerScoreCard.classList.add('active-turn');
         botScoreCard.classList.remove('active-turn');
       } else {
         turnBanner.textContent = "Bot is thinking...";
-        turnBanner.className = "mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 animate-pulse";
+        turnBanner.className = "mt-2 text-center text-xs font-bold py-1 px-3 rounded-lg bg-purple-100 text-purple-800 border border-purple-300 animate-pulse";
         botScoreCard.classList.add('active-turn');
         playerScoreCard.classList.remove('active-turn');
       }
@@ -737,43 +741,43 @@
       sound.playWin();
 
       if (gameMode === 'solo') {
-        victoryIcon.className = "fa-solid fa-trophy text-4xl text-amber-400";
+        victoryIcon.className = "fa-solid fa-trophy text-4xl text-amber-600";
         victoryTitle.textContent = "Awesome Job!";
         victorySubtitle.textContent = "You cleared all 10 pairs!";
         
         modalSummary.innerHTML = `
-          <div class="flex justify-between items-center text-slate-300">
-            <span><i class="fa-solid fa-clock text-amber-400 mr-2"></i>Time Taken:</span>
-            <span class="font-bold text-white">${timerDisplay.textContent}</span>
+          <div class="flex justify-between items-center text-slate-600">
+            <span><i class="fa-solid fa-clock text-amber-600 mr-2"></i>Time Taken:</span>
+            <span class="font-bold text-slate-800">${timerDisplay.textContent}</span>
           </div>
-          <div class="flex justify-between items-center text-slate-300">
-            <span><i class="fa-solid fa-hand text-sky-400 mr-2"></i>Total Moves:</span>
-            <span class="font-bold text-white">${moves}</span>
+          <div class="flex justify-between items-center text-slate-600">
+            <span><i class="fa-solid fa-hand text-sky-600 mr-2"></i>Total Moves:</span>
+            <span class="font-bold text-slate-800">${moves}</span>
           </div>
         `;
       } else {
         if (playerScore > botScore) {
-          victoryIcon.className = "fa-solid fa-trophy text-4xl text-amber-400";
+          victoryIcon.className = "fa-solid fa-trophy text-4xl text-amber-600";
           victoryTitle.textContent = "You Won!";
           victorySubtitle.textContent = "You defeated the Medium Bot!";
         } else if (botScore > playerScore) {
-          victoryIcon.className = "fa-solid fa-robot text-4xl text-purple-400";
+          victoryIcon.className = "fa-solid fa-robot text-4xl text-purple-600";
           victoryTitle.textContent = "Bot Won!";
           victorySubtitle.textContent = "Better luck next time!";
         } else {
-          victoryIcon.className = "fa-solid fa-handshake text-4xl text-sky-400";
+          victoryIcon.className = "fa-solid fa-handshake text-4xl text-sky-600";
           victoryTitle.textContent = "It's a Tie!";
           victorySubtitle.textContent = "Great match between both of you!";
         }
 
         modalSummary.innerHTML = `
-          <div class="flex justify-between items-center text-slate-300">
-            <span><i class="fa-solid fa-user text-emerald-400 mr-2"></i>Your Score:</span>
-            <span class="font-bold text-white text-base">${playerScore} Pairs</span>
+          <div class="flex justify-between items-center text-slate-600">
+            <span><i class="fa-solid fa-user text-emerald-600 mr-2"></i>Your Score:</span>
+            <span class="font-bold text-slate-800 text-base">${playerScore} Pairs</span>
           </div>
-          <div class="flex justify-between items-center text-slate-300">
-            <span><i class="fa-solid fa-robot text-purple-400 mr-2"></i>Bot Score:</span>
-            <span class="font-bold text-white text-base">${botScore} Pairs</span>
+          <div class="flex justify-between items-center text-slate-600">
+            <span><i class="fa-solid fa-robot text-purple-600 mr-2"></i>Bot Score:</span>
+            <span class="font-bold text-slate-800 text-base">${botScore} Pairs</span>
           </div>
         `;
       }
