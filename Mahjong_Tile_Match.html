@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fruit Tile Match</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;margin:0}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:#8a5a2b repeating-linear-gradient(90deg,#9b6a35 0 38px,#8a5a2b 38px 76px);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#fff;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column;max-width:520px;margin:0 auto;padding:8px 10px}
+.top{display:flex;align-items:center;justify-content:space-between;height:52px;flex:none}
+.top h2{margin:0;font-size:22px;text-shadow:0 2px 0 #4a2a0a}
+.btn{min-width:44px;height:44px;padding:0 12px;border-radius:12px;border:3px solid #5b3411;background:#c9822f;color:#fff;font-size:20px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;box-shadow:0 3px 0 #5b3411}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #5b3411}
+.btn.red{background:#d62828;border-color:#7a0f0f;box-shadow:0 3px 0 #7a0f0f}
+.btn:disabled{opacity:.45}
+.screen{flex:1;display:none;flex-direction:column;min-height:0}
+.screen.on{display:flex}
+#menu{align-items:center;padding-top:10px}
+#menu h1{margin:6px 0 4px;font-size:34px;text-shadow:0 3px 0 #4a2a0a;text-align:center}
+#menu p{margin:0 0 16px;opacity:.9}
+#grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:100%;overflow:auto;padding:4px}
+.lv{height:76px;border-radius:16px;border:3px solid #5b3411;background:#c9822f;box-shadow:0 4px 0 #5b3411;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;cursor:pointer;font-size:22px}
+.lv small{font-size:12px;opacity:.9;font-weight:600}
+.lv.lock{background:#6d5a48;cursor:not-allowed;color:#d8cbbd}
+.lv .st{font-size:14px;letter-spacing:2px}
+#tray{flex:none;display:flex;gap:4px;padding:6px;background:#6b3f17;border:3px solid #4a2a0a;border-radius:12px;margin:6px 0}
+.slot{flex:1;aspect-ratio:1;max-width:60px;background:#8a5a2b;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,6.5vw,32px)}
+.slot.f{background:#fff;box-shadow:0 2px 0 #c9a37a;animation:pop .18s}
+@keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+#wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+#board{position:relative}
+.t{position:absolute;background:#fff;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:2px 3px 0 #b58a5e,0 0 0 1px #d9c2a5;cursor:pointer;transition:filter .15s}
+.t.b{filter:brightness(.5);cursor:default}
+.bar{flex:none;display:flex;justify-content:space-around;padding:8px 0 10px}
+#ov{position:fixed;inset:0;background:rgba(40,20,5,.7);display:none;align-items:center;justify-content:center;z-index:9}
+#ov.on{display:flex}
+.card{background:#c9822f;border:4px solid #5b3411;border-radius:20px;padding:24px 28px;text-align:center;min-width:250px}
+.card h2{margin:0 0 6px;font-size:28px}
+.card .row{display:flex;gap:10px;justify-content:center;margin-top:16px}
+</style></head><body>
+<div id="app">
+ <div class="top">
+  <a class="btn red" href="index.html" aria-label="Home">🏠</a>
+  <h2 id="title">Fruit Match</h2>
+  <button class="btn" id="snd" aria-label="Sound">🔊</button>
+ </div>
+ <section class="screen on" id="menu">
+  <h1>🍓 Fruit Tile Match 🍉</h1>
+  <p>Match 3 identical tiles. Don't fill the tray!</p>
+  <div id="grid"></div>
+ </section>
+ <section class="screen" id="game">
+  <div id="tray"></div>
+  <div id="wrap"><div id="board"></div></div>
+  <div class="bar">
+   <button class="btn" id="undo">↩ Undo <span id="uc">3</span></button>
+   <button class="btn" id="rst">⟳ Restart</button>
+   <button class="btn" id="lvls">☰ Levels</button>
+  </div>
+ </section>
+</div>
+<div id="ov"><div class="card"><h2 id="ot"></h2><div id="om"></div><div class="row" id="ob"></div></div></div>
+<script>
+const E=['🍎','🍌','🍇','🍓','🍉','🍊','🍒','🥝','🍍','🍑','🍋','🥕','🌽','🍆','🥑','🍅'];
+// [cols, rows, layers, fruit types, tiles]
+const L=[[5,5,2,7,36],[5,5,3,8,45],[6,5,3,9,54],[6,6,3,10,63],[6,6,4,11,72],[6,6,4,12,84],[7,6,4,13,90],[7,7,4,14,99],[7,7,5,15,108],[7,7,5,16,120]];
+const NAMES=['Medium','Medium','Medium+','Hard','Hard','Hard+','Very Hard','Very Hard','Expert','Master'];
+const $=id=>document.getElementById(id);
+let prog={unlocked:1,stars:{}},muted=false;
+try{const p=JSON.parse(localStorage.getItem('fruitmatch')||'null');if(p)prog=p;}catch(e){}
+const save=()=>{try{localStorage.setItem('fruitmatch',JSON.stringify(prog))}catch(e){}};
+
+// ---------- sound ----------
+let ac;
+function tone(f,d,type='sine',t0=0,v=.15){if(muted)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
+ const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+t0;o.type=type;o.frequency.value=f;
+ g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const snd={
+ click:()=>tone(620,.08,'triangle'),
+ deny:()=>tone(130,.18,'sawtooth',0,.1),
+ match:()=>[660,830,990].forEach((f,i)=>tone(f,.15,'sine',i*.07)),
+ win:()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,.25,'triangle',i*.12)),
+ lose:()=>[400,330,260,180].forEach((f,i)=>tone(f,.3,'sawtooth',i*.15,.1)),
+ undo:()=>tone(420,.1,'square',0,.06)
+};
+$('snd').onclick=()=>{muted=!muted;$('snd').textContent=muted?'🔇':'🔊';snd.click()};
+
+// ---------- menu ----------
+function menu(){
+ $('game').classList.remove('on');$('menu').classList.add('on');$('title').textContent='Fruit Match';$('ov').classList.remove('on');
+ const g=$('grid');g.innerHTML='';
+ L.forEach((_,i)=>{const b=document.createElement('div'),ok=i<prog.unlocked,s=prog.stars[i]||0;
+  b.className='lv'+(ok?'':' lock');
+  b.innerHTML=ok?`Level ${i+1}<small>${NAMES[i]}</small><span class="st">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span>`:`🔒<small>Level ${i+1}</small>`;
+  b.onclick=()=>{ok?start(i):snd.deny()};g.appendChild(b)});
+}
+
+// ---------- level generation (always solvable) ----------
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const covers=(b,a)=>b.l>a.l&&Math.abs(b.x-a.x)<1&&Math.abs(b.y-a.y)<1;
+function gen(n){
+ const [C,R,Ly,T,N]=L[n];let all=[];
+ for(let l=0;l<Ly;l++){const o=(l%2)*.5,c=C-l%2,r=R-l%2;for(let i=0;i<c;i++)for(let j=0;j<r;j++)all.push({l,x:i+o,y:j+o})}
+ const tiles=shuf(all).slice(0,N);
+ const types=shuf(E.slice()).slice(0,T);
+ const bag=[];for(let i=0;i<N/3;i++)bag.push(types[i%T]);shuf(bag);
+ // remove tiles one by one from the top; every group of 3 shares a fruit => guaranteed solvable
+ let rem=tiles.slice(),k=0;
+ while(rem.length){
+  const ty=bag[k++];
+  for(let m=0;m<3;m++){
+   const free=rem.filter(a=>!rem.some(b=>covers(b,a)));
+   const p=free[Math.random()*free.length|0];p.e=ty;rem.splice(rem.indexOf(p),1);
+  }
+ }
+ return tiles;
+}
+
+// ---------- game ----------
+let cur=0,tiles=[],tray=[],hist=[],undos=3,busy=false,over=false,S=52;
+function start(n){
+ cur=n;tiles=gen(n);tray=[];hist=[];undos=3;busy=false;over=false;
+ $('menu').classList.remove('on');$('game').classList.add('on');$('ov').classList.remove('on');
+ $('title').textContent='Level '+(n+1);
+ const [C,R]=L[n],avail=Math.min(innerWidth,520)-20;
+ S=Math.min(58,Math.floor(avail/(C+.5)));
+ const b=$('board');b.style.width=(C+.5)*S+'px';b.style.height=(R+.5)*S+'px';
+ draw();
+}
+function isFree(a){return !tiles.some(b=>covers(b,a))}
+function draw(){
+ const b=$('board');b.innerHTML='';
+ tiles.slice().sort((a,c)=>a.l-c.l).forEach(t=>{
+  const d=document.createElement('div'),f=isFree(t);
+  d.className='t'+(f?'':' b');
+  d.style.cssText=`left:${t.x*S}px;top:${t.y*S}px;width:${S-3}px;height:${S-3}px;z-index:${t.l};font-size:${S*.62}px`;
+  d.textContent=t.e;d.onclick=()=>pick(t);b.appendChild(d)});
+ const tr=$('tray');tr.innerHTML='';
+ for(let i=0;i<7;i++){const s=document.createElement('div');s.className='slot'+(tray[i]?' f':'');s.textContent=tray[i]||'';tr.appendChild(s)}
+ $('uc').textContent=undos;$('undo').disabled=!undos||!hist.length||busy||over;
+}
+function pick(t){
+ if(busy||over)return;
+ if(!isFree(t)||tray.length>=7){snd.deny();return}
+ hist.push({t,tray:tray.slice()});
+ tiles.splice(tiles.indexOf(t),1);
+ const i=tray.lastIndexOf(t.e);
+ if(i<0)tray.push(t.e);else tray.splice(i+1,0,t.e);
+ snd.click();draw();
+ if(tray.filter(x=>x===t.e).length>=3){
+  busy=true;draw();
+  setTimeout(()=>{tray=tray.filter(x=>x!==t.e);snd.match();busy=false;hist=[];draw();check()},320);
+ }else check();
+}
+function check(){
+ if(!tiles.length&&!tray.length){over=true;win();return}
+ if(tray.length>=7&&!busy){over=true;draw();snd.lose();setTimeout(()=>modal('Tray is full! 😵','No more room for tiles.',[['Retry',()=>start(cur)],['Levels',menu]]),500)}
+}
+function win(){
+ const used=3-undos,st=used===0?3:used<=1?2:1;
+ prog.stars[cur]=Math.max(prog.stars[cur]||0,st);
+ if(cur+1<L.length&&prog.unlocked<cur+2)prog.unlocked=cur+2;
+ save();snd.win();
+ const last=cur===L.length-1;
+ setTimeout(()=>modal(last?'🏆 You beat the game!':'Level Complete! 🎉','★'.repeat(st)+'☆'.repeat(3-st)+(!last?'<br>Level '+(cur+2)+' unlocked':''),
+  last?[['Levels',menu]]:[['Next ▶',()=>start(cur+1)],['Levels',menu]]),400);
+}
+function modal(t,m,btns){
+ $('ot').textContent=t;$('om').innerHTML=m;const r=$('ob');r.innerHTML='';
+ btns.forEach(([n,f])=>{const b=document.createElement('button');b.className='btn';b.textContent=n;b.onclick=f;r.appendChild(b)});
+ $('ov').classList.add('on');
+}
+$('undo').onclick=()=>{
+ if(busy||over||!undos||!hist.length)return;
+ const h=hist.pop();tray=h.tray;tiles.push(h.t);undos--;snd.undo();draw();
+};
+$('rst').onclick=()=>start(cur);
+$('lvls').onclick=menu;
+menu();
+</script>
+</body></html>
