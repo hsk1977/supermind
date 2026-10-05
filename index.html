@@ -1,370 +1,189 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RMY6X2QMR2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RMY6X2QMR2"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-RMY6X2QMR2');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0e1030">
+<title>رویاهای ذهن - مرکز بازی‌های فکری</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0e1030; --ink2:#181b4a; --moon:#f6e7c1; --gold:#e9b95c;
+  --text:#f4f1ff; --muted:#a9acd6; --glass:rgba(255,255,255,.07); --line:rgba(255,255,255,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Vazirmatn',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+html{background:var(--ink)}
+body{
+  min-height:100vh;color:var(--text);
+  background:
+    radial-gradient(ellipse 70% 45% at 50% -5%,rgba(233,185,92,.28),transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 100%,rgba(122,92,255,.30),transparent 70%),
+    radial-gradient(ellipse 50% 40% at 5% 70%,rgba(255,98,146,.16),transparent 70%),
+    linear-gradient(180deg,var(--ink),var(--ink2));
+  background-attachment:fixed;
+  padding:clamp(20px,5vw,56px) 16px 40px;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.55;
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 18%,#fff,transparent),
+    radial-gradient(1px 1px at 27% 62%,#fff,transparent),
+    radial-gradient(1.6px 1.6px at 44% 30%,#fff,transparent),
+    radial-gradient(1px 1px at 63% 78%,#fff,transparent),
+    radial-gradient(1.4px 1.4px at 78% 22%,#fff,transparent),
+    radial-gradient(1px 1px at 90% 55%,#fff,transparent),
+    radial-gradient(1px 1px at 8% 88%,#fff,transparent),
+    radial-gradient(1.2px 1.2px at 55% 8%,#fff,transparent);
+  animation:twinkle 6s ease-in-out infinite alternate;
+}
+@keyframes twinkle{from{opacity:.25}to{opacity:.7}}
 
-      gtag('config', 'G-RMY6X2QMR2');
-    </script>
-    
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رویاهای ذهن - مرکز بازی‌های فکری</title>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #1a100a;
-            --card-bg: #ffffff;
-            --text-dark: #2b1810;
-            --accent-gold: #d4a359;
-            --accent-orange: #ff5722;
-            --primary-green: #2e7d32;
-        }
+main{position:relative;max-width:880px;margin:0 auto}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Vazirmatn', sans-serif;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+header{text-align:center;margin-bottom:clamp(24px,5vw,44px)}
+.moon{
+  width:clamp(64px,14vw,92px);aspect-ratio:1;margin:0 auto 14px;border-radius:50%;
+  background:radial-gradient(circle at 36% 34%,#fffaf0,var(--moon) 55%,#e2c27c);
+  box-shadow:0 0 40px 8px rgba(246,231,193,.35),0 0 120px 30px rgba(233,185,92,.18);
+  position:relative;
+}
+.moon::after{ /* crescent cut */
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:var(--ink);transform:translate(26%,-8%) scale(.82);
+  box-shadow:inset 0 0 18px rgba(122,92,255,.25);
+}
+h1{
+  font-size:clamp(2.2rem,8vw,3.8rem);font-weight:900;line-height:1.2;
+  background:linear-gradient(180deg,#fff7de 10%,var(--gold) 90%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.subtitle{margin-top:8px;color:var(--muted);font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600}
 
-        body {
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 50% 20%, rgba(212, 163, 89, 0.15) 0%, transparent 50%),
-                radial-gradient(#3a2517 1.5px, transparent 1.5px);
-            background-size: 100% 100%, 24px 24px;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px 8px;
-        }
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2.5vw,18px)}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
 
-        .device-container {
-            width: 100%;
-            max-width: 320px;
-            background: rgba(255, 248, 235, 0.96);
-            backdrop-filter: blur(10px);
-            border: 3px solid var(--accent-gold);
-            border-radius: 20px;
-            box-shadow: 
-                0 0 0 3px #422616,
-                0 10px 20px rgba(0, 0, 0, 0.8),
-                inset 0 0 10px rgba(212, 163, 89, 0.25);
-            padding: 12px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+.card{
+  --c:#e9b95c;
+  position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;
+  padding:clamp(16px,3vw,24px) 10px clamp(14px,3vw,20px);
+  text-decoration:none;color:var(--text);overflow:hidden;
+  background:linear-gradient(165deg,rgba(255,255,255,.11),rgba(255,255,255,.03));
+  border:1px solid var(--line);border-radius:22px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 10px 30px rgba(3,4,25,.45);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s;
+}
+.card::before{ /* per-game glow */
+  content:"";position:absolute;top:-40%;left:50%;width:140%;aspect-ratio:1;transform:translateX(-50%);
+  background:radial-gradient(circle,var(--c) 0%,transparent 60%);opacity:.22;transition:opacity .3s;
+}
+.card:hover,.card:focus-visible{
+  transform:translateY(-5px);border-color:var(--c);outline:none;
+  box-shadow:0 16px 36px rgba(3,4,25,.55),0 0 0 1px var(--c),0 0 28px -4px var(--c);
+}
+.card:hover::before,.card:focus-visible::before{opacity:.45}
+.card:active{transform:translateY(-1px) scale(.98)}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+.num{
+  position:absolute;top:10px;right:10px;min-width:24px;height:24px;padding:0 6px;
+  display:grid;place-items:center;border-radius:12px;
+  background:rgba(14,16,48,.7);border:1px solid var(--line);
+  color:var(--c);font-size:.75rem;font-weight:800;
+}
+.tag{
+  position:absolute;top:10px;left:10px;padding:2px 9px;border-radius:12px;
+  background:linear-gradient(135deg,#ff6b8b,#ff3d71);color:#fff;font-size:.68rem;font-weight:800;
+  box-shadow:0 0 14px rgba(255,61,113,.6);animation:glow 2.2s ease-in-out infinite;
+}
+@keyframes glow{50%{box-shadow:0 0 22px rgba(255,61,113,.95)}}
 
-        .header {
-            text-align: center;
-            position: relative;
-        }
+.icon{
+  position:relative;width:clamp(60px,14vw,76px);aspect-ratio:1;margin:8px 0 12px;
+  display:grid;place-items:center;border-radius:22px;
+  background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.04));
+  border:1px solid var(--line);font-size:clamp(1.5rem,5vw,1.9rem);line-height:1;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 16px rgba(0,0,0,.3);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.card:hover .icon{transform:scale(1.1) rotate(-4deg)}
+.icon svg{width:62%;height:62%}
 
-        .title {
-            font-size: 1.2rem;
-            font-weight: 900;
-            background: linear-gradient(180deg, #ff7043 0%, #d84315 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 1px 0px rgba(255,255,255,0.8)) drop-shadow(0 1px 1px rgba(93, 64, 55, 0.4));
-            line-height: 1.2;
-            letter-spacing: -0.5px;
-        }
+.name{position:relative;font-size:clamp(1rem,3vw,1.15rem);font-weight:900}
+.en{position:relative;margin-top:2px;font-size:.78rem;color:var(--muted);font-weight:600;direction:ltr}
 
-        .subtitle {
-            font-size: 0.65rem;
-            color: #8d6e63;
-            font-weight: 700;
-            margin-top: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
+footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opacity:.8}
 
-        .subtitle::before, .subtitle::after {
-            content: "";
-            display: inline-block;
-            width: 10px;
-            height: 1px;
-            background: #d7ccc8;
-            border-radius: 1px;
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-        }
-
-        .game-card {
-            background: var(--card-bg);
-            border: 1.5px solid #ebd3b0;
-            border-radius: 10px;
-            padding: 4px 3px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            position: relative;
-            box-shadow: 0 2px 0 #c29547, 0 3px 6px rgba(0, 0, 0, 0.08);
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .game-card:hover {
-            transform: translateY(-2px);
-            border-color: #d4a359;
-            box-shadow: 0 4px 0 #c29547, 0 5px 9px rgba(212, 163, 89, 0.25);
-        }
-
-        .game-card:active {
-            transform: translateY(1px);
-            box-shadow: 0 1px 0 #c29547, 0 2px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        /* تگ‌های تزئینی */
-        .badge-number {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            background: #3e2723;
-            color: #ffca28;
-            font-size: 0.5rem;
-            font-weight: 900;
-            width: 12px;
-            height: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-        }
-
-        .badge-tag {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            background: linear-gradient(135deg, #ff5252, #d32f2f);
-            color: white;
-            font-size: 0.45rem;
-            font-weight: 700;
-            padding: 1px 4px;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(211, 47, 47, 0.3);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .icon-container {
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(145deg, #ffffff, #fff3e0);
-            border-radius: 8px;
-            border: 1px solid #f5e1c8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 3px 0 2px 0;
-            font-size: 0.9rem;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.04);
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .game-card:hover .icon-container {
-            transform: scale(1.08) rotate(-3deg);
-            background: linear-gradient(145deg, #fff3e0, #ffe0b2);
-        }
-
-        .hangman-svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        .game-title {
-            color: var(--text-dark);
-            font-weight: 900;
-            font-size: 0.6rem;
-            text-align: center;
-            margin-top: 1px;
-        }
-
-        .game-sub {
-            font-size: 0.45rem;
-            color: #a1887f;
-            margin-top: 0px;
-            font-weight: 600;
-            letter-spacing: 0.1px;
-        }
-
-        .footer-action {
-            margin-top: 2px;
-        }
-
-        .start-btn {
-            background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%);
-            color: white;
-            border: 1.5px solid #81c784;
-            border-radius: 12px;
-            padding: 5px 6px;
-            font-size: 0.65rem;
-            font-weight: 900;
-            box-shadow: 0 2.5px 0 #1b5e20, 0 4px 8px rgba(46, 125, 50, 0.3);
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-
-        .start-btn:hover {
-            background: linear-gradient(180deg, #66bb6a 0%, #388e3c 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 3.5px 0 #1b5e20, 0 5px 9px rgba(46, 125, 50, 0.35);
-        }
-
-        .start-btn:active {
-            transform: translateY(1.5px);
-            box-shadow: 0 1px 0 #1b5e20, 0 2px 3px rgba(0,0,0,0.2);
-        }
-    </style>
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
+<main>
+  <header>
+    <div class="moon" aria-hidden="true"></div>
+    <h1>رویاهای ذهن</h1>
+    <p class="subtitle">مجموعه بازی‌های فکری و سرگرمی</p>
+  </header>
 
-    <div class="device-container">
-        <div class="header">
-            <h1 class="title">رویاهای ذهن</h1>
-            <p class="subtitle">مجموعه بازی‌های فکری و سرگرمی</p>
-        </div>
-
-        <div class="games-grid">
-            <!-- بازی ۱: فکر بکر -->
-            <a href="./pretty-mind.html" class="game-card">
-                <span class="badge-number">۱</span>
-                <div class="icon-container">🧠</div>
-                <div class="game-title">فکر بکر</div>
-                <div class="game-sub">Pretty Mind</div>
-            </a>
-
-            <!-- بازی ۲: چکرز -->
-            <a href="./Checkers.html" class="game-card">
-                <span class="badge-number">۲</span>
-                <div class="icon-container">🏁</div>
-                <div class="game-title">چکرز</div>
-                <div class="game-sub">Checkers</div>
-            </a>
-
-            <!-- بازی ۳: ریورسی -->
-            <a href="./reversi_game.html" class="game-card">
-                <span class="badge-number">۳</span>
-                <div class="icon-container">⚪⚫</div>
-                <div class="game-title">ریورسی</div>
-                <div class="game-sub">Reversi</div>
-            </a>
-
-            <!-- بازی ۴: حدس کلمات -->
-            <a href="./hangman.html" class="game-card">
-                <span class="badge-number">۴</span>
-                <div class="icon-container">
-                    <svg class="hangman-svg" viewBox="0 0 64 64" fill="none" stroke="#5d4037" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="56" x2="36" y2="56" />
-                        <line x1="20" y1="56" x2="20" y2="12" />
-                        <line x1="20" y1="12" x2="42" y2="12" />
-                        <line x1="42" y1="12" x2="42" y2="20" />
-                        <circle cx="42" cy="25" r="5" />
-                        <line x1="42" y1="30" x2="42" y2="42" />
-                        <line x1="42" y1="34" x2="36" y2="39" />
-                        <line x1="42" y1="34" x2="48" y2="39" />
-                        <line x1="42" y1="42" x2="37" y2="50" />
-                        <line x1="42" y1="42" x2="47" y2="50" />
-                    </svg>
-                </div>
-                <div class="game-title">حدس کلمات</div>
-                <div class="game-sub">Hangman</div>
-            </a>
-
-            <!-- بازی ۵: فروت نینجا -->
-            <a href="./fruit_ninja.html" class="game-card">
-                <span class="badge-number">۵</span>
-                <div class="icon-container">🍉⚔️</div>
-                <div class="game-title">فروت نینجا</div>
-                <div class="game-sub">Fruit Ninja</div>
-            </a>
-
-            <!-- بازی ۶: کارت‌های حافظه -->
-            <a href="./memory_game.html" class="game-card">
-                <span class="badge-number">۶</span>
-                <div class="icon-container">🃏🧠</div>
-                <div class="game-title">بازی حافظه</div>
-                <div class="game-sub">Memory Game</div>
-            </a>
-
-            <!-- بازی ۷: اسنیک -->
-            <a href="./snake_game.html" class="game-card">
-                <span class="badge-number">۷</span>
-                <div class="icon-container">🐍🍎</div>
-                <div class="game-title">بازی اسنیک</div>
-                <div class="game-sub">Snake Game</div>
-            </a>
-
-            <!-- بازی ۸: بلاک چوبی -->
-            <a href="./Wooden_ Blocks.html" class="game-card">
-                <span class="badge-number">۸</span>
-                <div class="icon-container">🧱🪵</div>
-                <div class="game-title">بلاک چوبی</div>
-                <div class="game-sub">Wooden Blocks</div>
-            </a>
-
-            <!-- بازی ۹: جدول ریاضی -->
-            <a href="./Math-Crossword.html" class="game-card">
-                <span class="badge-number">۹</span>
-                <div class="icon-container">➕🔢</div>
-                <div class="game-title">جدول ریاضی</div>
-                <div class="game-sub">Math Crossword</div>
-            </a>
-
-            <!-- بازی ۱۰: ماژونگ -->
-            <a href="./Mahjong_Tile_Match.html" class="game-card">
-                <span class="badge-number">۱۰</span>
-                <span class="badge-tag">جدید</span>
-                <div class="icon-container">🀄🎴</div>
-                <div class="game-title">ماژونگ</div>
-                <div class="game-sub">Mahjong Match</div>
-            </a>
-        </div>
-
-        <div class="footer-action">
-            <a href="./pretty-mind.html" class="start-btn">
-                <span>ورود به اتاق بازی‌ها</span>
-                <span>🎮</span>
-            </a>
-        </div>
-    </div>
-
+  <nav class="grid" aria-label="فهرست بازی‌ها">
+    <a href="./pretty-mind.html" class="card" style="--c:#ff8fb1">
+      <span class="num">۱</span><div class="icon">🧠</div>
+      <div class="name">فکر بکر</div><div class="en">Pretty Mind</div>
+    </a>
+    <a href="./Checkers.html" class="card" style="--c:#ff7a59">
+      <span class="num">۲</span><div class="icon">🏁</div>
+      <div class="name">چکرز</div><div class="en">Checkers</div>
+    </a>
+    <a href="./reversi_game.html" class="card" style="--c:#5fd4b0">
+      <span class="num">۳</span><div class="icon">⚪⚫</div>
+      <div class="name">ریورسی</div><div class="en">Reversi</div>
+    </a>
+    <a href="./hangman.html" class="card" style="--c:#ffd166">
+      <span class="num">۴</span>
+      <div class="icon">
+        <svg viewBox="0 0 64 64" fill="none" stroke="#f6e7c1" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="56" x2="36" y2="56"/><line x1="20" y1="56" x2="20" y2="12"/>
+          <line x1="20" y1="12" x2="42" y2="12"/><line x1="42" y1="12" x2="42" y2="20"/>
+          <circle cx="42" cy="25" r="5"/><line x1="42" y1="30" x2="42" y2="42"/>
+          <line x1="42" y1="34" x2="36" y2="39"/><line x1="42" y1="34" x2="48" y2="39"/>
+          <line x1="42" y1="42" x2="37" y2="50"/><line x1="42" y1="42" x2="47" y2="50"/>
+        </svg>
+      </div>
+      <div class="name">حدس کلمات</div><div class="en">Hangman</div>
+    </a>
+    <a href="./fruit_ninja.html" class="card" style="--c:#7bdc6a">
+      <span class="num">۵</span><div class="icon">🍉⚔️</div>
+      <div class="name">فروت نینجا</div><div class="en">Fruit Ninja</div>
+    </a>
+    <a href="./memory_game.html" class="card" style="--c:#8ea2ff">
+      <span class="num">۶</span><div class="icon">🃏🧠</div>
+      <div class="name">بازی حافظه</div><div class="en">Memory Game</div>
+    </a>
+    <a href="./snake_game.html" class="card" style="--c:#4fe08a">
+      <span class="num">۷</span><div class="icon">🐍🍎</div>
+      <div class="name">بازی اسنیک</div><div class="en">Snake Game</div>
+    </a>
+    <a href="./Wooden_ Blocks.html" class="card" style="--c:#e0a060">
+      <span class="num">۸</span><div class="icon">🧱🪵</div>
+      <div class="name">بلاک چوبی</div><div class="en">Wooden Blocks</div>
+    </a>
+    <a href="./Math-Crossword.html" class="card" style="--c:#59c8ff">
+      <span class="num">۹</span><div class="icon">➕🔢</div>
+      <div class="name">جدول ریاضی</div><div class="en">Math Crossword</div>
+    </a>
+    <a href="./Mahjong_Tile_Match.html" class="card" style="--c:#ff5c7a">
+      <span class="num">۱۰</span><span class="tag">جدید</span><div class="icon">🀄🎴</div>
+      <div class="name">ماژونگ</div><div class="en">Mahjong Match</div>
+    </a>
+  </nav>
+</main>
 </body>
 </html>
