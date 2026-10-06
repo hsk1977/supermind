@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Backgammon</title>
+<style>
+:root{--bg:#f4efe6;--fg:#222;--card:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1a18;--fg:#eee;--card:#2a2825}}
+:root[data-theme="dark"]{--bg:#1b1a18;--fg:#eee;--card:#2a2825}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+.home{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:10px;z-index:5;background:#d62828;color:#fff;text-decoration:none;font-weight:700;padding:9px 16px;border-radius:10px;box-shadow:0 2px 6px #0004}
+.home:hover{background:#b01e1e}
+.wrap{max-width:860px;margin:0 auto;padding:54px 12px 8px;text-align:center}
+h1{margin:0 0 6px;font-size:22px}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-bottom:8px}
+select,button{font:inherit;padding:7px 12px;border-radius:8px;border:1px solid #8886;background:var(--card);color:var(--fg)}
+button{cursor:pointer;font-weight:600}button:disabled{opacity:.4;cursor:default}
+#roll{background:#2a9d4a;color:#fff;border:0;min-width:130px}
+#status{min-height:22px;font-weight:600;margin:4px 0;font-size:15px}
+svg{display:block;margin:0 auto;width:100%;height:auto;max-width:min(800px,calc((100vh - 235px)*1.538));max-width:min(800px,calc((100dvh - 235px)*1.538));touch-action:manipulation}
+.pulse{animation:p 1s infinite alternate}@keyframes p{from{opacity:.35}to{opacity:1}}
+.dicerow{display:flex;justify-content:center;align-items:center;gap:16px;min-height:48px}
+.die{font-size:40px;line-height:1}.used{opacity:.25}
+</style></head><body>
+<a class="home" href="index.html">🏠 Home</a>
+<div class="wrap">
+<h1>🎲 Backgammon</h1>
+<div class="ctl">
+<label>Difficulty <select id="diff"><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></label>
+<label><input type="checkbox" id="hints" checked> Show hints</label>
+<label><input type="checkbox" id="snd" checked> Sound</label>
+<button id="ng">New Game</button></div>
+<div id="status"></div>
+<svg id="svg" viewBox="0 0 800 520"><g id="board"></g><g id="fly"></g></svg>
+<div class="dicerow"><div id="dice" style="display:flex;gap:6px"></div><button id="roll" disabled>Roll Dice</button></div>
+<p style="font-size:12px;opacity:.7;margin:2px 0">You are <b style="color:#d62828">Red</b> (moving to the bottom-right). Robot is <b style="color:#2f6fe0">Blue</b>.</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const SPEED=450; // medium animation speed (ms per move)
+let S,gameId=0,phase='',dice=[],rem=[],seqs=[],sel=null,hideDest=null,moveRes=null,rollRes=null;
+const ki=p=>p===1?0:1, sleep=ms=>new Promise(r=>setTimeout(r,ms)), rnd=()=>1+Math.floor(Math.random()*6);
+const clone=s=>({b:s.b.slice(),bar:s.bar.slice(),off:s.off.slice()});
+function newState(){const b=Array(24).fill(0);b[23]=2;b[12]=5;b[7]=3;b[5]=5;b[0]=-2;b[11]=-5;b[16]=-3;b[18]=-5;return{b,bar:[0,0],off:[0,0]}}
+function allHome(s,p){if(s.bar[ki(p)])return false;for(let i=0;i<24;i++)if(s.b[i]*p>0&&(p===1?i>5:i<18))return false;return true}
+function movesFor(s,p,d){
+ const out=[],k=ki(p);
+ if(s.bar[k]>0){const to=p===1?24-d:d-1;if(s.b[to]*p>=-1)out.push({from:'bar',to,d});return out}
+ const home=allHome(s,p);
+ for(let i=0;i<24;i++){if(s.b[i]*p<=0)continue;const to=i-p*d;
+  if(to>=0&&to<24){if(s.b[to]*p>=-1)out.push({from:i,to,d})}
+  else if(home){
+   if(to===(p===1?-1:24))out.push({from:i,to:'off',d});
+   else{let ok=true;for(let j=0;j<24;j++)if(s.b[j]*p>0&&(p===1?j>i:j<i)){ok=false;break}
+    if(ok)out.push({from:i,to:'off',d})}}}
+ return out}
+function apply(s,p,m){const k=ki(p),o=1-k;
+ if(m.from==='bar')s.bar[k]--;else s.b[m.from]-=p;
+ if(m.to==='off'){s.off[k]++;return}
+ if(s.b[m.to]*p===-1){s.b[m.to]=0;s.bar[o]++}
+ s.b[m.to]+=p}
+function genSeqs(s,p,d0){
+ let best=0,res=[];
+ (function rec(st,rm,path){let any=false;
+  for(const d of new Set(rm))for(const m of movesFor(st,p,d)){any=true;const n=clone(st);apply(n,p,m);const r=rm.slice();r.splice(r.indexOf(d),1);rec(n,r,path.concat([m]))}
+  if(!any){if(path.length>best){best=path.length;res=[]}if(path.length===best)res.push({path,st})}})(s,d0,[]);
+ if(best===1&&d0.length===2&&d0[0]!==d0[1]){const mx=Math.max(...d0),f=res.filter(x=>x.path[0].d===mx);if(f.length)res=f}
+ return res}
+// ---- Sound (WebAudio, no files) ----
+let AC=null;
+function tone(f,t,d,type,v,f2){const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+t;o.type=type;o.frequency.setValueAtTime(f,s);
+ if(f2)o.frequency.exponentialRampToValueAtTime(f2,s+d);g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d)}
+function sfx(n){if(!$('snd').checked)return;
+ try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();
+  if(n==='tick')tone(180+Math.random()*250,0,.05,'square',.06);
+  else if(n==='sel')tone(700,0,.05,'sine',.12);
+  else if(n==='move')tone(260,0,.09,'triangle',.3,90);
+  else if(n==='hit'){tone(200,0,.3,'sawtooth',.14,50);tone(120,0,.2,'triangle',.3,60)}
+  else if(n==='off'){tone(600,0,.12,'sine',.18);tone(900,.1,.18,'sine',.18)}
+  else if(n==='pass')tone(180,0,.25,'square',.08,120);
+  else if(n==='win')[523,659,784,1047].forEach((f,i)=>tone(f,i*.15,.3,'triangle',.2));
+  else if(n==='lose')[392,330,262,196].forEach((f,i)=>tone(f,i*.2,.35,'triangle',.2))}catch(e){}}
+// ---- Robot AI ----
+function evalBot(s,hard){
+ let pr=0,pb=0;const b=s.b;
+ for(let i=0;i<24;i++){if(b[i]>0)pr+=b[i]*(i+1);else if(b[i]<0)pb+=-b[i]*(24-i)}
+ pr+=s.bar[0]*25;pb+=s.bar[1]*25;
+ let e=(pr-pb)+10*s.off[1]-10*s.off[0]+8*s.bar[0];
+ for(let i=0;i<24;i++){const n=-b[i];
+  if(n===1){let ex=s.bar[0]>0&&i>=18;for(let j=i+1;j<24&&j<=i+6;j++)if(b[j]>0)ex=true;
+   e-=(hard?9:4)*(ex?1:.2)+(hard?i*.3*(ex?1:0):0)}
+  else if(n>=2){e+=hard?3:2;if(i>=18)e+=hard?2:1;if(hard){if(n>3)e-=(n-3)*1.5;if(i>0&&b[i-1]<=-2)e+=2}}
+  if(hard&&b[i]===1){for(let k=Math.max(0,i-6);k<i;k++)if(b[k]<0){e+=2;break}}}
+ return e}
+function chooseSeq(all,hard){let best=null,bs=-1e9;
+ for(const x of all){const sc=evalBot(x.st,hard)+(hard?0:(Math.random()-.5)*24);if(sc>bs){bs=sc;best=x}}
+ return best}
+// ---- Geometry & rendering ----
+function colX(i){const c=i>=12?i-12:11-i;return 20+c*56+(c>=6?40:0)+28}
+function stackPos(i,k,n){const st=n<=5?44:176/(n-1);return{x:colX(i),y:i>=12?42+k*st:478-k*st}}
+function barPos(p,k){return{x:376,y:p===1?300+k*40:220-k*40}}
+function offPos(p){return{x:765,y:p===1?470:50}}
+const CR='#d62828',CB='#2f6fe0';
+function chk(x,y,p,extra=''){const c=p===1?CR:CB,d=p===1?'#6e1010':'#12358a';
+ return `<circle cx="${x}" cy="${y}" r="22" fill="${c}" stroke="${d}" stroke-width="2" ${extra}/><circle cx="${x}" cy="${y}" r="14" fill="none" stroke="#fff5" stroke-width="2"/>`}
+function firsts(){return seqs.filter(x=>x.path.length).map(x=>x.path[0])}
+function render(){
+ let h=`<rect x="0" y="0" width="800" height="520" rx="14" fill="#5a3a1e"/><rect x="14" y="14" width="342" height="492" fill="#e8d3a8"/><rect x="396" y="14" width="342" height="492" fill="#e8d3a8"/><rect x="356" y="14" width="40" height="492" fill="#4a2e17"/><rect x="740" y="14" width="46" height="492" fill="#3b2412"/>`;
+ for(let i=0;i<24;i++){const x=colX(i),top=i>=12,c=((top?i-12:11-i)%2)?'#a13d2d':'#2d4a5e';
+  h+=top?`<polygon points="${x-28},20 ${x+28},20 ${x},230" fill="${c}"/>`:`<polygon points="${x-28},500 ${x+28},500 ${x},290" fill="${c}"/>`}
+ const hint=$('hints').checked&&phase==='move',fs=hint?firsts():[];
+ for(let i=0;i<24;i++){const n=Math.abs(S.b[i]),p=Math.sign(S.b[i]);
+  for(let k=0;k<n;k++){if(i===hideDest&&k===n-1)continue;const q=stackPos(i,k,n);h+=chk(q.x,q.y,p)}}
+ for(let k=0;k<S.bar[0];k++){const q=barPos(1,k);h+=chk(q.x,q.y,1)}
+ for(let k=0;k<S.bar[1];k++){const q=barPos(-1,k);h+=chk(q.x,q.y,-1)}
+ for(let k=0;k<S.off[0];k++)h+=`<rect x="746" y="${488-k*10}" width="40" height="8" rx="2" fill="${CR}"/>`;
+ for(let k=0;k<S.off[1];k++)h+=`<rect x="746" y="${24+k*10}" width="40" height="8" rx="2" fill="${CB}"/>`;
+ if(hint){
+  const seen=new Set();
+  for(const m of fs){if(seen.has(m.from))continue;seen.add(m.from);
+   const q=m.from==='bar'?barPos(1,S.bar[0]-1):stackPos(m.from,Math.abs(S.b[m.from])-1,Math.abs(S.b[m.from]));
+   h+=`<circle class="pulse" cx="${q.x}" cy="${q.y}" r="26" fill="none" stroke="#ffd93b" stroke-width="5"/>`}
+  if(sel!==null){
+   const q=sel==='bar'?barPos(1,S.bar[0]-1):stackPos(sel,Math.abs(S.b[sel])-1,Math.abs(S.b[sel]));
+   h+=`<circle cx="${q.x}" cy="${q.y}" r="26" fill="none" stroke="#fff" stroke-width="5"/>`;
+   for(const m of fs)if(m.from===sel){
+    if(m.to==='off')h+=`<rect x="742" y="270" width="42" height="232" fill="none" stroke="#3ddc84" stroke-width="4"/>`;
+    else{const v=S.b[m.to],n=v>0?v:0,hit=v===-1,t=stackPos(m.to,n,n+1);
+     h+=`<circle cx="${t.x}" cy="${t.y}" r="${hit?20:15}" fill="${hit?'#ff9f1c':'#3ddc84'}" opacity=".9"/>`}}}}
+ for(let i=0;i<24;i++){const x=colX(i);h+=`<rect data-s="${i}" x="${x-28}" y="${i>=12?20:270}" width="56" height="230" fill="transparent" style="cursor:pointer"/>`}
+ h+=`<rect data-s="bar" x="356" y="270" width="40" height="230" fill="transparent"/><rect data-s="off" x="742" y="270" width="42" height="232" fill="transparent"/>`;
+ $('board').innerHTML=h;renderDice()}
+function renderDice(){const c=rem.slice();
+ $('dice').innerHTML=dice.map(d=>{const i=c.indexOf(d),u=i<0;if(!u)c.splice(i,1);return `<span class="die ${u?'used':''}">${String.fromCodePoint(0x267F+d)}</span>`}).join('')}
+const status=t=>$('status').textContent=t;
+// ---- Animation ----
+async function animate(m,p){const k=ki(p);
+ const from=m.from==='bar'?barPos(p,S.bar[k]-1):stackPos(m.from,Math.abs(S.b[m.from])-1,Math.abs(S.b[m.from]));
+ const sound=m.to==='off'?'off':(S.b[m.to]*p===-1?'hit':'move');
+ apply(S,p,m);
+ const to=m.to==='off'?offPos(p):stackPos(m.to,Math.abs(S.b[m.to])-1,Math.abs(S.b[m.to]));
+ hideDest=m.to==='off'?null:m.to;render();
+ const g=$('fly');g.innerHTML=chk(from.x,from.y,p);const el=g.firstChild,el2=g.children[1];
+ await new Promise(res=>{const t0=performance.now();(function f(t){let u=Math.min(1,(t-t0)/SPEED);u=u*u*(3-2*u);
+  const x=from.x+(to.x-from.x)*u,y=from.y+(to.y-from.y)*u-Math.sin(u*Math.PI)*28;
+  for(const e of [el,el2]){e.setAttribute('cx',x);e.setAttribute('cy',y)}
+  u<1?requestAnimationFrame(f):res()})(t0)});
+ g.innerHTML='';hideDest=null;sfx(sound);render()}
+// ---- Game flow ----
+async function doRoll(first,gid){
+ for(let i=0;i<6;i++){dice=[rnd(),rnd()];rem=dice.slice();renderDice();sfx('tick');await sleep(70)}
+ let a=rnd(),b=rnd();if(first)while(a===b)b=rnd();
+ const d=a===b?[a,a,a,a]:[a,b];dice=d;rem=d.slice();renderDice();return d}
+async function playerTurn(gid,pre){
+ let d=pre;
+ if(!d){status('Your turn — press Roll Dice');$('roll').disabled=false;await new Promise(r=>rollRes=r);
+  if(gid!==gameId)return;$('roll').disabled=true;d=await doRoll(false,gid)}
+ if(gid!==gameId)return;
+ seqs=genSeqs(S,1,d);
+ while(true){
+  if(!seqs[0].path.length){phase='';sel=null;render();status('No legal moves — your turn is skipped');sfx('pass');await sleep(1500);return}
+  phase='move';sel=null;render();status('Your move — click a glowing checker, then a green spot');
+  const m=await new Promise(r=>moveRes=r);if(gid!==gameId)return;
+  phase='anim';sel=null;await animate(m,1);if(gid!==gameId)return;
+  rem.splice(rem.indexOf(m.d),1);
+  seqs=seqs.filter(x=>x.path.length&&x.path[0].from===m.from&&x.path[0].to===m.to&&x.path[0].d===m.d).map(x=>({path:x.path.slice(1),st:x.st}));
+  if(S.off[0]===15)return;
+  if(!seqs.length||!seqs[0].path.length){phase='';render();return}}}
+async function botTurn(gid,pre){
+ phase='';status('Robot is rolling…');await sleep(500);if(gid!==gameId)return;
+ const d=pre||await doRoll(false,gid);if(gid!==gameId)return;await sleep(500);
+ const all=genSeqs(S,-1,d);
+ if(!all[0].path.length){status('Robot has no legal moves');sfx('pass');await sleep(1500);return}
+ const pick=chooseSeq(all,$('diff').value==='hard');status('Robot is moving…');
+ for(const m of pick.path){await animate(m,-1);if(gid!==gameId)return;rem.splice(rem.indexOf(m.d),1);renderDice();await sleep(220)}}
+async function loop(gid){
+ let turn=Math.random()<.5?1:-1,pre=await doRoll(true,gid);
+ status(turn===1?'You start!':'Robot starts!');await sleep(900);
+ while(gid===gameId){
+  turn===1?await playerTurn(gid,pre):await botTurn(gid,pre);
+  if(gid!==gameId)return;pre=null;
+  if(S.off[0]===15){phase='';status('🎉 You win!');sfx('win');render();return}
+  if(S.off[1]===15){phase='';status('🤖 Robot wins!');sfx('lose');render();return}
+  turn=-turn;dice=[];rem=[];render()}}
+function newGame(){gameId++;S=newState();phase='';dice=[];rem=[];seqs=[];sel=null;hideDest=null;$('roll').disabled=true;$('fly').innerHTML='';render();loop(gameId)}
+$('roll').onclick=()=>{if(rollRes){const r=rollRes;rollRes=null;r()}};
+$('ng').onclick=newGame;$('hints').onchange=render;
+$('svg').addEventListener('click',e=>{
+ const t=e.target.closest('[data-s]');if(!t||phase!=='move')return;
+ const v=t.dataset.s,s=(v==='bar'||v==='off')?v:+v,fs=firsts();
+ if(sel!==null){const m=fs.find(m=>m.from===sel&&m.to===s);if(m){moveRes&&moveRes(m);moveRes=null;return}}
+ sel=fs.some(m=>m.from===s)?s:null;if(sel!==null)sfx('sel');render()});
+newGame();
+</script></body></html>
