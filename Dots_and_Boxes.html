@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dots and Boxes</title>
+<style>
+:root{--bg:#e0d9ff;--card:#f3f0ff;--red:#ef5b52;--blue:#16b3e8;--ink:#2b2540;--line:#ffffff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241f3a;--card:#2f2950;--ink:#f1eeff;--line:#4a4278}}
+:root[data-theme="dark"]{--bg:#241f3a;--card:#2f2950;--ink:#f1eeff;--line:#4a4278}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS",system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px}
+.home{align-self:flex-start;background:var(--red);color:#fff;text-decoration:none;font-weight:800;padding:10px 18px;border-radius:12px;box-shadow:0 3px 0 #b93d36}
+.home:active{transform:translateY(2px);box-shadow:none}
+h1{color:var(--red);letter-spacing:1px;margin:14px 0 4px;font-size:2rem;text-align:center}
+.score{display:flex;gap:12px;margin:8px 0;width:100%;max-width:420px}
+.p{flex:1;background:var(--card);border-radius:14px;padding:10px;text-align:center;font-weight:700;border:3px solid transparent}
+.p b{display:block;font-size:1.8rem}
+.p.red{color:var(--red)}.p.blue{color:var(--blue)}
+.p.on{border-color:currentColor}
+#status{min-height:1.5em;font-weight:700;margin:4px 0}
+svg{width:100%;max-width:420px;background:var(--card);border-radius:20px;touch-action:manipulation}
+.hit{fill:transparent;cursor:pointer}
+.ln{stroke:var(--line);stroke-width:10;stroke-linecap:round}
+.ln.red{stroke:var(--red)}.ln.blue{stroke:var(--blue)}
+.dot{fill:#111}
+@media (prefers-color-scheme:dark){.dot{fill:#fff}}
+.box.red{fill:var(--red);opacity:.5}.box.blue{fill:var(--blue);opacity:.5}
+.btns{display:flex;gap:10px;margin-top:12px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:10px 16px;background:var(--card);color:var(--ink);cursor:pointer}
+</style>
+</head>
+<body>
+<a class="home" href="index.html">🏠 Home</a>
+<h1>DOTS AND BOXES</h1>
+<div class="score">
+  <div class="p red on" id="pp">You (Red)<b id="sp">0</b></div>
+  <div class="p blue" id="pb">Robot (Blue)<b id="sb">0</b></div>
+</div>
+<div id="status">Your turn</div>
+<svg id="board" viewBox="0 0 400 400"></svg>
+<div class="btns"><button id="restart">New Game</button><button id="mute">🔊 Sound On</button></div>
+
+<script>
+const N=5,S=80,O=40,NS="http://www.w3.org/2000/svg";
+let h,v,box,turn,score,over,sound=true,AC;
+const svg=document.getElementById("board");
+function tone(f,d,t="sine",delay=0,vol=.15){
+  if(!sound)return;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+delay;
+  o.type=t;o.frequency.value=f;g.gain.setValueAtTime(vol,s);g.gain.exponentialRampToValueAtTime(.001,s+d);
+  o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d);}catch(e){}
+}
+const sfx={
+  line:who=>tone(who==="red"?520:380,.12,"triangle"),
+  box:()=>{tone(660,.15,"sine");tone(880,.2,"sine",.1)},
+  win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.25,"sine",i*.15)),
+  lose:()=>[400,330,260].forEach((f,i)=>tone(f,.3,"sawtooth",i*.18,.08)),
+  tie:()=>[440,440].forEach((f,i)=>tone(f,.2,"square",i*.2,.06))
+};
+function mk(tag,a){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e}
+function init(){
+  h=Array.from({length:N},()=>Array(N-1).fill(null));
+  v=Array.from({length:N-1},()=>Array(N).fill(null));
+  box=Array.from({length:N-1},()=>Array(N-1).fill(null));
+  turn="red";score={red:0,blue:0};over=false;draw();ui();
+}
+function sides(r,c){return [h[r][c],h[r+1][c],v[r][c],v[r][c+1]].filter(x=>x).length}
+function draw(){
+  svg.innerHTML="";
+  for(let r=0;r<N-1;r++)for(let c=0;c<N-1;c++)if(box[r][c])mk("rect",{x:O+c*S+5,y:O+r*S+5,width:S-10,height:S-10,rx:8,class:"box "+box[r][c]});
+  for(let r=0;r<N;r++)for(let c=0;c<N-1;c++)line("h",r,c,O+c*S,O+r*S,O+(c+1)*S,O+r*S);
+  for(let r=0;r<N-1;r++)for(let c=0;c<N;c++)line("v",r,c,O+c*S,O+r*S,O+c*S,O+(r+1)*S);
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)mk("circle",{cx:O+c*S,cy:O+r*S,r:9,class:"dot"});
+}
+function line(t,r,c,x1,y1,x2,y2){
+  const o=(t==="h"?h:v)[r][c];
+  mk("line",{x1,y1,x2,y2,class:"ln"+(o?" "+o:"")});
+  if(!o){
+    const hit=mk("line",{x1,y1,x2,y2,stroke:"transparent","stroke-width":36,"stroke-linecap":"round",class:"hit"});
+    hit.addEventListener("click",()=>{if(turn==="red"&&!over)play(t,r,c,"red")});
+  }
+}
+function play(t,r,c,who){
+  (t==="h"?h:v)[r][c]=who;
+  let got=0;
+  const cand=t==="h"?[[r-1,c],[r,c]]:[[r,c-1],[r,c]];
+  for(const [br,bc] of cand)
+    if(br>=0&&bc>=0&&br<N-1&&bc<N-1&&!box[br][bc]&&sides(br,bc)===4){box[br][bc]=who;score[who]++;got++}
+  got?sfx.box():sfx.line(who);
+  draw();
+  if(score.red+score.blue===(N-1)*(N-1)){finish();return}
+  if(!got)turn=who==="red"?"blue":"red";
+  ui();
+  if(turn==="blue")setTimeout(bot,600);
+}
+function allMoves(){
+  const m=[];
+  for(let r=0;r<N;r++)for(let c=0;c<N-1;c++)if(!h[r][c])m.push(["h",r,c]);
+  for(let r=0;r<N-1;r++)for(let c=0;c<N;c++)if(!v[r][c])m.push(["v",r,c]);
+  return m;
+}
+function adj(t,r,c){
+  const a=t==="h"?[[r-1,c],[r,c]]:[[r,c-1],[r,c]];
+  return a.filter(([br,bc])=>br>=0&&bc>=0&&br<N-1&&bc<N-1);
+}
+function bot(){
+  if(over)return;
+  const m=allMoves();
+  const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  const take=m.filter(([t,r,c])=>adj(t,r,c).some(([br,bc])=>sides(br,bc)===3));
+  let mv;
+  if(take.length)mv=rnd(take);
+  else{
+    const cost=([t,r,c])=>adj(t,r,c).filter(([br,bc])=>sides(br,bc)===2).length;
+    const safe=m.filter(x=>cost(x)===0);
+    if(safe.length)mv=rnd(safe);
+    else{const best=Math.min(...m.map(cost));mv=rnd(m.filter(x=>cost(x)===best))}
+  }
+  play(...mv,"blue");
+}
+function ui(){
+  document.getElementById("sp").textContent=score.red;
+  document.getElementById("sb").textContent=score.blue;
+  document.getElementById("pp").classList.toggle("on",turn==="red");
+  document.getElementById("pb").classList.toggle("on",turn==="blue");
+  document.getElementById("status").textContent=turn==="red"?"Your turn":"Robot is thinking…";
+}
+function finish(){
+  over=true;ui();
+  const s=document.getElementById("status");
+  if(score.red>score.blue){s.textContent="🎉 You win!";sfx.win()}
+  else if(score.red<score.blue){s.textContent="🤖 Robot wins!";sfx.lose()}
+  else{s.textContent="It's a tie!";sfx.tie()}
+}
+document.getElementById("restart").onclick=init;
+document.getElementById("mute").onclick=e=>{sound=!sound;e.target.textContent=sound?"🔊 Sound On":"🔇 Sound Off"};
+init();
+</script>
+</body>
+</html>
