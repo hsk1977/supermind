@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 4: AI Robot vs Player</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for Victory Effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            touch-action: manipulation;
+        }
+
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 4px solid #334155;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1);
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: #090d16;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.05);
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.15s ease;
+        }
+
+        .cell:hover {
+            transform: scale(1.03);
+        }
+
+        .piece {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(-150%);
+        }
+
+        .piece.dropped {
+            transform: translateY(0);
+        }
+
+        .piece-red {
+            background: radial-gradient(circle at 35% 35%, #ff4d4d, #b30000);
+            box-shadow: inset 0 -3px 6px rgba(0,0,0,0.4), 0 0 15px rgba(239, 68, 68, 0.6);
+            border: 2px solid #ef4444;
+        }
+
+        .piece-blue {
+            background: radial-gradient(circle at 35% 35%, #38bdf8, #1d4ed8);
+            box-shadow: inset 0 -3px 6px rgba(0,0,0,0.4), 0 0 15px rgba(59, 130, 246, 0.6);
+            border: 2px solid #3b82f6;
+        }
+
+        .winning-piece {
+            animation: pulse-glow 1s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(0.95); filter: brightness(1); }
+            100% { transform: scale(1.08); filter: brightness(1.4); }
+        }
+
+        .piece.last-move {
+            outline: 3px solid rgba(255,255,255,0.9);
+            outline-offset: -7px;
+        }
+
+        .custom-glow-red {
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .custom-glow-blue {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col justify-between items-center p-4">
+
+    <!-- Top Navigation Header -->
+    <header class="w-full max-w-4xl flex items-center justify-between py-2 px-4 bg-slate-800/80 backdrop-blur border border-slate-700/50 rounded-2xl shadow-lg mb-4">
+        <!-- Red Home Button (Requirement 3) -->
+        <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-xl shadow-md transition-all transform active:scale-95 border border-red-400/30 group">
+            <i class="fa-solid fa-house group-hover:-translate-x-0.5 transition-transform"></i>
+            <span>Home</span>
+        </a>
+
+        <!-- Title / Logo -->
+        <div class="text-center">
+            <h1 class="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-red-400 via-purple-300 to-blue-400 bg-clip-text text-transparent tracking-wide">
+                CYBER CONNECT 4
+            </h1>
+            <p class="text-xs text-slate-400 hidden sm:block">Player vs AI Battlezone</p>
+        </div>
+
+        <!-- Controls: Sound Toggle & Difficulty -->
+        <div class="flex items-center gap-3">
+            <button id="soundToggle" class="p-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition-all border border-slate-600 focus:outline-none" title="Toggle Sound">
+                <i id="soundIcon" class="fa-solid fa-volume-high text-lg"></i>
+            </button>
+            <div class="relative">
+                <select id="difficultySelect" class="bg-slate-700 hover:bg-slate-600 text-xs sm:text-sm text-slate-100 font-semibold py-2 px-3 pr-8 rounded-xl border border-slate-600 cursor-pointer focus:outline-none appearance-none">
+                    <option value="easy">Easy AI</option>
+                    <option value="medium" selected>Medium AI</option>
+                    <option value="hard">Hard AI</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-2.5 top-3 text-xs text-slate-400 pointer-events-none"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="w-full max-w-4xl flex flex-col items-center gap-4 my-auto">
+        
+        <!-- Scoreboard & Player Turn Cards -->
+        <div class="grid grid-cols-2 gap-4 w-full max-w-md">
+            <!-- Player 1 (User - Red) -->
+            <div id="playerCard" class="bg-slate-800/90 border-2 border-red-500/50 rounded-2xl p-3 flex items-center justify-between transition-all duration-300 custom-glow-red">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-md border border-red-300/40">
+                        <i class="fa-solid fa-user text-white text-base"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Player</p>
+                        <p class="text-sm font-bold text-red-400">RED</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span id="playerScore" class="text-2xl font-black text-red-400">0</span>
+                </div>
+            </div>
+
+            <!-- Player 2 (AI Robot - Blue) -->
+            <div id="robotCard" class="bg-slate-800/90 border-2 border-slate-700 rounded-2xl p-3 flex items-center justify-between transition-all duration-300 opacity-60">
+                <div class="text-left">
+                    <span id="robotScore" class="text-2xl font-black text-blue-400">0</span>
+                </div>
+                <div class="flex items-center gap-3 flex-row-reverse">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-md border border-blue-300/40">
+                        <i class="fa-solid fa-robot text-white text-base"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">AI Bot</p>
+                        <p class="text-sm font-bold text-blue-400">BLUE</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Status / Turn Indicator Bar -->
+        <div class="w-full max-w-md bg-slate-800/60 border border-slate-700/60 rounded-xl py-2 px-4 text-center">
+            <span id="statusText" class="text-sm font-semibold text-slate-200">
+                Your Turn! Tap a column to drop a red disc.
+            </span>
+        </div>
+
+        <!-- Connect 4 Game Board -->
+        <div class="relative w-full max-w-md">
+            <!-- Drop Indicators above columns -->
+            <div id="dropIndicators" class="grid grid-cols-7 gap-3 mb-2 px-4">
+                <!-- Drop indicators created dynamically -->
+            </div>
+
+            <!-- Interactive Board Grid -->
+            <div id="board" class="board-grid p-4 rounded-3xl">
+                <!-- 42 cells (6 rows x 7 cols) populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Game Review Panel (shown after the game ends) -->
+        <div id="reviewPanel" class="hidden w-full max-w-md bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3 flex flex-col gap-3">
+            <p id="reviewInfo" class="text-center text-sm font-semibold text-slate-200 min-h-[2.5rem]"></p>
+            <div class="flex items-center justify-center gap-2">
+                <button id="reviewFirstBtn" title="Start (Home)" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl border border-slate-600 transition-all active:scale-95"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="reviewPrevBtn" title="Previous move (←)" class="px-5 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl border border-slate-600 transition-all active:scale-95"><i class="fa-solid fa-chevron-left"></i></button>
+                <button id="reviewNextBtn" title="Next move (→)" class="px-5 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl border border-slate-600 transition-all active:scale-95"><i class="fa-solid fa-chevron-right"></i></button>
+                <button id="reviewLastBtn" title="Final position (End)" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl border border-slate-600 transition-all active:scale-95"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <button id="reviewPlayAgainBtn" class="w-full py-2.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95">
+                Play Next Round
+            </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 mt-2">
+            <button id="resetBtn" class="flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold rounded-xl border border-slate-600 transition-all active:scale-95 shadow-md">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>Reset Game</span>
+            </button>
+            <button id="clearScoreBtn" class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 text-sm font-semibold rounded-xl border border-slate-700 transition-all active:scale-95">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Reset Score</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-6 text-center text-xs text-slate-500">
+        AI vs Player Strategy Game &bull; Web Audio Synthesizer Powered
+    </footer>
+
+    <!-- Win/Loss/Draw Modal -->
+    <div id="gameModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl transform transition-all scale-95 opacity-0 duration-300" id="modalCard">
+            <div id="modalIconContainer" class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-4xl shadow-inner">
+                <i id="modalIcon" class="fa-solid fa-trophy"></i>
+            </div>
+            <h2 id="modalTitle" class="text-2xl font-black mb-2">Victory!</h2>
+            <p id="modalMessage" class="text-sm text-slate-300 mb-6">You outsmarted the Blue AI Robot!</p>
+            <button id="modalPlayAgainBtn" class="w-full py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95">
+                Play Next Round
+            </button>
+            <button id="modalReviewBtn" class="w-full mt-3 py-3 bg-slate-700 hover:bg-slate-600 text-slate-100 font-bold rounded-xl border border-slate-600 transition-all active:scale-95">
+                <i class="fa-solid fa-magnifying-glass mr-2"></i>Review Game
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* Audio Synthesizer Class (Web Audio API) */
+        class SoundEffects {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.ctx = new AudioContext();
+                    }
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playDrop(isAI = false) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = isAI ? 'sawtooth' : 'sine';
+                const startFreq = isAI ? 320 : 440;
+                const endFreq = isAI ? 120 : 180;
+
+                osc.frequency.setValueAtTime(startFreq, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(endFreq, this.ctx.currentTime + 0.12);
+
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            }
+
+            playWin() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+                notes.forEach((freq, index) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + index * 0.1);
+
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + index * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + index * 0.1 + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(this.ctx.currentTime + index * 0.1);
+                    osc.stop(this.ctx.currentTime + index * 0.1 + 0.3);
+                });
+            }
+
+            playLoss() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const notes = [300, 260, 220, 150];
+                notes.forEach((freq, index) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + index * 0.15);
+
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + index * 0.15);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + index * 0.15 + 0.25);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(this.ctx.currentTime + index * 0.15);
+                    osc.stop(this.ctx.currentTime + index * 0.15 + 0.25);
+                });
+            }
+
+            playClick() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.04);
+
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.04);
+            }
+        }
+
+        const ROWS = 6;
+        const COLS = 7;
+        const PLAYER = 1; // Red Player
+        const AI_BOT = 2; // Blue AI Robot
+
+        let boardState = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+        let currentPlayer = PLAYER;
+        let isGameActive = true;
+        let isAiThinking = false;
+        let scores = { player: 0, robot: 0 };
+        let moveHistory = [];   // [{row, col, player}]
+        let winLine = null;     // winning cells, if any
+        let gameResult = null;  // 'win' | 'loss' | 'draw'
+        let reviewStep = 0;
+        let aiTimeoutId = null;
+
+        const sfx = new SoundEffects();
+
+        // DOM Element References
+        const boardElem = document.getElementById('board');
+        const dropIndicatorsElem = document.getElementById('dropIndicators');
+        const statusTextElem = document.getElementById('statusText');
+        const playerCardElem = document.getElementById('playerCard');
+        const robotCardElem = document.getElementById('robotCard');
+        const playerScoreElem = document.getElementById('playerScore');
+        const robotScoreElem = document.getElementById('robotScore');
+        const difficultySelect = document.getElementById('difficultySelect');
+        const soundToggle = document.getElementById('soundToggle');
+        const soundIcon = document.getElementById('soundIcon');
+        const resetBtn = document.getElementById('resetBtn');
+        const clearScoreBtn = document.getElementById('clearScoreBtn');
+
+        // Modal Elements
+        const gameModal = document.getElementById('gameModal');
+        const modalCard = document.getElementById('modalCard');
+        const modalIconContainer = document.getElementById('modalIconContainer');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalPlayAgainBtn = document.getElementById('modalPlayAgainBtn');
+        const modalReviewBtn = document.getElementById('modalReviewBtn');
+
+        // Review Elements
+        const reviewPanel = document.getElementById('reviewPanel');
+        const reviewInfo = document.getElementById('reviewInfo');
+        const reviewFirstBtn = document.getElementById('reviewFirstBtn');
+        const reviewPrevBtn = document.getElementById('reviewPrevBtn');
+        const reviewNextBtn = document.getElementById('reviewNextBtn');
+        const reviewLastBtn = document.getElementById('reviewLastBtn');
+        const reviewPlayAgainBtn = document.getElementById('reviewPlayAgainBtn');
+
+        function initBoardUI() {
+            boardElem.innerHTML = '';
+            dropIndicatorsElem.innerHTML = '';
+
+            // Create column drop indicators
+            for (let c = 0; c < COLS; c++) {
+                const ind = document.createElement('div');
+                ind.className = 'text-center opacity-0 transition-opacity duration-200 text-red-400';
+                ind.innerHTML = '<i class="fa-solid fa-chevron-down text-sm"></i>';
+                ind.id = `indicator-${c}`;
+                dropIndicatorsElem.appendChild(ind);
+            }
+
+            // Create grid cells
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+
+                    const piece = document.createElement('div');
+                    piece.className = 'piece';
+                    piece.id = `piece-${r}-${c}`;
+                    cell.appendChild(piece);
+
+                    cell.addEventListener('mouseenter', () => handleCellHover(c, true));
+                    cell.addEventListener('mouseleave', () => handleCellHover(c, false));
+                    cell.addEventListener('click', () => handlePlayerMove(c));
+
+                    boardElem.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellHover(col, isHovered) {
+            if (!isGameActive || currentPlayer !== PLAYER || isAiThinking) return;
+            const ind = document.getElementById(`indicator-${col}`);
+            if (ind) {
+                ind.style.opacity = isHovered ? '1' : '0';
+            }
+        }
+
+        function updateTurnUI() {
+            if (currentPlayer === PLAYER) {
+                playerCardElem.classList.add('border-red-500/50', 'custom-glow-red');
+                playerCardElem.classList.remove('opacity-60', 'border-slate-700');
+                
+                robotCardElem.classList.add('opacity-60', 'border-slate-700');
+                robotCardElem.classList.remove('border-blue-500/50', 'custom-glow-blue');
+
+                statusTextElem.textContent = "Your Turn! Tap a column to drop a red disc.";
+                statusTextElem.className = "text-sm font-semibold text-red-400";
+            } else {
+                robotCardElem.classList.add('border-blue-500/50', 'custom-glow-blue');
+                robotCardElem.classList.remove('opacity-60', 'border-slate-700');
+
+                playerCardElem.classList.add('opacity-60', 'border-slate-700');
+                playerCardElem.classList.remove('border-red-500/50', 'custom-glow-red');
+
+                statusTextElem.textContent = "AI Robot is thinking...";
+                statusTextElem.className = "text-sm font-semibold text-blue-400 animate-pulse";
+            }
+        }
+
+        function getAvailableRow(col) {
+            for (let r = ROWS - 1; r >= 0; r--) {
+                if (boardState[r][col] === 0) return r;
+            }
+            return -1;
+        }
+
+        function handlePlayerMove(col) {
+            if (!isGameActive || currentPlayer !== PLAYER || isAiThinking) return;
+
+            const row = getAvailableRow(col);
+            if (row === -1) return; // Column full
+
+            sfx.playDrop(false);
+            executeMove(row, col, PLAYER);
+
+            if (checkEndGame(row, col, PLAYER)) return;
+
+            currentPlayer = AI_BOT;
+            updateTurnUI();
+            
+            // Trigger AI Turn with small delay
+            isAiThinking = true;
+            aiTimeoutId = setTimeout(handleAiMove, 600);
+        }
+
+        function executeMove(row, col, player) {
+            boardState[row][col] = player;
+            moveHistory.push({ row, col, player });
+            const piece = document.getElementById(`piece-${row}-${col}`);
+            piece.classList.add(player === PLAYER ? 'piece-red' : 'piece-blue');
+            // Slight timeout to trigger smooth CSS animation
+            setTimeout(() => piece.classList.add('dropped'), 10);
+        }
+
+        function checkEndGame(row, col, player) {
+            const winCells = getWinningCells(row, col, player);
+            if (winCells) {
+                isGameActive = false;
+                winLine = winCells;
+                gameResult = player === PLAYER ? 'win' : 'loss';
+                highlightWinningCells(winCells);
+                enterReviewMode();
+                
+                if (player === PLAYER) {
+                    scores.player++;
+                    playerScoreElem.textContent = scores.player;
+                    sfx.playWin();
+                    triggerConfetti();
+                    showModal('win');
+                } else {
+                    scores.robot++;
+                    robotScoreElem.textContent = scores.robot;
+                    sfx.playLoss();
+                    showModal('loss');
+                }
+                return true;
+            }
+
+            // Check for draw (full board)
+            if (boardState.every(row => row.every(cell => cell !== 0))) {
+                isGameActive = false;
+                gameResult = 'draw';
+                enterReviewMode();
+                showModal('draw');
+                return true;
+            }
+
+            return false;
+        }
+
+        function getWinningCells(r, c, p) {
+            const directions = [
+                [[0,1], [0,-1]],  // Horizontal
+                [[1,0], [-1,0]],  // Vertical
+                [[1,1], [-1,-1]],  // Diagonal \
+                [[1,-1], [-1,1]]   // Diagonal /
+            ];
+
+            for (let dir of directions) {
+                let matches = [[r, c]];
+                for (let [dr, dc] of dir) {
+                    let nr = r + dr;
+                    let nc = c + dc;
+                    while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && boardState[nr][nc] === p) {
+                        matches.push([nr, nc]);
+                        nr += dr;
+                        nc += dc;
+                    }
+                }
+                if (matches.length >= 4) return matches;
+            }
+            return null;
+        }
+
+        function highlightWinningCells(cells) {
+            cells.forEach(([r, c]) => {
+                const piece = document.getElementById(`piece-${r}-${c}`);
+                if (piece) piece.classList.add('winning-piece');
+            });
+        }
+
+        function handleAiMove() {
+            if (!isGameActive) return;
+
+            const difficulty = difficultySelect.value;
+            let col = 0;
+
+            if (difficulty === 'easy') {
+                col = getEasyAiMove();
+            } else if (difficulty === 'medium') {
+                col = getMediumAiMove();
+            } else {
+                col = getHardAiMove();
+            }
+
+            const row = getAvailableRow(col);
+            if (row !== -1) {
+                sfx.playDrop(true);
+                executeMove(row, col, AI_BOT);
+
+                if (!checkEndGame(row, col, AI_BOT)) {
+                    currentPlayer = PLAYER;
+                    updateTurnUI();
+                }
+            }
+
+            isAiThinking = false;
+        }
+
+        // Random valid column
+        function getEasyAiMove() {
+            const validCols = [];
+            for (let c = 0; c < COLS; c++) {
+                if (boardState[0][c] === 0) validCols.push(c);
+            }
+            return validCols[Math.floor(Math.random() * validCols.length)];
+        }
+
+        // Medium AI: Block immediate player wins, take immediate AI wins, otherwise random
+        function getMediumAiMove() {
+            // 1. Check if AI can win immediately
+            for (let c = 0; c < COLS; c++) {
+                let r = getAvailableRow(c);
+                if (r !== -1) {
+                    boardState[r][c] = AI_BOT;
+                    if (getWinningCells(r, c, AI_BOT)) {
+                        boardState[r][c] = 0;
+                        return c;
+                    }
+                    boardState[r][c] = 0;
+                }
+            }
+
+            // 2. Check if Player can win and block them
+            for (let c = 0; c < COLS; c++) {
+                let r = getAvailableRow(c);
+                if (r !== -1) {
+                    boardState[r][c] = PLAYER;
+                    if (getWinningCells(r, c, PLAYER)) {
+                        boardState[r][c] = 0;
+                        return c;
+                    }
+                    boardState[r][c] = 0;
+                }
+            }
+
+            // Otherwise, center preference or random
+            return getEasyAiMove();
+        }
+
+        // Hard AI: Minimax depth 4 evaluation
+        function getHardAiMove() {
+            let bestScore = -Infinity;
+            let bestCol = 3; // Default center
+            const validCols = [];
+            for (let c = 0; c < COLS; c++) {
+                if (boardState[0][c] === 0) validCols.push(c);
+            }
+
+            // Prioritize middle columns for search efficiency
+            validCols.sort((a, b) => Math.abs(3 - a) - Math.abs(3 - b));
+
+            for (let c of validCols) {
+                let r = getAvailableRow(c);
+                boardState[r][c] = AI_BOT;
+                let score = minimax(boardState, 3, false, -Infinity, Infinity);
+                boardState[r][c] = 0;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestCol = c;
+                }
+            }
+
+            return bestCol;
+        }
+
+        function minimax(board, depth, isMaximizing, alpha, beta) {
+            // Check terminal conditions
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c] === AI_BOT && getWinningCells(r, c, AI_BOT)) return 1000 + depth;
+                    if (board[r][c] === PLAYER && getWinningCells(r, c, PLAYER)) return -1000 - depth;
+                }
+            }
+
+            if (depth === 0 || board.every(row => row.every(cell => cell !== 0))) {
+                return evaluateBoard(board);
+            }
+
+            const validCols = [];
+            for (let c = 0; c < COLS; c++) {
+                if (board[0][c] === 0) validCols.push(c);
+            }
+
+            if (isMaximizing) {
+                let maxEval = -Infinity;
+                for (let c of validCols) {
+                    let r = getAvailableRow(c);
+                    board[r][c] = AI_BOT;
+                    let evaluation = minimax(board, depth - 1, false, alpha, beta);
+                    board[r][c] = 0;
+                    maxEval = Math.max(maxEval, evaluation);
+                    alpha = Math.max(alpha, evaluation);
+                    if (beta <= alpha) break;
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (let c of validCols) {
+                    let r = getAvailableRow(c);
+                    board[r][c] = PLAYER;
+                    let evaluation = minimax(board, depth - 1, true, alpha, beta);
+                    board[r][c] = 0;
+                    minEval = Math.min(minEval, evaluation);
+                    beta = Math.min(beta, evaluation);
+                    if (beta <= alpha) break;
+                }
+                return minEval;
+            }
+        }
+
+        function evaluateBoard(board) {
+            let score = 0;
+            // Center column preference
+            for (let r = 0; r < ROWS; r++) {
+                if (board[r][3] === AI_BOT) score += 3;
+            }
+            return score;
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function showModal(type) {
+            gameModal.classList.remove('hidden');
+            setTimeout(() => {
+                modalCard.classList.remove('scale-95', 'opacity-0');
+                modalCard.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            if (type === 'win') {
+                modalIconContainer.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-4xl bg-red-500/20 text-red-400 border border-red-500/40 shadow-lg shadow-red-500/20";
+                modalIcon.className = "fa-solid fa-trophy";
+                modalTitle.textContent = "Victory!";
+                modalTitle.className = "text-2xl font-black mb-2 text-red-400";
+                modalMessage.textContent = "Great tactical skill! You defeated the Blue AI Robot.";
+            } else if (type === 'loss') {
+                modalIconContainer.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-4xl bg-blue-500/20 text-blue-400 border border-blue-500/40 shadow-lg shadow-blue-500/20";
+                modalIcon.className = "fa-solid fa-robot";
+                modalTitle.textContent = "Defeat!";
+                modalTitle.className = "text-2xl font-black mb-2 text-blue-400";
+                modalMessage.textContent = "The Blue AI Robot outmaneuvered you this round. Try again!";
+            } else {
+                modalIconContainer.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-4xl bg-slate-700 text-slate-300 border border-slate-600";
+                modalIcon.className = "fa-solid fa-handshake";
+                modalTitle.textContent = "Draw Game!";
+                modalTitle.className = "text-2xl font-black mb-2 text-slate-300";
+                modalMessage.textContent = "The board is full! A perfectly matched battle.";
+            }
+        }
+
+        function enterReviewMode() {
+            reviewPanel.classList.remove('hidden');
+            const msgs = {
+                win: "You won! Use the arrows below to review the game.",
+                loss: "The AI won. Use the arrows below to see how it happened.",
+                draw: "Draw! Use the arrows below to review the game."
+            };
+            statusTextElem.textContent = msgs[gameResult];
+            statusTextElem.className = "text-sm font-semibold " +
+                (gameResult === 'win' ? "text-red-400" : gameResult === 'loss' ? "text-blue-400" : "text-slate-300");
+            playerCardElem.classList.remove('opacity-60');
+            robotCardElem.classList.remove('opacity-60');
+            renderReview(moveHistory.length);
+        }
+
+        function renderReview(step) {
+            const total = moveHistory.length;
+            reviewStep = Math.max(0, Math.min(step, total));
+
+            // Clear every piece, then redraw the position after `reviewStep` moves
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const piece = document.getElementById(`piece-${r}-${c}`);
+                    piece.classList.remove('piece-red', 'piece-blue', 'dropped', 'winning-piece', 'last-move');
+                }
+            }
+            moveHistory.slice(0, reviewStep).forEach((m, i) => {
+                const piece = document.getElementById(`piece-${m.row}-${m.col}`);
+                piece.classList.add(m.player === PLAYER ? 'piece-red' : 'piece-blue', 'dropped');
+                if (i === reviewStep - 1) piece.classList.add('last-move');
+            });
+
+            const atEnd = reviewStep === total;
+            if (atEnd && winLine) highlightWinningCells(winLine);
+
+            // Description of the current step
+            if (reviewStep === 0) {
+                reviewInfo.textContent = `Start of the game (0 / ${total})`;
+            } else {
+                const m = moveHistory[reviewStep - 1];
+                const who = m.player === PLAYER ? 'You (Red)' : 'AI (Blue)';
+                let text = `Move ${reviewStep} / ${total}: ${who} dropped a disc in column ${m.col + 1}`;
+                if (atEnd && winLine) text += ' — four in a row!';
+                else if (atEnd && gameResult === 'draw') text += ' — the board is full.';
+                reviewInfo.textContent = text;
+            }
+
+            reviewFirstBtn.disabled = reviewPrevBtn.disabled = reviewStep === 0;
+            reviewNextBtn.disabled = reviewLastBtn.disabled = atEnd;
+        }
+
+        function exitReviewMode() {
+            reviewPanel.classList.add('hidden');
+        }
+
+        function hideModal() {
+            modalCard.classList.remove('scale-100', 'opacity-100');
+            modalCard.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                gameModal.classList.add('hidden');
+            }, 200);
+        }
+
+        function resetGame() {
+            sfx.playClick();
+            boardState = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+            currentPlayer = PLAYER;
+            isGameActive = true;
+            isAiThinking = false;
+            clearTimeout(aiTimeoutId);
+            moveHistory = [];
+            winLine = null;
+            gameResult = null;
+            reviewStep = 0;
+            exitReviewMode();
+            hideModal();
+            initBoardUI();
+            updateTurnUI();
+        }
+
+        resetBtn.addEventListener('click', resetGame);
+        reviewPlayAgainBtn.addEventListener('click', resetGame);
+        modalReviewBtn.addEventListener('click', () => { sfx.playClick(); hideModal(); });
+        reviewFirstBtn.addEventListener('click', () => { sfx.playClick(); renderReview(0); });
+        reviewPrevBtn.addEventListener('click', () => { sfx.playClick(); renderReview(reviewStep - 1); });
+        reviewNextBtn.addEventListener('click', () => { sfx.playClick(); renderReview(reviewStep + 1); });
+        reviewLastBtn.addEventListener('click', () => { sfx.playClick(); renderReview(moveHistory.length); });
+
+        document.addEventListener('keydown', (e) => {
+            if (reviewPanel.classList.contains('hidden') || !gameModal.classList.contains('hidden')) return;
+            if (e.key === 'ArrowLeft') renderReview(reviewStep - 1);
+            else if (e.key === 'ArrowRight') renderReview(reviewStep + 1);
+            else if (e.key === 'Home') renderReview(0);
+            else if (e.key === 'End') renderReview(moveHistory.length);
+        });
+        modalPlayAgainBtn.addEventListener('click', resetGame);
+
+        clearScoreBtn.addEventListener('click', () => {
+            sfx.playClick();
+            scores = { player: 0, robot: 0 };
+            playerScoreElem.textContent = '0';
+            robotScoreElem.textContent = '0';
+        });
+
+        soundToggle.addEventListener('click', () => {
+            sfx.muted = !sfx.muted;
+            if (sfx.muted) {
+                soundIcon.className = "fa-solid fa-volume-xmark text-lg text-slate-400";
+            } else {
+                soundIcon.className = "fa-solid fa-volume-high text-lg text-slate-100";
+                sfx.playClick();
+            }
+        });
+
+        difficultySelect.addEventListener('change', () => {
+            sfx.playClick();
+            resetGame();
+        });
+
+        // Initialize Application on Window Load
+        window.onload = function() {
+            initBoardUI();
+            updateTurnUI();
+        };
+    </script>
+</body>
+</html>
