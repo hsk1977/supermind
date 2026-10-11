@@ -412,6 +412,8 @@
         let centerX, centerY, centerRadius, pinLength;
         let pinWidth, ballRadius, minPinGap;
         let lastTime = 0;
+        const REMOVE_EVERY = 10;   // after every N shots...
+        const REMOVE_STEP = 3;     // ...remove (level x this) pins: 3 at 10, 6 at 20, 9 at 30, ...
         let pins = [];
         let shootingPin = null;
         let rotation = 0;
@@ -481,6 +483,7 @@
         function checkCollision(newAngle) {
             const threshold = minPinGap;
             for (let pin of pins) {
+                if (pin.fade !== undefined) continue; // being removed
                 if (angleDiff(pin.angle, newAngle) < threshold) {
                     return true;
                 }
@@ -488,10 +491,28 @@
             return false;
         }
 
+        function removeOldPins(count) {
+            let removed = 0;
+            for (let pin of pins) {
+                if (removed >= count) break;
+                if (pin.fade === undefined) {
+                    pin.fade = 1;
+                    removed++;
+                }
+            }
+            if (removed) playSound('pause');
+        }
+
         function update(dt) {
             if (!gameRunning || gamePaused) return;
 
             rotation += rotationSpeed * dt;
+
+            // fade out pins that are being removed
+            for (let pin of pins) {
+                if (pin.fade !== undefined) pin.fade -= 0.05 * dt;
+            }
+            pins = pins.filter(pin => pin.fade === undefined || pin.fade > 0);
 
             if (shootingPin && shootingPin.moving) {
                 shootingPin.y -= pinSpeed * dt;
@@ -515,6 +536,7 @@
                     score++;
                     updateBestScoreDisplay();
                     playSound('stick');
+                    if (score % REMOVE_EVERY === 0) removeOldPins((score / REMOVE_EVERY) * REMOVE_STEP);
                     spawnPin();
                 }
             }
@@ -525,6 +547,7 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             for (let pin of pins) {
+                ctx.globalAlpha = pin.fade !== undefined ? Math.max(pin.fade, 0) : 1;
                 const rad = pin.angle + rotation;
                 const x1 = centerX + Math.cos(rad) * centerRadius;
                 const y1 = centerY + Math.sin(rad) * centerRadius;
@@ -544,6 +567,7 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.fill();
             }
+            ctx.globalAlpha = 1;
 
             ctx.beginPath();
             ctx.arc(centerX, centerY, centerRadius, 0, Math.PI * 2);
