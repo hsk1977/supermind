@@ -413,7 +413,7 @@
         let pinWidth, ballRadius, minPinGap;
         let lastTime = 0;
         const REMOVE_EVERY = 10;   // after every N shots...
-        const REMOVE_STEP = 3;     // ...remove (level x this) pins: 3 at 10, 6 at 20, 9 at 30, ...
+        const REMOVE_COUNT = 3;    // ...remove this fixed number of pins from the circle
         let pins = [];
         let shootingPin = null;
         let rotation = 0;
@@ -536,7 +536,7 @@
                     score++;
                     updateBestScoreDisplay();
                     playSound('stick');
-                    if (score % REMOVE_EVERY === 0) removeOldPins((score / REMOVE_EVERY) * REMOVE_STEP);
+                    if (score % REMOVE_EVERY === 0) removeOldPins(REMOVE_COUNT);
                     spawnPin();
                 }
             }
