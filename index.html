@@ -133,8 +133,8 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
 <main>
   <header>
     <div class="moon" aria-hidden="true"></div>
-    <h1>رویاهای ذهن</h1>
-    <p class="subtitle">مجموعه بازی‌های فکری و سرگرمی</p>
+    <h1 data-en="Dreams of the Mind">رویاهای ذهن</h1>
+    <p class="subtitle" data-en="A collection of brain games &amp; fun">مجموعه بازی‌های فکری و سرگرمی</p>
   </header>
 
   <nav class="grid" aria-label="فهرست بازی‌ها">
@@ -240,7 +240,7 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
       <div class="name">پینگ پونگ</div><div class="en">Ping Pong</div>
     </a>
     <a href="./2048.html" class="card" style="--c:#f59563">
-      <span class="num">۱۶</span><span class="tag">جدید</span>
+      <span class="num">۱۶</span><span class="tag" data-en="New">جدید</span>
       <div class="icon">
         <svg viewBox="0 0 64 64" fill="none">
           <rect x="6" y="6" width="23" height="23" rx="5" fill="#eee4da"/>
@@ -262,7 +262,18 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
 <script>
 (function(){
   var KEY='geo_cc';
-  function apply(cc){ document.body.classList.toggle('intl', !!cc && cc!=='IR'); }
+  function apply(cc){
+    var intl=!!cc && cc!=='IR';
+    document.body.classList.toggle('intl', intl);
+    document.documentElement.lang=intl?'en':'fa';
+    var els=document.querySelectorAll('[data-en]');
+    for(var i=0;i<els.length;i++){
+      var el=els[i];
+      if(el.getAttribute('data-fa')===null) el.setAttribute('data-fa',el.innerHTML);
+      el.innerHTML=el.getAttribute(intl?'data-en':'data-fa');
+    }
+    document.title=intl?'Dreams of the Mind - Brain Games Hub':'رویاهای ذهن - مرکز بازی‌های فکری';
+  }
   try{ var cached=localStorage.getItem(KEY); if(cached) apply(cached); }catch(e){}
   function save(cc){ if(!cc) return; apply(cc); try{ localStorage.setItem(KEY,cc); }catch(e){} }
   function get(url,pick){
