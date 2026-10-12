@@ -119,6 +119,10 @@ h1{
 .name{position:relative;font-size:clamp(1rem,3vw,1.15rem);font-weight:900}
 .en{position:relative;margin-top:2px;font-size:.78rem;color:var(--muted);font-weight:600;direction:ltr}
 
+
+/* Visitors outside Iran: English name first (large), Persian name below */
+.intl .en{order:1;font-size:clamp(1rem,3vw,1.15rem);font-weight:900;color:var(--text);margin-top:0}
+.intl .name{order:2;font-size:.8rem;font-weight:600;color:var(--muted);margin-top:2px}
 footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opacity:.8}
 
 :focus-visible{outline:2px solid var(--gold);outline-offset:3px}
@@ -255,5 +259,23 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
     </a>
   </nav>
 </main>
+<script>
+(function(){
+  var KEY='geo_cc';
+  function apply(cc){ document.body.classList.toggle('intl', !!cc && cc!=='IR'); }
+  try{ var cached=localStorage.getItem(KEY); if(cached) apply(cached); }catch(e){}
+  function save(cc){ if(!cc) return; apply(cc); try{ localStorage.setItem(KEY,cc); }catch(e){} }
+  function get(url,pick){
+    var ctrl=('AbortController' in window)?new AbortController():null;
+    var t=setTimeout(function(){ if(ctrl) ctrl.abort(); },4000);
+    return fetch(url,ctrl?{signal:ctrl.signal}:{}).then(function(r){return r.json();})
+      .then(function(j){ clearTimeout(t); return pick(j); });
+  }
+  get('https://api.country.is/',function(j){return j.country;})
+    .catch(function(){ return get('https://ipwho.is/',function(j){return j.country_code;}); })
+    .then(save)
+    .catch(function(){ /* on failure keep the default Persian layout */ });
+})();
+</script>
 </body>
 </html>
