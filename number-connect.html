@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Number Connect</title>
+<style>
+:root{--bg:#33556f;--panel:#14232e;--accent:#00d68f;--line:#ffb82b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;height:100%;background:var(--bg);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;color:#fff;overflow:hidden}
+.app{max-width:480px;height:100%;margin:0 auto;padding:14px 16px;display:flex;flex-direction:column;align-items:center}
+.top{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.round{width:48px;height:48px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);text-decoration:none}
+.round:active{transform:translateY(2px);box-shadow:none}
+.home{background:#e53935}
+.home svg,.rest svg{width:24px;height:24px}
+.rest{background:#fff}
+.box{background:var(--panel);border-radius:8px;padding:6px 14px;text-align:center;min-width:92px}
+.box small{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;color:#cfd8dc}
+.box b{font-size:22px}
+.box.best b{color:var(--accent)}
+.sound{background:#fff;width:36px;height:36px;font-size:16px;flex:none}
+.modes{display:flex;align-items:center;gap:8px;margin-top:10px;width:100%;justify-content:center}
+.seg{display:flex;background:var(--panel);border-radius:20px;padding:3px}
+.seg button{border:0;background:none;color:#cfd8dc;font:inherit;font-weight:800;font-size:14px;padding:7px 14px;border-radius:17px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#06281d}
+.seg button:focus-visible,.round:focus-visible,.undo:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.wrap{flex:1;width:100%;display:flex;align-items:center;justify-content:center;min-height:0}
+#board{position:relative;aspect-ratio:5/7;height:100%;max-height:min(100%,calc((100vw - 32px)*1.4));max-width:100%;touch-action:none}
+.grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(7,1fr);gap:0}
+.cell{padding:3.5%}
+.t{width:100%;height:100%;border-radius:10%;display:grid;place-items:center;font-weight:900;font-size:clamp(18px,6.4vw,30px);color:#3b4252;box-shadow:inset 0 -6px 0 rgba(0,0,0,.16);transition:transform .12s,filter .12s}
+.t.sel{transform:scale(.88);filter:brightness(1.12);outline:3px solid #fff}
+.t.pop{animation:pop .3s}
+.t.drop{animation:drop .28s ease-out}
+@keyframes pop{0%{transform:scale(.5)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes drop{from{transform:translateY(-60%);opacity:.3}to{transform:none;opacity:1}}
+svg.ln{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.bar{width:100%;display:flex;justify-content:flex-end;align-items:center;padding:8px 6px 0;gap:14px}
+.undo{display:flex;flex-direction:column;align-items:center;font-weight:800;font-size:14px;color:var(--line);cursor:pointer;background:none;border:0;position:relative}
+.undo span.c{position:absolute;top:-6px;right:-2px;background:#fff;color:#222;border-radius:50%;width:22px;height:22px;font-size:13px;display:grid;place-items:center}
+.undo i{width:54px;height:54px;border-radius:50%;background:var(--line);display:grid;place-items:center;margin-bottom:2px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.undo:disabled{opacity:.4}
+#msg{position:absolute;inset:0;background:rgba(20,35,46,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:12px;text-align:center}
+#msg h2{margin:0;font-size:28px}
+#msg p{margin:0;color:#cfd8dc}
+#msg button{background:var(--accent);color:#06281d;border:0;border-radius:24px;padding:12px 28px;font-size:17px;font-weight:800;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.t,.t.pop,.t.drop{animation:none;transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a class="round home" href="index.html" aria-label="Home" title="Home">
+      <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg>
+    </a>
+    <div class="box"><small>SCORE</small><b id="score">0</b></div>
+    <div class="box best"><small>BEST</small><b id="best">0</b></div>
+    <button class="round rest" id="restart" aria-label="Restart" title="Restart">
+      <svg viewBox="0 0 24 24" fill="#c2678a"><path d="M12 5V2L7 6.5 12 11V8a5 5 0 1 1-5 5H5a7 7 0 1 0 7-8z"/></svg>
+    </button>
+  </div>
+  <div class="modes">
+    <div class="seg" id="seg">
+      <button data-m="easy">Easy</button>
+      <button data-m="medium">Medium</button>
+      <button data-m="hard">Hard</button>
+    </div>
+    <button class="round sound" id="snd" aria-label="Toggle sound">🔊</button>
+  </div>
+  <div class="wrap">
+    <div id="board">
+      <div class="grid" id="grid"></div>
+      <svg class="ln" viewBox="0 0 5 7" preserveAspectRatio="none"><polyline id="pl" fill="none" stroke="#ffb82b" stroke-width=".14" stroke-linecap="round" stroke-linejoin="round" vector-effect="none"/></svg>
+      <div id="msg"><h2>No more moves</h2><p id="fin"></p><button id="again">Play again</button></div>
+    </div>
+  </div>
+  <div class="bar">
+    <button class="undo" id="undo"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M12 5V2L7 6.5 12 11V8a5 5 0 1 1-5 5H5a7 7 0 1 0 7-8z" transform="scale(-1,1) translate(-24,0)"/></svg></i>Undo<span class="c" id="uc">1</span></button>
+  </div>
+</div>
+<script>
+const C=5,R=7;
+const COL={2:'#ff6b6b',4:'#9b5de5',8:'#ffc300',16:'#7ed957',32:'#5bc8ff',64:'#ffa66b',128:'#4a7fd6',256:'#a67c5b',512:'#10d9a0',1024:'#ff5fa2',2048:'#f4f4f4'};
+const $=id=>document.getElementById(id);
+let b,score,best=0,undos,snap,chain=[],drag=false,over=false,muted=false,fresh=new Set();
+/* v = [value, base weight] spawn pool; undos = undo charges at start */
+const MODES={
+  easy:{v:[[2,1.2],[4,1.1],[8,1],[16,.9]],undos:2,ug:256},
+  medium:{v:[[2,1.1],[4,1],[8,1],[16,1],[32,.9],[64,.8]],undos:1,ug:512},
+  hard:{v:[[2,1],[4,1],[8,1],[16,1],[32,1],[64,.9],[128,.8]],undos:0,ug:1024}
+};
+let mode='medium';
+try{const m=localStorage.getItem('nc_mode');if(MODES[m])mode=m}catch(e){}
+const M=()=>MODES[mode];
+function loadBest(){best=0;try{best=+localStorage.getItem('nc_best_'+mode)||0}catch(e){}}
+loadBest();
+
+/* ---------- sound ---------- */
+let ac;
+function ctx(){if(!ac){try{ac=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume();return ac}
+function tone(f,d=.12,type='sine',v=.18,t0=0,slide){
+  if(muted)return;const a=ctx();if(!a)return;
+  const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+t0;
+  o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02);
+}
+const PENT=[0,2,4,7,9,12,14,16,19,21,24];
+const sfx={
+  pick(n){tone(330*Math.pow(2,PENT[Math.min(n,PENT.length-1)]/12),.1,'triangle',.2)},
+  back(){tone(260,.07,'triangle',.12)},
+  merge(v,n){const base=220*Math.pow(2,Math.min(Math.log2(v),11)/12*2);
+    [0,4,7,12].slice(0,Math.min(2+n,4)).forEach((s,i)=>tone(base*Math.pow(2,s/12),.22,'sine',.2,i*.06));
+    tone(base*2,.3,'square',.04,.05)},
+  undo(){tone(520,.2,'sawtooth',.1,0,200)},
+  cancel(){tone(160,.12,'square',.08)},
+  over(){[392,330,262,196].forEach((f,i)=>tone(f,.3,'triangle',.22,i*.18))},
+  start(){[262,330,392].forEach((f,i)=>tone(f,.12,'triangle',.15,i*.07))}
+};
+
+/* ---------- game ---------- */
+/* values already common on the board get a lower chance, so no single number takes over */
+function rnd(cn){
+  const vs=M().v;let t=0;
+  const w=vs.map(([v,p])=>{const x=p/(1+(cn[v]||0)*.4);t+=x;return x});
+  let r=Math.random()*t,pick=vs[vs.length-1][0];
+  for(let i=0;i<vs.length;i++){r-=w[i];if(r<=0){pick=vs[i][0];break}}
+  cn[pick]=(cn[pick]||0)+1;return pick}
+function hasMove(g){
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++)for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    if(!dr&&!dc)continue;const rr=r+dr,cc=c+dc;
+    if(rr>=0&&rr<R&&cc>=0&&cc<C&&g[rr][cc]===g[r][c])return true}
+  return false}
+function newGame(){
+  do{const cn={};b=Array.from({length:R},()=>Array.from({length:C},()=>rnd(cn)))}while(!hasMove(b));
+  score=0;undos=M().undos;snap=null;over=false;chain=[];
+  fresh=new Set(b.flatMap((row,r)=>row.map((_,c)=>r*C+c)));
+  $('msg').style.display='none';render();sfx.start();
+}
+function render(){
+  const g=$('grid');g.innerHTML='';
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    const cell=document.createElement('div');cell.className='cell';
+    const t=document.createElement('div'),v=b[r][c];
+    t.className='t'+(fresh.has(r*C+c)?' drop':'')+(chain.some(p=>p[0]===r&&p[1]===c)?' sel':'');
+    t.style.background=COL[v]||'#e0e0e0';
+    if(v>=1000)t.style.fontSize='clamp(14px,4.8vw,24px)';
+    t.textContent=v;cell.appendChild(t);g.appendChild(cell)}
+  fresh=new Set();
+  $('score').textContent=score;$('best').textContent=best;
+  $('uc').textContent=undos;$('undo').disabled=!snap||undos<1;
+  document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x.dataset.m===mode));
+  $('pl').setAttribute('points',chain.map(p=>(p[1]+.5)+','+(p[0]+.5)).join(' '));
+}
+function cellAt(e){
+  const rc=$('board').getBoundingClientRect();
+  const x=(e.clientX-rc.left)/rc.width*C,y=(e.clientY-rc.top)/rc.height*R;
+  const c=Math.floor(x),r=Math.floor(y);
+  if(c<0||c>=C||r<0||r>=R)return null;
+  if(Math.hypot(x-c-.5,y-r-.5)>.42)return null;
+  return [r,c]}
+const adj=(a,p)=>Math.abs(a[0]-p[0])<=1&&Math.abs(a[1]-p[1])<=1;
+$('board').addEventListener('pointerdown',e=>{
+  if(over)return;ctx();const p=cellAt(e);if(!p)return;
+  drag=true;chain=[p];$('board').setPointerCapture(e.pointerId);sfx.pick(0);render()});
+$('board').addEventListener('pointermove',e=>{
+  if(!drag)return;const p=cellAt(e);if(!p)return;
+  const last=chain[chain.length-1];if(p[0]===last[0]&&p[1]===last[1])return;
+  const prev=chain[chain.length-2];
+  if(prev&&p[0]===prev[0]&&p[1]===prev[1]){chain.pop();sfx.back();render();return}
+  if(adj(last,p)&&b[p[0]][p[1]]===b[chain[0][0]][chain[0][1]]&&!chain.some(q=>q[0]===p[0]&&q[1]===p[1])){
+    chain.push(p);sfx.pick(chain.length-1);render()}});
+['pointerup','pointercancel'].forEach(n=>$('board').addEventListener(n,()=>{
+  if(!drag)return;drag=false;
+  if(chain.length<2){if(chain.length)sfx.cancel();chain=[];render();return}
+  commit()}));
+function commit(){
+  snap={b:b.map(r=>r.slice()),score};
+  const n=chain.length,v=b[chain[0][0]][chain[0][1]],nv=v*Math.pow(2,Math.floor(Math.log2(n)));
+  const [lr,lc]=chain[n-1];
+  chain.forEach(([r,c])=>b[r][c]=0);b[lr][lc]=nv;
+  score+=nv;if(score>best){best=score;try{localStorage.setItem('nc_best_'+mode,best)}catch(e){}}
+  if(nv>=M().ug&&undos<3)undos++;
+  const cn={};b.forEach(row=>row.forEach(v=>{if(v)cn[v]=(cn[v]||0)+1}));
+  for(let c=0;c<C;c++){
+    const col=[];for(let r=R-1;r>=0;r--)if(b[r][c])col.push(b[r][c]);
+    for(let r=R-1,i=0;r>=0;r--,i++){
+      if(i<col.length)b[r][c]=col[i];else{b[r][c]=rnd(cn);fresh.add(r*C+c)}}}
+  chain=[];sfx.merge(nv,n);render();
+  if(!hasMove(b)){over=true;setTimeout(()=>{sfx.over();$('fin').textContent='Final score: '+score;$('msg').style.display='flex'},450)}
+}
+$('undo').onclick=()=>{
+  if(!snap||undos<1)return;ctx();
+  b=snap.b;score=snap.score;snap=null;undos--;over=false;chain=[];
+  $('msg').style.display='none';sfx.undo();render()};
+document.querySelectorAll('#seg button').forEach(x=>x.onclick=()=>{
+  ctx();if(x.dataset.m===mode)return;
+  mode=x.dataset.m;try{localStorage.setItem('nc_mode',mode)}catch(e){}
+  loadBest();newGame()});
+$('restart').onclick=()=>{ctx();newGame()};
+$('again').onclick=()=>{ctx();newGame()};
+$('snd').onclick=()=>{muted=!muted;$('snd').textContent=muted?'🔇':'🔊';if(!muted){ctx();sfx.pick(2)}};
+newGame();
+</script>
+</body>
+</html>
