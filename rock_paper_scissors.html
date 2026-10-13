@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Paper Scissors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f3ec;
+  --surface: #ffffff;
+  --ink: #1e1b18;
+  --muted: #7a7267;
+  --rock: #8c7e70;
+  --paper: #4a90a4;
+  --scissors: #c45c3e;
+  --accent-weak: color-mix(in oklab, var(--paper) 12%, var(--surface));
+  --line: color-mix(in oklab, var(--ink) 10%, transparent);
+  --step-0: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.6vw, 1.5rem);
+  --step-2: clamp(1.8rem, 1.5rem + 1.5vw, 3rem);
+  --step-3: clamp(2.5rem, 2rem + 2.5vw, 4.5rem);
+  --space: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  --radius: 18px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 10px 30px -10px rgba(0,0,0,0.15);
+}
+
+
+.home-btn {
+  position: absolute;
+  top: calc(var(--space) * 0.8);
+  left: calc(var(--space) * 0.8);
+  background: #c62828;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.55em 1em;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  z-index: 10;
+}
+.home-btn:hover {
+  background: #b71c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(198, 40, 40, 0.45);
+}
+.home-btn:active {
+  transform: translateY(0);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Outfit", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space);
+}
+
+header {
+  text-align: center;
+  margin-top: calc(var(--space) * 1.5);
+  margin-bottom: calc(var(--space) * 2);
+}
+
+header h1 {
+  font-size: var(--step-3);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+header p {
+  font-size: var(--step-0);
+  color: var(--muted);
+  margin-top: 0.6em;
+  max-width: 32ch;
+  margin-inline: auto;
+}
+
+.scoreboard {
+  display: flex;
+  gap: calc(var(--space) * 1.2);
+  margin-bottom: calc(var(--space) * 2);
+}
+
+.score-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--space) * 0.9) calc(var(--space) * 1.4);
+  text-align: center;
+  min-width: 110px;
+  box-shadow: var(--shadow);
+}
+
+.score-card .label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 0.3em;
+}
+
+.score-card .score {
+  font-family: "Space Mono", monospace;
+  font-size: var(--step-2);
+  font-weight: 700;
+  line-height: 1;
+}
+
+#player-score { color: var(--paper); }
+#computer-score { color: var(--scissors); }
+
+.arena {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space) * 1.5);
+  margin-bottom: calc(var(--space) * 2.5);
+  min-height: 140px;
+}
+
+.hand {
+  font-size: clamp(3.5rem, 10vw, 6rem);
+  line-height: 1;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));
+}
+
+.hand.shake {
+  animation: shake 0.55s ease-in-out 3;
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-18deg); }
+  75% { transform: rotate(18deg); }
+}
+
+.vs {
+  font-family: "Space Mono", monospace;
+  font-size: var(--step-1);
+  font-weight: 700;
+  color: var(--muted);
+  opacity: 0.5;
+  letter-spacing: 0.1em;
+}
+
+.result {
+  font-size: var(--step-1);
+  font-weight: 600;
+  min-height: 1.8em;
+  text-align: center;
+  margin-bottom: calc(var(--space) * 1.2);
+  color: var(--ink);
+}
+
+.result.win { color: #3a8d5d; }
+.result.lose { color: var(--scissors); }
+.result.draw { color: var(--muted); }
+
+.choices {
+  display: flex;
+  gap: calc(var(--space) * 0.8);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.choice-btn {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--space) * 0.9) calc(var(--space) * 1.1);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--step-0);
+  font-weight: 600;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+  min-width: 110px;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.choice-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 14px 36px -12px rgba(0,0,0,0.2);
+}
+
+.choice-btn:active {
+  transform: translateY(0);
+}
+
+.choice-btn .icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.choice-btn[data-choice="rock"]:hover { border-color: var(--rock); }
+.choice-btn[data-choice="paper"]:hover { border-color: var(--paper); }
+.choice-btn[data-choice="scissors"]:hover { border-color: var(--scissors); }
+
+.choice-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reset-wrap {
+  margin-top: calc(var(--space) * 2);
+}
+
+.reset-btn {
+  background: transparent;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 0.55em 1.6em;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.15s ease;
+}
+
+.reset-btn:hover {
+  border-color: var(--muted);
+  color: var(--ink);
+}
+
+footer {
+  margin-top: auto;
+  padding-top: calc(var(--space) * 2);
+  font-size: 0.75rem;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hand, .choice-btn, .hand.shake {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media print {
+  body { background: #fff; }
+  .no-print { display: none; }
+}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="home-btn no-print">🏠 Home</a>
+
+<header>
+  <h1>Rock Paper Scissors</h1>
+  <p>Choose your weapon and battle the computer.</p>
+</header>
+
+<div class="scoreboard">
+  <div class="score-card">
+    <div class="label">You</div>
+    <div class="score" id="player-score">0</div>
+  </div>
+  <div class="score-card">
+    <div class="label">Computer</div>
+    <div class="score" id="computer-score">0</div>
+  </div>
+</div>
+
+<div class="arena">
+  <div class="hand" id="player-hand">✊</div>
+  <div class="vs">VS</div>
+  <div class="hand" id="computer-hand">✊</div>
+</div>
+
+<div class="result" id="result">Make your move</div>
+
+<div class="choices no-print">
+  <button class="choice-btn" data-choice="rock" onclick="play('rock')">
+    <span class="icon">✊</span>
+    <span>Rock</span>
+  </button>
+  <button class="choice-btn" data-choice="paper" onclick="play('paper')">
+    <span class="icon">✋</span>
+    <span>Paper</span>
+  </button>
+  <button class="choice-btn" data-choice="scissors" onclick="play('scissors')">
+    <span class="icon">✌️</span>
+    <span>Scissors</span>
+  </button>
+</div>
+
+<div class="reset-wrap no-print">
+  <button class="reset-btn" onclick="resetGame()">Reset Game</button>
+</div>
+
+<footer>First to win, wins.</footer>
+
+<script>
+const icons = {
+  rock: '✊',
+  paper: '✋',
+  scissors: '✌️'
+};
+
+const beats = {
+  rock: 'scissors',
+  paper: 'rock',
+  scissors: 'paper'
+};
+
+let playerScore = 0;
+let computerScore = 0;
+let isPlaying = false;
+
+const playerHand = document.getElementById('player-hand');
+const computerHand = document.getElementById('computer-hand');
+const resultText = document.getElementById('result');
+const playerScoreEl = document.getElementById('player-score');
+const computerScoreEl = document.getElementById('computer-score');
+const buttons = document.querySelectorAll('.choice-btn');
+
+function getComputerChoice() {
+  const choices = ['rock', 'paper', 'scissors'];
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+function disableButtons(disabled) {
+  buttons.forEach(btn => btn.disabled = disabled);
+}
+
+function play(playerChoice) {
+  if (isPlaying) return;
+  isPlaying = true;
+  disableButtons(true);
+
+  playerHand.textContent = icons[playerChoice];
+  computerHand.textContent = icons[getComputerChoice()];
+  resultText.textContent = 'Rock... Paper... Scissors...';
+  resultText.className = 'result';
+
+  playerHand.classList.add('shake');
+  computerHand.classList.add('shake');
+
+  setTimeout(() => {
+    playerHand.classList.remove('shake');
+    computerHand.classList.remove('shake');
+
+    const computerChoice = getComputerChoice();
+    playerHand.textContent = icons[playerChoice];
+    computerHand.textContent = icons[computerChoice];
+
+    if (playerChoice === computerChoice) {
+      resultText.textContent = "It's a draw!";
+      resultText.className = 'result draw';
+    } else if (beats[playerChoice] === computerChoice) {
+      resultText.textContent = `You win! ${capitalize(playerChoice)} beats ${capitalize(computerChoice)}`;
+      resultText.className = 'result win';
+      playerScore++;
+      playerScoreEl.textContent = playerScore;
+    } else {
+      resultText.textContent = `You lose! ${capitalize(computerChoice)} beats ${capitalize(playerChoice)}`;
+      resultText.className = 'result lose';
+      computerScore++;
+      computerScoreEl.textContent = computerScore;
+    }
+
+    isPlaying = false;
+    disableButtons(false);
+  }, 1650);
+}
+
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function resetGame() {
+  playerScore = 0;
+  computerScore = 0;
+  playerScoreEl.textContent = '0';
+  computerScoreEl.textContent = '0';
+  resultText.textContent = 'Make your move';
+  resultText.className = 'result';
+  playerHand.textContent = '✊';
+  computerHand.textContent = '✊';
+}
+</script>
+</body>
+</html>
