@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>One Line</title>
+<style>
+  :root{
+    --bg:#b7d31c;
+    --bg-dark:#8fa812;
+    --board:#f6f3e4;
+    --line-off:#d9d5c3;
+    --line-on:#f6a21e;
+    --node:#f6a21e;
+    --ink:#ffffff;
+    --panel:#9bb614;
+    --good:#2fbf71;
+    --bad:#e5484d;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg);
+    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+    color:var(--ink);
+    overflow:hidden;
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+
+  /* Red home button, top-left */
+  .home{
+    position:fixed;top:12px;left:12px;z-index:50;
+    display:flex;align-items:center;justify-content:center;
+    width:48px;height:48px;border-radius:50%;
+    background:#e5282e;border:3px solid #fff;
+    box-shadow:0 4px 0 #a81419, 0 6px 10px rgba(0,0,0,.25);
+    text-decoration:none;cursor:pointer;
+    transition:transform .08s, box-shadow .08s;
+  }
+  .home:active{transform:translateY(3px);box-shadow:0 1px 0 #a81419}
+  .home:focus-visible{outline:3px solid #fff;outline-offset:3px}
+  .home svg{width:26px;height:26px;fill:#fff}
+
+  .mute{
+    position:fixed;top:12px;right:12px;z-index:50;
+    width:48px;height:48px;border-radius:50%;
+    background:var(--bg-dark);border:3px solid #fff;color:#fff;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mute svg{width:24px;height:24px;fill:#fff}
+  .mute:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:72px 16px 16px}
+  .screen.active{display:flex}
+
+  h1{
+    margin:0 0 4px;font-size:clamp(40px,9vw,64px);letter-spacing:.5px;
+    text-shadow:0 4px 0 var(--bg-dark);
+  }
+  .sub{margin:0 0 20px;font-size:17px;opacity:.95}
+
+  .levels{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:12px;
+    width:min(100%,520px);
+  }
+  @media (max-width:420px){.levels{grid-template-columns:repeat(4,1fr)}}
+  .lvl{
+    aspect-ratio:1;border:0;border-radius:18px;cursor:pointer;
+    background:#fff;color:#6b7d0b;font:inherit;font-size:24px;font-weight:700;
+    box-shadow:0 5px 0 var(--bg-dark);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    position:relative;transition:transform .08s, box-shadow .08s;
+  }
+  .lvl:active:not(.locked){transform:translateY(4px);box-shadow:0 1px 0 var(--bg-dark)}
+  .lvl:focus-visible{outline:3px solid #fff;outline-offset:3px}
+  .lvl.locked{background:var(--panel);color:rgba(255,255,255,.75);cursor:not-allowed;box-shadow:0 5px 0 #7c9410}
+  .lvl.done{background:var(--line-on);color:#fff;box-shadow:0 5px 0 #c07a0b}
+  .lvl svg{width:20px;height:20px;fill:currentColor}
+  .lvl .tick{position:absolute;top:6px;right:8px;font-size:14px}
+  .lvl.shake{animation:shake .3s}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+  .stats{margin-top:22px;font-size:16px;opacity:.95}
+
+  /* Game screen */
+  .hud{
+    width:min(100%,560px);display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:10px;gap:8px;
+  }
+  .hud .title{font-size:24px;font-weight:700;text-shadow:0 3px 0 var(--bg-dark)}
+  .hud .count{font-size:16px;background:var(--panel);padding:6px 12px;border-radius:999px}
+  .hud .diff{font-size:14px;opacity:.9}
+  .boardwrap{
+    width:min(100%,560px);flex:1;min-height:0;max-height:min(100vw,560px,calc(100vh - 230px));
+    aspect-ratio:1;background:var(--board);border-radius:26px;border:5px solid var(--bg-dark);
+    box-shadow:0 8px 0 #7c9410;padding:6px;position:relative;
+  }
+  svg#board{width:100%;height:100%;display:block;touch-action:none}
+  .eline{stroke:var(--line-off);stroke-width:2.6;stroke-linecap:round}
+  .eline.on{stroke:var(--line-on)}
+  .rubber{stroke:var(--line-on);stroke-width:2.6;stroke-linecap:round;opacity:.45;stroke-dasharray:1.5 3}
+  .nd{fill:var(--node);stroke:#fff;stroke-width:1}
+  .nd.start-hint{animation:pulse 1.3s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes pulse{50%{transform:scale(1.3)}}
+  .ring{fill:rgba(246,162,30,.3);stroke:var(--line-on);stroke-width:1.2}
+  @media (prefers-reduced-motion:reduce){.nd.start-hint{animation:none}}
+
+  .msg{height:26px;margin-top:12px;font-size:17px;font-weight:700;text-align:center}
+  .msg.bad{color:#fff;background:var(--bad);padding:2px 14px;border-radius:999px;height:auto}
+  .actions{display:flex;gap:12px;margin-top:10px}
+  .btn{
+    border:0;border-radius:16px;padding:12px 22px;font:inherit;font-size:17px;font-weight:700;cursor:pointer;
+    background:#fff;color:#6b7d0b;box-shadow:0 4px 0 var(--bg-dark);
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--bg-dark)}
+  .btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+  .btn.primary{background:var(--line-on);color:#fff;box-shadow:0 4px 0 #c07a0b}
+
+  .overlay{
+    position:fixed;inset:0;background:rgba(40,55,0,.55);display:none;
+    align-items:center;justify-content:center;z-index:60;padding:20px;
+  }
+  .overlay.show{display:flex}
+  .card{
+    background:#fff;color:#4d5c08;border-radius:26px;padding:28px 30px;text-align:center;
+    width:min(100%,360px);box-shadow:0 8px 0 var(--bg-dark);
+    animation:pop .35s cubic-bezier(.3,1.5,.6,1);
+  }
+  @keyframes pop{from{transform:scale(.7);opacity:0}}
+  .card h2{margin:0 0 6px;font-size:30px}
+  .card p{margin:0 0 18px;font-size:17px}
+  .card .btn{margin:4px}
+  .stars{font-size:38px;margin-bottom:6px;letter-spacing:4px}
+</style>
+</head>
+<body>
+
+<a class="home" href="index.html" id="homeBtn" aria-label="Home">
+  <svg viewBox="0 0 24 24"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3L12 3z"/></svg>
+</a>
+<button class="mute" id="muteBtn" aria-label="Toggle sound"></button>
+
+<!-- Level select -->
+<section class="screen active" id="menu">
+  <h1>One Line</h1>
+  <p class="sub">Trace every line once without lifting your finger.</p>
+  <div class="levels" id="levels"></div>
+  <div class="stats" id="stats"></div>
+</section>
+
+<!-- Game -->
+<section class="screen" id="game">
+  <div class="hud">
+    <div>
+      <div class="title" id="lvlTitle">Level 1</div>
+      <div class="diff" id="lvlDiff"></div>
+    </div>
+    <div class="count" id="count">0 / 0</div>
+  </div>
+  <div class="boardwrap"><svg id="board" viewBox="0 0 100 100" aria-label="Puzzle board"></svg></div>
+  <div class="msg" id="msg"></div>
+  <div class="actions">
+    <button class="btn" id="menuBtn">Levels</button>
+    <button class="btn" id="undoBtn">Undo</button>
+    <button class="btn" id="resetBtn">Restart</button>
+  </div>
+</section>
+
+<div class="overlay" id="winOverlay">
+  <div class="card">
+    <div class="stars">★★★</div>
+    <h2 id="winTitle">Level complete!</h2>
+    <p id="winText"></p>
+    <button class="btn primary" id="nextBtn">Next level</button>
+    <button class="btn" id="winMenuBtn">Levels</button>
+  </div>
+</div>
+
+<script>
+//LEVELS-START
+function polygon(n,R,startDeg,cx,cy){
+  cx=cx==null?50:cx; cy=cy==null?50:cy;
+  var pts=[];
+  for(var i=0;i<n;i++){
+    var a=(startDeg+i*360/n)*Math.PI/180;
+    pts.push([cx+R*Math.cos(a),cy+R*Math.sin(a)]);
+  }
+  return pts;
+}
+function complete(n){
+  var e=[];
+  for(var i=0;i<n;i++)for(var j=i+1;j<n;j++)e.push([i,j]);
+  return e;
+}
+function trianglePuzzle(size){
+  var nodes=[],idx={},step=80/size,h=step*0.866,top=(100-size*h)/2;
+  for(var r=0;r<=size;r++)for(var c=0;c<=r;c++){
+    idx[r+","+c]=nodes.length;
+    nodes.push([50+(c-r/2)*step,top+r*h]);
+  }
+  var edges=[];
+  for(var r2=0;r2<=size;r2++)for(var c2=0;c2<=r2;c2++){
+    var a=idx[r2+","+c2];
+    if(c2<r2)edges.push([a,idx[r2+","+(c2+1)]]);
+    if(r2<size){edges.push([a,idx[(r2+1)+","+c2]]);edges.push([a,idx[(r2+1)+","+(c2+1)]]);}
+  }
+  return {nodes:nodes,edges:edges};
+}
+function starPolygon(n,R,startDeg,steps){
+  var nodes=polygon(n,R,startDeg),edges=[];
+  for(var i=0;i<n;i++){
+    edges.push([i,(i+1)%n]);
+    steps.forEach(function(s){edges.push([i,(i+s)%n]);});
+  }
+  return {nodes:nodes,edges:dedupe(edges)};
+}
+function dedupe(edges){
+  var seen={},out=[];
+  edges.forEach(function(e){
+    var k=Math.min(e[0],e[1])+"-"+Math.max(e[0],e[1]);
+    if(!seen[k]&&e[0]!==e[1]){seen[k]=1;out.push(e);}
+  });
+  return out;
+}
+function buildLevels(){
+  var L=[];
+  // 1 House with crossing diagonals
+  L.push({name:"House",diff:"Medium",
+    nodes:[[25,52],[75,52],[75,88],[25,88],[50,18]],
+    edges:[[0,1],[1,2],[2,3],[3,0],[0,4],[4,1],[0,2],[1,3]]});
+  // 2 Pentagram + pentagon (K5)
+  L.push({name:"Pentagram",diff:"Medium",
+    nodes:polygon(5,40,-90,50,54),edges:complete(5)});
+  // 3 Hexagon wheel
+  var hx=polygon(6,40,-90);hx.push([50,50]);
+  L.push({name:"Wheel",diff:"Medium+",nodes:hx,
+    edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],
+           [6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[0,2],[3,5]]});
+  // 4 Window grid with diamond
+  var gn=[];for(var r=0;r<3;r++)for(var c=0;c<3;c++)gn.push([20+c*30,20+r*30]);
+  var ge=[];
+  for(var r2=0;r2<3;r2++)for(var c2=0;c2<3;c2++){
+    var i=r2*3+c2;
+    if(c2<2)ge.push([i,i+1]);
+    if(r2<2)ge.push([i,i+3]);
+  }
+  ge.push([1,3]);ge.push([5,7]);
+  L.push({name:"Window",diff:"Hard-ish",nodes:gn,edges:ge});
+  // 5 Hexagram
+  var tips=polygon(6,42,-90),inner=polygon(6,42/Math.sqrt(3),-60);
+  var hn=tips.concat(inner),he=[];
+  for(var k=0;k<6;k++){
+    he.push([k,6+k]);              // tip -> inner at +30deg
+    he.push([k,6+((k+5)%6)]);      // tip -> inner at -30deg
+    he.push([6+k,6+((k+1)%6)]);    // inner hexagon
+  }
+  L.push({name:"Star of David",diff:"Hard",nodes:hn,edges:dedupe(he)});
+  // 6 Triangle lattice
+  var t3=trianglePuzzle(3);
+  L.push({name:"Triangle",diff:"Hard",nodes:t3.nodes,edges:t3.edges});
+  // 7 Octagon star with center line
+  var os=starPolygon(8,42,-90,[3]);
+  os.nodes.push([50,50]);
+  os.edges.push([8,0]);os.edges.push([8,4]);
+  L.push({name:"Compass",diff:"Hard",nodes:os.nodes,edges:os.edges});
+  // 8 Heptagon, every connection (K7)
+  L.push({name:"Heptagon",diff:"Very hard",
+    nodes:polygon(7,42,-90),edges:complete(7)});
+  // 9 Octagon web
+  var ow=starPolygon(8,43,-90,[2,3]);
+  L.push({name:"Web",diff:"Very hard",nodes:ow.nodes,edges:ow.edges});
+  // 10 Big triangle lattice
+  var t4=trianglePuzzle(4);
+  L.push({name:"Pyramid",diff:"Expert",nodes:t4.nodes,edges:t4.edges});
+  return L;
+}
+//LEVELS-END
+
+(function(){
+  var LEVELS=buildLevels();
+  var KEY="oneline_unlocked_v1";
+
+  /* ---------- progress ---------- */
+  var unlocked=1, completed={};
+  try{
+    var saved=JSON.parse(localStorage.getItem(KEY)||"null");
+    if(saved){unlocked=Math.max(1,Math.min(LEVELS.length,saved.unlocked|0));completed=saved.completed||{};}
+  }catch(e){}
+  function saveProgress(){
+    try{localStorage.setItem(KEY,JSON.stringify({unlocked:unlocked,completed:completed}));}catch(e){}
+  }
+
+  /* ---------- audio ---------- */
+  var actx=null, muted=false;
+  try{muted=localStorage.getItem("oneline_muted")==="1";}catch(e){}
+  function ac(){
+    if(!actx){
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(AC)actx=new AC();
+    }
+    if(actx&&actx.state==="suspended")actx.resume();
+    return actx;
+  }
+  function tone(freq,dur,type,vol,delay,slideTo){
+    if(muted)return;
+    var a=ac();if(!a)return;
+    var t=a.currentTime+(delay||0);
+    var o=a.createOscillator(),g=a.createGain();
+    o.type=type||"sine";
+    o.frequency.setValueAtTime(freq,t);
+    if(slideTo)o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol||0.2,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g);g.connect(a.destination);
+    o.start(t);o.stop(t+dur+0.02);
+  }
+  var SCALE=[0,2,4,7,9,12,14,16,19,21,24]; // pentatonic climb
+  function note(semi){return 440*Math.pow(2,(semi-9)/12);}
+  var sfx={
+    start:function(){tone(note(0),0.12,"triangle",0.18);},
+    move:function(step){
+      var s=SCALE[Math.min(step,SCALE.length-1)];
+      tone(note(s),0.16,"triangle",0.22);
+    },
+    undo:function(){tone(520,0.14,"sine",0.18,0,300);},
+    stuck:function(){tone(160,0.28,"sawtooth",0.14,0,90);tone(120,0.3,"sawtooth",0.12,0.12,70);},
+    locked:function(){tone(200,0.1,"square",0.1);tone(150,0.12,"square",0.1,0.09);},
+    click:function(){tone(660,0.07,"square",0.08);},
+    win:function(){[0,4,7,12,16,19].forEach(function(s,i){tone(note(s+3),0.28,"triangle",0.2,i*0.09);});
+      tone(note(24),0.7,"sine",0.18,0.6);},
+    reset:function(){tone(400,0.12,"sine",0.15,0,700);}
+  };
+
+  /* ---------- elements ---------- */
+  var $=function(id){return document.getElementById(id);};
+  var menu=$("menu"),game=$("game"),board=$("board");
+  var NS="http://www.w3.org/2000/svg";
+
+  /* ---------- mute button ---------- */
+  var ICON_ON='<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
+  var ICON_OFF='<svg viewBox="0 0 24 24"><path d="M16.5 12A4.5 4.5 0 0 0 14 8v2.2l2.5 2.5V12zM19 12a7 7 0 0 1-.9 3.4l1.5 1.5A9 9 0 0 0 21 12a9 9 0 0 0-7-8.8v2.1A7 7 0 0 1 19 12zM4.3 3 3 4.3 7.7 9H3v6h4l5 4v-6.7l4.3 4.3c-.7.5-1.4.9-2.3 1.2v2.1a9 9 0 0 0 3.7-1.8l2 2 1.3-1.3L4.3 3zM12 5 9.9 6.9 12 9V5z"/></svg>';
+  function paintMute(){$("muteBtn").innerHTML=muted?ICON_OFF:ICON_ON;}
+  paintMute();
+  $("muteBtn").addEventListener("click",function(){
+    muted=!muted;
+    try{localStorage.setItem("oneline_muted",muted?"1":"0");}catch(e){}
+    paintMute();
+    if(!muted)sfx.click();
+  });
+
+  /* ---------- menu ---------- */
+  var LOCK='<svg viewBox="0 0 24 24"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 1 1 6 0v3H9z"/></svg>';
+  function renderMenu(){
+    var wrap=$("levels");wrap.innerHTML="";
+    var doneCount=0;
+    LEVELS.forEach(function(lv,i){
+      var n=i+1,b=document.createElement("button");
+      b.className="lvl";
+      var isLocked=n>unlocked,isDone=!!completed[n];
+      if(isDone){b.classList.add("done");doneCount++;}
+      if(isLocked)b.classList.add("locked");
+      b.innerHTML=isLocked?LOCK:("<span>"+n+"</span>")+(isDone?'<span class="tick">✓</span>':"");
+      b.setAttribute("aria-label",isLocked?("Level "+n+" locked"):("Level "+n));
+      b.addEventListener("click",function(){
+        if(isLocked){
+          sfx.locked();b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");
+          return;
+        }
+        sfx.click();startLevel(i);
+      });
+      wrap.appendChild(b);
+    });
+    $("stats").textContent=doneCount+" of "+LEVELS.length+" levels solved";
+  }
+  function showMenu(){
+    game.classList.remove("active");menu.classList.add("active");
+    $("winOverlay").classList.remove("show");
+    renderMenu();
+  }
+
+  /* ---------- game state ---------- */
+  var cur=null,level=null,levelIdx=0;
+  var used=[],path=[],lineEls=[],nodeEls=[],adj=[],edgeMap={};
+  var ring=null,rubber=null,dragging=false,finished=false;
+
+  function startLevel(i){
+    levelIdx=i;level=LEVELS[i];finished=false;
+    menu.classList.remove("active");game.classList.add("active");
+    $("lvlTitle").textContent="Level "+(i+1)+" · "+level.name;
+    $("lvlDiff").textContent=level.diff;
+    buildBoard();
+  }
+
+  function buildBoard(){
+    board.innerHTML="";
+    var n=level.nodes.length,m=level.edges.length;
+    adj=[];for(var i=0;i<n;i++)adj.push([]);
+    edgeMap={};lineEls=[];nodeEls=[];used=[];path=[];cur=null;dragging=false;finished=false;
+    level.edges.forEach(function(e,k){
+      adj[e[0]].push([e[1],k]);adj[e[1]].push([e[0],k]);
+      edgeMap[Math.min(e[0],e[1])+"-"+Math.max(e[0],e[1])]=k;
+      used.push(false);
+      var l=document.createElementNS(NS,"line");
+      l.setAttribute("class","eline");
+      l.setAttribute("x1",level.nodes[e[0]][0]);l.setAttribute("y1",level.nodes[e[0]][1]);
+      l.setAttribute("x2",level.nodes[e[1]][0]);l.setAttribute("y2",level.nodes[e[1]][1]);
+      board.appendChild(l);lineEls.push(l);
+    });
+    rubber=document.createElementNS(NS,"line");
+    rubber.setAttribute("class","rubber");rubber.style.display="none";
+    board.appendChild(rubber);
+    ring=document.createElementNS(NS,"circle");
+    ring.setAttribute("class","ring");ring.setAttribute("r",6.5);ring.style.display="none";
+    board.appendChild(ring);
+    level.nodes.forEach(function(p){
+      var c=document.createElementNS(NS,"circle");
+      c.setAttribute("class","nd start-hint");
+      c.setAttribute("cx",p[0]);c.setAttribute("cy",p[1]);c.setAttribute("r",3.1);
+      board.appendChild(c);nodeEls.push(c);
+    });
+    setMsg("Touch any dot to start.");
+    updateCount();
+  }
+
+  function setMsg(t,bad){
+    var m=$("msg");m.textContent=t||"";m.className="msg"+(bad?" bad":"");
+  }
+  function updateCount(){
+    var u=used.filter(Boolean).length;
+    $("count").textContent=u+" / "+used.length;
+  }
+  function paintCursor(){
+    if(cur==null){ring.style.display="none";}
+    else{
+      ring.style.display="";
+      ring.setAttribute("cx",level.nodes[cur][0]);ring.setAttribute("cy",level.nodes[cur][1]);
+    }
+    nodeEls.forEach(function(c){c.classList.toggle("start-hint",cur==null);});
+  }
+
+  function unusedFrom(n){
+    return adj[n].filter(function(a){return !used[a[1]];}).length;
+  }
+
+  function tryMove(n){
+    if(finished)return;
+    if(cur==null){
+      cur=n;path=[];sfx.start();paintCursor();setMsg("");return;
+    }
+    if(n===cur)return;
+    var k=edgeMap[Math.min(cur,n)+"-"+Math.max(cur,n)];
+    if(k===undefined)return;
+    if(used[k]){
+      var last=path[path.length-1];
+      if(last&&last.edge===k&&last.from===n){undoMove(true);}
+      return;
+    }
+    used[k]=true;path.push({from:cur,edge:k});
+    lineEls[k].classList.add("on");
+    cur=n;
+    sfx.move(path.length-1);
+    paintCursor();updateCount();setMsg("");
+    if(used.every(Boolean)){win();return;}
+    if(unusedFrom(cur)===0){
+      sfx.stuck();setMsg("Dead end! Undo or restart.",true);
+    }
+  }
+
+  function undoMove(quiet){
+    if(finished)return;
+    if(!path.length){
+      if(cur!=null){cur=null;paintCursor();sfx.undo();setMsg("Touch any dot to start.");}
+      return;
+    }
+    var s=path.pop();
+    used[s.edge]=false;lineEls[s.edge].classList.remove("on");
+    cur=s.from;
+    sfx.undo();paintCursor();updateCount();setMsg("");
+  }
+
+  function restart(){
+    sfx.reset();buildBoard();
+  }
+
+  function win(){
+    finished=true;dragging=false;rubber.style.display="none";
+    completed[levelIdx+1]=true;
+    if(levelIdx+2>unlocked&&levelIdx+1<LEVELS.length)unlocked=levelIdx+2;
+    saveProgress();
+    sfx.win();
+    var last=levelIdx===LEVELS.length-1;
+    $("winTitle").textContent=last?"You solved them all!":"Level complete!";
+    $("winText").textContent=last?"Every line traced. Nice work.":
+      "Level "+(levelIdx+2)+" is now unlocked.";
+    $("nextBtn").style.display=last?"none":"";
+    setTimeout(function(){$("winOverlay").classList.add("show");},650);
+  }
+
+  /* ---------- input ---------- */
+  function toSvg(ev){
+    var pt=board.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;
+    return pt.matrixTransform(board.getScreenCTM().inverse());
+  }
+  function nearest(p,maxD){
+    var best=-1,bd=maxD;
+    level.nodes.forEach(function(q,i){
+      var d=Math.hypot(q[0]-p.x,q[1]-p.y);
+      if(d<bd){bd=d;best=i;}
+    });
+    return best;
+  }
+  board.addEventListener("pointerdown",function(ev){
+    ac();
+    if(!level||finished)return;
+    var p=toSvg(ev),n=nearest(p,9);
+    if(n<0)return;
+    if(cur==null||n===cur||edgeMap[Math.min(cur,n)+"-"+Math.max(cur,n)]!==undefined){
+      dragging=true;
+      try{board.setPointerCapture(ev.pointerId);}catch(e){}
+      tryMove(n);
+      moveRubber(p);
+    }
+  });
+  board.addEventListener("pointermove",function(ev){
+    if(!dragging||finished)return;
+    var p=toSvg(ev);
+    var n=nearest(p,6);
+    if(n>=0)tryMove(n);
+    moveRubber(p);
+  });
+  function endDrag(){dragging=false;if(rubber)rubber.style.display="none";}
+  board.addEventListener("pointerup",endDrag);
+  board.addEventListener("pointercancel",endDrag);
+  function moveRubber(p){
+    if(cur==null||finished){rubber.style.display="none";return;}
+    rubber.style.display="";
+    rubber.setAttribute("x1",level.nodes[cur][0]);rubber.setAttribute("y1",level.nodes[cur][1]);
+    rubber.setAttribute("x2",p.x);rubber.setAttribute("y2",p.y);
+  }
+
+  /* ---------- buttons ---------- */
+  $("undoBtn").addEventListener("click",function(){undoMove();});
+  $("resetBtn").addEventListener("click",restart);
+  $("menuBtn").addEventListener("click",function(){sfx.click();showMenu();});
+  $("winMenuBtn").addEventListener("click",function(){sfx.click();showMenu();});
+  $("nextBtn").addEventListener("click",function(){
+    sfx.click();$("winOverlay").classList.remove("show");startLevel(levelIdx+1);
+  });
+  document.addEventListener("keydown",function(e){
+    if(!game.classList.contains("active"))return;
+    if((e.ctrlKey||e.metaKey)&&e.key==="z"){undoMove();}
+  });
+
+  renderMenu();
+})();
+</script>
+</body>
+</html>
