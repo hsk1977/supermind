@@ -62,7 +62,7 @@ background:var(--hole);border:8px solid #8a5a32;border-radius:14px;box-shadow:0 
 </div>
 <div class="board" id="bd"></div>
 <div class="tray" id="tr"></div>
-<div class="tip">Drag a block onto the board, tap it to rotate. Fill a full row or column to clear it — blocks above fall down.</div>
+<div class="tip">Drag a block onto the board, tap it to rotate. Fill a full row or column to clear it — blocks always fall down.</div>
 <div class="over" id="ov"><h2>Game Over</h2><p>Score: <b id="fs">0</b></p><button class="btn" id="pa">Play Again</button></div>
 <script>
 const N=8,$=id=>document.getElementById(id);
@@ -141,7 +141,8 @@ function place(d){busy=true;const{p,r,c,i}=d;let n=0;
   setTimeout(()=>{score+=L*L*10*chain;idx.forEach(k=>g[k]=null);const mv=gravity();draw();
    mv.forEach(k=>cells[k].classList.add('drop'));if(mv.length)setTimeout(sfx.drop,120);
    setTimeout(()=>resolve(chain+1),mv.length?280:0)},300)};
- resolve(1)}
+ const m0=gravity();
+ if(m0.length)setTimeout(()=>{draw();m0.forEach(k=>cells[k].classList.add('drop'));sfx.drop();setTimeout(()=>resolve(1),290)},130);else resolve(1)}
 
 function init(){g=Array(N*N).fill(null);score=0;tray=[rnd(),rnd(),rnd()];busy=false;$('ov').classList.remove('show');draw();renderTray()}
 const mt=$('mt');mt.textContent=muted?'🔇':'🔊';mt.onclick=()=>{muted=!muted;mt.textContent=muted?'🔇':'🔊';try{localStorage.setItem('wb-mute',muted?'1':'0')}catch(e){}ac();sfx.pick()};
