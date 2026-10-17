@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Hidden Objects Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #1e293b;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .top-bar {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #0f172a;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .home-btn {
+            background-color: #dc2626;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .home-btn:hover {
+            background-color: #b91c1c;
+        }
+
+        .level-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .hint-btn {
+            background-color: #d97706;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .hint-btn:disabled {
+            background-color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .task-bar {
+            width: 100%;
+            max-width: 800px;
+            background-color: #334155;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .target-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .target-icon {
+            font-size: 24px;
+            background: #0f172a;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #64748b;
+        }
+
+        .dot.active {
+            background-color: #22c55e;
+        }
+
+        .game-board {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            background-color: #0284c7;
+            border: 4px solid #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .item {
+            position: absolute;
+            font-size: 30px;
+            cursor: pointer;
+            line-height: 1;
+            transition: transform 0.1s;
+        }
+
+        .item:hover {
+            transform: scale(1.2) !important;
+        }
+
+        .item.found {
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .target-item {
+            z-index: 50;
+        }
+
+        @keyframes hintFlash {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0px yellow); }
+            50% { transform: scale(1.8); filter: drop-shadow(0 0 15px yellow); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0px yellow); }
+        }
+
+        .hint-highlight {
+            animation: hintFlash 0.5s infinite;
+            z-index: 100 !important;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal-box {
+            background: #0f172a;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #38bdf8;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-box h2 {
+            color: #22c55e;
+            margin-bottom: 10px;
+        }
+
+        .modal-box p {
+            margin-bottom: 20px;
+            color: #cbd5e1;
+            font-size: 16px;
+        }
+
+        .modal-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-btn:hover {
+            background: #16a34a;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="index.html" class="home-btn">HOME</a>
+        <div class="level-title" id="level-txt">Level 1 / 10</div>
+        <button class="hint-btn" id="hint-btn" onclick="useHint()">HINT (3)</button>
+    </div>
+
+    <div class="task-bar">
+        <div class="target-box">
+            <span>Find 5 x</span>
+            <span class="target-icon" id="target-symbol">🔑</span>
+            <span id="target-label">Keys</span>
+        </div>
+        <div class="progress-dots" id="dots-box">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <div class="game-board" id="board"></div>
+
+    <div class="modal hidden" id="win-modal">
+        <div class="modal-box">
+            <h2 id="modal-title">Stage Cleared!</h2>
+            <p id="modal-msg">You found all 5 hidden items.</p>
+            <button class="modal-btn" id="modal-action-btn" onclick="handleModalClick()">Next Stage</button>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            { name: 'Keys', symbol: '🔑' },
+            { name: 'Elephants', symbol: '🐘' },
+            { name: 'Apples', symbol: '🍎' },
+            { name: 'Guitars', symbol: '🎸' },
+            { name: 'Watches', symbol: '⌚' },
+            { name: 'Diamonds', symbol: '💎' },
+            { name: 'Teddy Bears', symbol: '🧸' },
+            { name: 'Cameras', symbol: '📸' },
+            { name: 'Crowns', symbol: '👑' },
+            { name: 'Rockets', symbol: '🚀' }
+        ];
+
+        const clutterSymbols = [
+            '🍕','🍔','🍟','🍳','🍞','🥩','🧀','🥗','🍌','🥦',
+            '🌽','🎺','🎻','⚽','🏀','🏈','🎾','🏓','🚗','🚲',
+            '⛵','🚁','🚜','⏰','🎧','💻','🕹️','🎨','🖌️','📚',
+            '✂️','🔨','🧲','🎩','👟','👕','🧦','🎈','🎁','🏆'
+        ];
+
+        let currentLevel = 0;
+        let foundCount = 0;
+        let hintsRemaining = 3;
+        let targetsInBoard = [];
+
+        const board = document.getElementById('board');
+
+        function startLevel(lvlIndex) {
+            currentLevel = lvlIndex;
+            foundCount = 0;
+            targetsInBoard = [];
+            board.innerHTML = '';
+
+            document.getElementById('level-txt').innerText = `Level ${currentLevel + 1} / 10`;
+            document.getElementById('target-symbol').innerText = levels[currentLevel].symbol;
+            document.getElementById('target-label').innerText = levels[currentLevel].name;
+            document.getElementById('win-modal').classList.add('hidden');
+
+            renderDots();
+            updateHintButton();
+
+            let items = [];
+            for (let i = 0; i < 5; i++) {
+                items.push({ isTarget: true, symbol: levels[currentLevel].symbol });
+            }
+
+            const cleanClutter = clutterSymbols.filter(s => s !== levels[currentLevel].symbol);
+            while (items.length < 185) {
+                const randomSym = cleanClutter[Math.floor(Math.random() * cleanClutter.length)];
+                items.push({ isTarget: false, symbol: randomSym });
+            }
+
+            items.sort(() => Math.random() - 0.5);
+
+            items.forEach((data) => {
+                const el = document.createElement('div');
+                el.className = 'item';
+                el.innerText = data.symbol;
+
+                const posX = Math.floor(Math.random() * 740) + 10;
+                const posY = Math.floor(Math.random() * 440) + 10;
+                const angle = Math.floor(Math.random() * 360);
+
+                el.style.left = posX + 'px';
+                el.style.top = posY + 'px';
+                el.style.transform = `rotate(${angle}deg)`;
+
+                if (data.isTarget) {
+                    el.classList.add('target-item');
+                    targetsInBoard.push(el);
+                    el.onclick = (e) => {
+                        e.stopPropagation();
+                        clickTarget(el);
+                    };
+                } else {
+                    el.style.zIndex = Math.floor(Math.random() * 30) + 1;
+                }
+
+                board.appendChild(el);
+            });
+        }
+
+        function clickTarget(el) {
+            if (el.classList.contains('found')) return;
+
+            el.classList.add('found');
+            el.classList.remove('hint-highlight');
+            foundCount++;
+            renderDots();
+
+            if (foundCount === 5) {
+                setTimeout(() => {
+                    const modal = document.getElementById('win-modal');
+                    const title = document.getElementById('modal-title');
+                    const msg = document.getElementById('modal-msg');
+                    const btn = document.getElementById('modal-action-btn');
+
+                    if (currentLevel < levels.length - 1) {
+                        title.innerText = 'Stage Cleared!';
+                        msg.innerText = `Great job! You found all 5 ${levels[currentLevel].name}.`;
+                        btn.innerText = 'Next Stage';
+                    } else {
+                        title.innerText = 'Congratulations!';
+                        msg.innerText = 'CONGRATULATIONS! You completed all 10 stages!';
+                        btn.innerText = 'OK';
+                    }
+                    modal.classList.remove('hidden');
+                }, 300);
+            }
+        }
+
+        function handleModalClick() {
+            if (currentLevel < levels.length - 1) {
+                startLevel(currentLevel + 1);
+            } else {
+                hintsRemaining = 3;
+                startLevel(0);
+            }
+        }
+
+        function renderDots() {
+            const dotsBox = document.getElementById('dots-box');
+            dotsBox.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (i < foundCount ? ' active' : '');
+                dotsBox.appendChild(dot);
+            }
+        }
+
+        function useHint() {
+            if (hintsRemaining <= 0) return;
+
+            const remainingTargets = targetsInBoard.filter(el => !el.classList.contains('found'));
+            if (remainingTargets.length > 0) {
+                hintsRemaining--;
+                updateHintButton();
+
+                const target = remainingTargets[Math.floor(Math.random() * remainingTargets.length)];
+                target.classList.add('hint-highlight');
+
+                setTimeout(() => {
+                    target.classList.remove('hint-highlight');
+                }, 2000);
+            }
+        }
+
+        function updateHintButton() {
+            const btn = document.getElementById('hint-btn');
+            btn.innerText = `HINT (${hintsRemaining})`;
+            btn.disabled = hintsRemaining <= 0;
+        }
+
+        window.onload = () => {
+            startLevel(0);
+        };
+    </script>
+</body>
+</html>
