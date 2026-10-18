@@ -2,9 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Find Hidden Objects Game</title>
     <style>
+        :root {
+            /* Set by JS: the board side length in px (square board) */
+            --board: 480px;
+            /* UI scale relative to the original 480px design */
+            --k: calc(var(--board) / 480);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -12,6 +19,11 @@
             font-family: Arial, sans-serif;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
         }
 
         body {
@@ -20,31 +32,37 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
+            min-height: 100dvh;
             padding: 8px;
-            overflow-x: hidden;
+            overflow: hidden;
+        }
+
+        .top-bar,
+        .task-bar,
+        .game-board {
+            width: var(--board);
         }
 
         .top-bar {
-            width: 100%;
-            max-width: 480px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background-color: #0f172a;
-            padding: 10px 15px;
+            padding: calc(10px * var(--k)) calc(15px * var(--k));
             border-radius: 8px;
-            margin-bottom: 8px;
+            margin-bottom: calc(8px * var(--k));
         }
 
         .home-btn {
             background-color: #dc2626;
             color: #ffffff;
             text-decoration: none;
-            padding: 6px 12px;
+            padding: calc(6px * var(--k)) calc(12px * var(--k));
             font-weight: bold;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: calc(13px * var(--k));
         }
 
         .home-btn:hover {
@@ -52,7 +70,7 @@
         }
 
         .level-title {
-            font-size: 16px;
+            font-size: calc(16px * var(--k));
             font-weight: bold;
             color: #38bdf8;
         }
@@ -61,11 +79,11 @@
             background-color: #d97706;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: calc(6px * var(--k)) calc(12px * var(--k));
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: calc(13px * var(--k));
         }
 
         .hint-btn:disabled {
@@ -74,40 +92,38 @@
         }
 
         .task-bar {
-            width: 100%;
-            max-width: 480px;
             background-color: #334155;
-            padding: 8px 15px;
+            padding: calc(8px * var(--k)) calc(15px * var(--k));
             border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: calc(8px * var(--k));
         }
 
         .target-box {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            gap: calc(8px * var(--k));
+            font-size: calc(14px * var(--k));
             font-weight: bold;
         }
 
         .target-icon {
-            font-size: 20px;
+            font-size: calc(20px * var(--k));
             background: #0f172a;
-            padding: 2px 8px;
+            padding: calc(2px * var(--k)) calc(8px * var(--k));
             border-radius: 6px;
         }
 
         .progress-dots {
             display: flex;
-            gap: 5px;
+            gap: calc(5px * var(--k));
         }
 
         .dot {
-            width: 12px;
-            height: 12px;
+            width: calc(12px * var(--k));
+            height: calc(12px * var(--k));
             border-radius: 50%;
             background-color: #64748b;
         }
@@ -118,18 +134,17 @@
 
         .game-board {
             position: relative;
-            width: 100%;
-            max-width: 480px;
-            height: 480px;
+            height: var(--board);
             background-color: #0284c7;
             border: 3px solid #0f172a;
             border-radius: 8px;
             overflow: hidden;
+            touch-action: manipulation;
         }
 
         .item {
             position: absolute;
-            font-size: 28px;
+            font-size: calc(var(--board) * 0.0583); /* 28px at 480px */
             cursor: pointer;
             line-height: 1;
             transition: transform 0.1s;
@@ -214,6 +229,14 @@
             background: #16a34a;
         }
 
+        /* Larger modal on big (desktop) screens */
+        @media (min-width: 900px) and (min-height: 700px) {
+            .modal-box { max-width: 420px; padding: 34px 28px; }
+            .modal-box h2 { font-size: 28px; }
+            .modal-box p { font-size: 18px; }
+            .modal-btn { font-size: 19px; padding: 13px 20px; }
+        }
+
         .hidden {
             display: none !important;
         }
@@ -280,6 +303,24 @@
 
         const board = document.getElementById('board');
 
+        /* ---------- Responsive sizing ---------- */
+        function resizeGame() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const pad = 16;                       // body padding (both sides)
+            const maxByWidth = vw - pad;
+            // Height available = viewport minus the two bars (~ 0.31 * board + margins)
+            // Solve: board + 0.31*board + 6 ≈ vh - pad  →  board ≈ (vh - pad - 6) / 1.31
+            const maxByHeight = (vh - pad - 6) / 1.31;
+            const size = Math.floor(Math.max(260, Math.min(maxByWidth, maxByHeight, 900)));
+            document.documentElement.style.setProperty('--board', size + 'px');
+        }
+
+        window.addEventListener('resize', resizeGame);
+        window.addEventListener('orientationchange', () => setTimeout(resizeGame, 150));
+        resizeGame();
+
+        /* ---------- Game ---------- */
         function startLevel(lvlIndex) {
             currentLevel = lvlIndex;
             foundCount = 0;
@@ -312,12 +353,13 @@
                 el.className = 'item';
                 el.innerText = data.symbol;
 
-                const posX = Math.floor(Math.random() * 420) + 10;
-                const posY = Math.floor(Math.random() * 420) + 10;
+                // Positions in % so they scale with any board size (2% .. 90%)
+                const posX = 2 + Math.random() * 88;
+                const posY = 2 + Math.random() * 88;
                 const angle = Math.floor(Math.random() * 360);
 
-                el.style.left = posX + 'px';
-                el.style.top = posY + 'px';
+                el.style.left = posX + '%';
+                el.style.top = posY + '%';
                 el.style.transform = `rotate(${angle}deg)`;
 
                 if (data.isTarget) {
@@ -407,6 +449,7 @@
         }
 
         window.onload = () => {
+            resizeGame();
             startLevel(0);
         };
     </script>
