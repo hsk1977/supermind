@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" class="lang-pending">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بازی حدس کلمه</title>
     <style>
+        html.lang-pending body { visibility: hidden; }
         :root {
             --bg-color: #fdf6e3;
             --card-bg: #f5e8c7;
@@ -308,6 +309,7 @@
 
         function toggleLanguage() {
             currentLang = currentLang === 'fa' ? 'en' : 'fa';
+            try { localStorage.setItem('lang_manual', currentLang); } catch (e) {}
             updateUI();
             loadWords();
         }
@@ -462,8 +464,53 @@
             }
         }
 
-        updateUI();
-        loadWords();
+        // ---------- تشخیص زبان بر اساس کشور (IP) ----------
+        const GEO_SERVICES = [
+            async (signal) => (await (await fetch('https://api.country.is/', { signal })).json()).country,
+            async (signal) => (await (await fetch('https://get.geojs.io/v1/ip/country.json', { signal })).json()).country,
+            async (signal) => (await (await fetch('https://ipapi.co/country/', { signal })).text()).trim()
+        ];
+        const AUTO_TTL = 24 * 60 * 60 * 1000; // نتیجه تشخیص ۲۴ ساعت کش می‌شود
+
+        function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+        function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+        async function detectLang() {
+            // 1) انتخاب دستی کاربر همیشه اولویت دارد
+            const manual = storageGet('lang_manual');
+            if (manual === 'fa' || manual === 'en') return manual;
+
+            // 2) نتیجه تشخیص قبلی (اگر تازه باشد)
+            try {
+                const cached = JSON.parse(storageGet('lang_auto') || 'null');
+                if (cached && Date.now() - cached.t < AUTO_TTL) return cached.lang;
+            } catch (e) {}
+
+            // 3) تشخیص با IP (سرویس‌ها به ترتیب امتحان می‌شوند)
+            for (const svc of GEO_SERVICES) {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 2000);
+                try {
+                    const country = String(await svc(ctrl.signal) || '').trim().toUpperCase();
+                    clearTimeout(timer);
+                    if (/^[A-Z]{2}$/.test(country)) {
+                        const lang = country === 'IR' ? 'fa' : 'en';
+                        storageSet('lang_auto', JSON.stringify({ lang, t: Date.now() }));
+                        return lang;
+                    }
+                } catch (e) { clearTimeout(timer); }
+            }
+
+            // 4) اگر همه سرویس‌ها شکست خوردند: زبان مرورگر
+            return (navigator.language || '').toLowerCase().startsWith('fa') ? 'fa' : 'en';
+        }
+
+        (async function start() {
+            currentLang = await detectLang();
+            updateUI();
+            document.documentElement.classList.remove('lang-pending');
+            loadWords();
+        })();
     </script>
 </body>
 </html>
