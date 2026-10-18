@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pointers Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background-color: #dbece5;
+            color: #2b3a4a;
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Glass / Pastel Card Effect */
+        .game-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(8px);
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Top Bar Home Red Button */
+        .home-btn {
+            background: linear-gradient(135deg, #ff5f5f, #e63946);
+            box-shadow: 0 4px 12px rgba(230, 57, 70, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .home-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* Heart Beat Animation */
+        .heart-icon {
+            color: #e63946;
+            filter: drop-shadow(0 2px 4px rgba(230, 57, 70, 0.3));
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .heart-lost {
+            opacity: 0.25;
+            transform: scale(0.75);
+            filter: grayscale(1);
+        }
+
+        /* Bottom Round Action Buttons */
+        .action-btn {
+            background: #ffffff;
+            color: #2c4d5d;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:active {
+            transform: scale(0.92);
+            background: #f0f8f5;
+        }
+
+        .hint-btn-glow {
+            background: #ffb703;
+            color: #ffffff;
+            box-shadow: 0 6px 18px rgba(255, 183, 3, 0.4);
+        }
+
+        /* Smooth Canvas */
+        canvas {
+            display: block;
+            border-radius: 16px;
+            cursor: pointer;
+        }
+
+        /* Modal Overlay */
+        .modal {
+            background: rgba(27, 38, 59, 0.4);
+            backdrop-filter: blur(6px);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between p-3 select-none">
+
+    <!-- Top Navigation & Header -->
+    <header class="w-full max-w-md flex items-center justify-between px-2 pt-2 z-10">
+        <!-- Red Home Button linking to index.html -->
+        <a href="index.html" class="home-btn w-12 h-12 rounded-full flex items-center justify-center text-white text-xl cursor-pointer no-underline">
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg>
+        </a>
+
+        <!-- Difficulty & Level Badge -->
+        <div class="flex flex-col items-center">
+            <span id="diff-badge" class="bg-white/60 text-[#3a5a40] text-xs font-bold px-3 py-0.5 rounded-full uppercase tracking-wider mb-0.5">MEDIUM</span>
+            <h1 id="level-title" class="text-2xl font-extrabold text-[#3a5a40] tracking-wide">Level 1</h1>
+        </div>
+
+        <!-- Lives / Hearts -->
+        <div class="flex gap-1.5 text-xl" id="lives-container">
+            <span class="heart-icon" id="heart-1" style="display:inline-block"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg></span>
+            <span class="heart-icon" id="heart-2" style="display:inline-block"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg></span>
+            <span class="heart-icon" id="heart-3" style="display:inline-block"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg></span>
+        </div>
+    </header>
+
+    <!-- Main Game Canvas Container -->
+    <main class="w-full max-w-md my-auto flex items-center justify-center relative">
+        <div class="game-card p-3 rounded-3xl w-full flex items-center justify-center relative overflow-hidden">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+    </main>
+
+    <!-- Bottom Controls Bar -->
+    <footer class="w-full max-w-md flex items-center justify-between px-6 pb-3 z-10">
+        <!-- Restart Button -->
+        <button id="restart-btn" class="action-btn w-12 h-12 rounded-full flex items-center justify-center text-lg text-slate-600 focus:outline-none">
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M21.5 2.5v8h-8z"/></svg>
+        </button>
+
+        <!-- Sound Toggle -->
+        <button id="sound-btn" class="action-btn w-12 h-12 rounded-full flex items-center justify-center text-lg text-slate-600 focus:outline-none">
+            <span id="sound-icon" style="display:inline-block"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M3 9v6h4l5 4V5L7 9z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        </button>
+
+        <!-- Hint Button -->
+        <button id="hint-btn" class="action-btn hint-btn-glow w-14 h-14 rounded-full flex items-center justify-center text-2xl relative focus:outline-none">
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.7A7 7 0 0 0 12 2z"/><rect x="9" y="19.5" width="6" height="2" rx="1"/></svg>
+            <span id="hint-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">3</span>
+        </button>
+    </footer>
+
+    <!-- Level Complete / Game Over Modal -->
+    <div id="modal-overlay" class="modal fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 text-center max-w-xs w-full shadow-2xl transform transition-all scale-95 opacity-0" id="modal-box">
+            <div id="modal-icon-container" class="w-20 h-20 rounded-full bg-emerald-100 text-emerald-500 mx-auto flex items-center justify-center text-4xl mb-4">
+                <span id="modal-icon" style="display:inline-block"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M7 3h10v5a5 5 0 0 1-10 0z"/><path d="M7 5H3.5v2A4 4 0 0 0 7 11M17 5h3.5v2A4 4 0 0 1 17 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="11" y="13" width="2" height="4"/><rect x="8" y="18" width="8" height="3" rx="1"/></svg></span>
+            </div>
+            <h2 id="modal-title" class="text-2xl font-bold text-slate-800 mb-1">Level Cleared!</h2>
+            <p id="modal-desc" class="text-slate-500 text-sm mb-6">Great job solving the puzzle!</p>
+            
+            <button id="modal-action-btn" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95 text-lg">
+                Next Level
+            </button>
+        </div>
+    </div>
+
+    <!-- Web Audio Synthesizer & Game Logic -->
+    <script>
+        // Sound System using Web Audio API
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playSwoosh() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.15);
+
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+
+            playError() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(110, this.ctx.currentTime + 0.08);
+
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.25);
+            }
+
+            playWin() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const notes = [392, 523.25, 659.25, 783.99]; // G4, C5, E5, G5
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+
+                    gain.gain.setValueAtTime(0.25, this.ctx.currentTime + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(this.ctx.currentTime + idx * 0.08);
+                    osc.stop(this.ctx.currentTime + idx * 0.08 + 0.3);
+                });
+            }
+
+            playGameOver() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const notes = [300, 260, 220, 180];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.12);
+
+                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime + idx * 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.12 + 0.2);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(this.ctx.currentTime + idx * 0.12);
+                    osc.stop(this.ctx.currentTime + idx * 0.12 + 0.2);
+                });
+            }
+        }
+
+        const sound = new SoundSystem();
+
+        const ICONS = {
+            house: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg>',
+            heart: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>',
+            restart: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M21.5 2.5v8h-8z"/></svg>',
+            volume: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M3 9v6h4l5 4V5L7 9z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+            mute: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M3 9v6h4l5 4V5L7 9z"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+            bulb: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.7A7 7 0 0 0 12 2z"/><rect x="9" y="19.5" width="6" height="2" rx="1"/></svg>',
+            trophy: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M7 3h10v5a5 5 0 0 1-10 0z"/><path d="M7 5H3.5v2A4 4 0 0 0 7 11M17 5h3.5v2A4 4 0 0 1 17 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="11" y="13" width="2" height="4"/><rect x="8" y="18" width="8" height="3" rx="1"/></svg>',
+            crack: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="display:block"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/><path d="M12 7.5l-2 3.5 3 2-2 4.5" fill="none" stroke="#ffe4e6" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>'
+        };
+
+        // Canvas & Game State setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const MAX_HINTS = 3;
+        let currentLevel = 1;
+        let lives = 3;
+        let hintsLeft = MAX_HINTS;
+        let gridSize = 5;          // Grid dimensions (N x N)
+        let pointers = [];         // Active pointers
+        let exitingPointers = [];  // Pointers currently animating out
+        let gameOver = false;
+        let levelDone = false;
+        let canvasSize = 0;        // CSS pixel size of the canvas
+        let lastTime = 0;
+        let modalTimer = null;
+
+        // Colors
+        const POINTER_COLOR = "#2b3a4a";
+        const ERROR_COLOR = "#e63946";
+        const HINT_COLOR = "#ffb703";
+        const TRAIL_GRADIENT = ["#ff5996", "#9d4edd", "#00b4d8", "#52b788", "#ffb703"];
+
+        const EXIT_SPEED = 30;     // cells per second
+        const ERROR_FLASH = 0.35;  // seconds
+
+        // Directions: Up (0, -1), Right (1, 0), Down (0, 1), Left (-1, 0)
+        const DIRS = [
+            { x: 0, y: -1 },
+            { x: 1, y: 0 },
+            { x: 0, y: 1 },
+            { x: -1, y: 0 }
+        ];
+
+        class Pointer {
+            constructor(id, segments, dirIndex, gridDim) {
+                this.id = id;
+                this.segments = segments; // tail ... head
+                this.dirIndex = dirIndex; // direction the head points to
+                this.errorTimer = 0;
+                this.exitDist = 0;        // distance (in cells) travelled while exiting
+                this.trailColor = TRAIL_GRADIENT[Math.floor(Math.random() * TRAIL_GRADIENT.length)];
+                this.highlight = false;
+                this.pts = this.buildPath(gridDim);
+            }
+
+            get head() { return this.segments[this.segments.length - 1]; }
+            get tail() { return this.segments[0]; }
+            get bodyLen() { return this.segments.length - 1; }
+
+            // Full path: the body followed by a straight extension past the head,
+            // so the pointer "slides" out like a snake along its own shape.
+            buildPath(gridDim) {
+                const pts = this.segments.map(s => ({ x: s.x, y: s.y }));
+                const dir = DIRS[this.dirIndex];
+                const ext = gridDim + 2 + this.bodyLen;
+                for (let k = 1; k <= ext; k++) {
+                    pts.push({ x: this.head.x + dir.x * k, y: this.head.y + dir.y * k });
+                }
+                return pts;
+            }
+
+            // Cells in front of the head until the edge of the grid
+            getRayCells(gridDim) {
+                const ray = [];
+                const dir = DIRS[this.dirIndex];
+                let cx = this.head.x + dir.x;
+                let cy = this.head.y + dir.y;
+                while (cx >= 0 && cx < gridDim && cy >= 0 && cy < gridDim) {
+                    ray.push({ x: cx, y: cy });
+                    cx += dir.x;
+                    cy += dir.y;
+                }
+                return ray;
+            }
+        }
+
+        // Resize canvas to a crisp square that really fits its container
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const cs = getComputedStyle(container);
+            const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+            const avail = container.clientWidth - padX;
+            const size = Math.floor(Math.max(120, Math.min(avail, window.innerHeight * 0.68)));
+            const dpr = window.devicePixelRatio || 1;
+
+            canvasSize = size;
+            canvas.width = Math.round(size * dpr);
+            canvas.height = Math.round(size * dpr);
+            canvas.style.width = `${size}px`;
+            canvas.style.height = `${size}px`;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
+
+        // ---------- Level generation (dense + always solvable) ----------
+        // 1) Partition the board into long, winding paths (like the reference game).
+        // 2) Pick which end of every path is the arrow head, building a dependency graph
+        //    ("A is blocked by B"). An end is only accepted if the graph stays acyclic,
+        //    so a full solution always exists, but long blocking chains make it hard.
+        let occ = [];  // occ[y][x] = id of the active pointer on that cell, or 0
+
+        function levelSettings(levelNum) {
+            return {
+                size: Math.min(12 + (levelNum - 1), 20),
+                maxLen: Math.min(8 + levelNum * 2, 28),
+                label: levelNum <= 3 ? "MEDIUM" : "HARD"
+            };
+        }
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function generateLevel(levelNum) {
+            const cfg = levelSettings(levelNum);
+            gridSize = cfg.size;
+            document.getElementById('diff-badge').innerText = cfg.label;
+            document.getElementById('level-title').innerText = `Level ${levelNum}`;
+
+            let best = null;
+            for (let attempt = 0; attempt < 40; attempt++) {
+                const result = buildBoard(gridSize, cfg.maxLen);
+                if (!best || result.coverage > best.coverage) best = result;
+                if (result.coverage >= 0.9) break;
+            }
+
+            pointers = best.list.map((p, i) => new Pointer(i + 1, p.cells, p.dirIndex, gridSize));
+            exitingPointers = [];
+            rebuildOccupancy();
+        }
+
+        function buildBoard(n, maxLen) {
+            // ----- 1) partition into winding paths -----
+            const own = Array(n).fill(null).map(() => Array(n).fill(0));
+            let nextId = 1;
+            const paths = {};
+            const order = [];
+            for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) order.push({ x, y });
+            shuffle(order);
+
+            for (const start of order) {
+                if (own[start.y][start.x] !== 0) continue;
+                const target = 2 + Math.floor(Math.pow(Math.random(), 1.3) * (maxLen - 1));
+                const cells = [{ x: start.x, y: start.y }];
+                const id = nextId++;
+                own[start.y][start.x] = id;
+                let dir = Math.floor(Math.random() * 4);
+
+                while (cells.length < target) {
+                    const last = cells[cells.length - 1];
+                    const opts = [];
+                    for (let d = 0; d < 4; d++) {
+                        const nx = last.x + DIRS[d].x, ny = last.y + DIRS[d].y;
+                        if (nx >= 0 && ny >= 0 && nx < n && ny < n && own[ny][nx] === 0) opts.push(d);
+                    }
+                    if (opts.length === 0) break;
+                    // keep going straight most of the time, otherwise turn
+                    dir = (opts.includes(dir) && Math.random() < 0.6) ? dir : opts[Math.floor(Math.random() * opts.length)];
+                    const nx = last.x + DIRS[dir].x, ny = last.y + DIRS[dir].y;
+                    cells.push({ x: nx, y: ny });
+                    own[ny][nx] = id;
+                }
+
+                if (cells.length < 2) {
+                    own[start.y][start.x] = 0; // lonely cell, leave empty
+                    continue;
+                }
+                paths[id] = { id, cells, assigned: false, dirIndex: 0, ray: [] };
+            }
+
+            // ----- 2) choose head ends keeping the dependency graph acyclic -----
+            const depsOf = (p) => {
+                const set = new Set();
+                for (const c of p.ray) {
+                    const o = own[c.y][c.x];
+                    if (o !== 0 && o !== p.id) set.add(o);
+                }
+                return set;
+            };
+
+            const rayFrom = (head, dirIndex) => {
+                const ray = [];
+                let cx = head.x + DIRS[dirIndex].x, cy = head.y + DIRS[dirIndex].y;
+                while (cx >= 0 && cx < n && cy >= 0 && cy < n) {
+                    ray.push({ x: cx, y: cy });
+                    cx += DIRS[dirIndex].x; cy += DIRS[dirIndex].y;
+                }
+                return ray;
+            };
+
+            // Would giving `p` these deps create a cycle? (is p reachable from its deps?)
+            const createsCycle = (p, deps) => {
+                const seen = new Set();
+                const stack = [...deps];
+                while (stack.length) {
+                    const id = stack.pop();
+                    if (id === p.id) return true;
+                    if (seen.has(id)) continue;
+                    seen.add(id);
+                    const q = paths[id];
+                    if (q && q.assigned) depsOf(q).forEach(d => stack.push(d));
+                }
+                return false;
+            };
+
+            const queue = shuffle(Object.keys(paths).map(Number));
+            const finished = [];
+
+            while (queue.length) {
+                const id = queue.pop();
+                const p = paths[id];
+                if (!p) continue;
+
+                const options = [];
+                for (const reversed of [false, true]) {
+                    const cells = reversed ? p.cells.slice().reverse() : p.cells;
+                    const head = cells[cells.length - 1];
+                    const dirIndex = getDirectionFromPoints(cells[cells.length - 2], head);
+                    const ray = rayFrom(head, dirIndex);
+                    // a head pointing into its own body could never leave
+                    if (ray.some(c => own[c.y][c.x] === p.id)) continue;
+                    const probe = { id: p.id, ray };
+                    const deps = depsOf(probe);
+                    if (!createsCycle(p, deps)) options.push({ cells, dirIndex, ray, depCount: deps.size });
+                }
+
+                if (options.length > 0) {
+                    // prefer the more entangled option most of the time -> harder levels
+                    options.sort((a, b) => b.depCount - a.depCount);
+                    const pick = (options.length > 1 && Math.random() > 0.75) ? options[1] : options[0];
+                    p.cells = pick.cells; p.dirIndex = pick.dirIndex; p.ray = pick.ray; p.assigned = true;
+                    finished.push(p);
+                } else if (p.cells.length >= 4) {
+                    // split into two shorter paths and try again
+                    const mid = Math.floor(p.cells.length / 2);
+                    const a = { id: nextId++, cells: p.cells.slice(0, mid), assigned: false, dirIndex: 0, ray: [] };
+                    const b = { id: nextId++, cells: p.cells.slice(mid), assigned: false, dirIndex: 0, ray: [] };
+                    for (const piece of [a, b]) {
+                        paths[piece.id] = piece;
+                        piece.cells.forEach(c => own[c.y][c.x] = piece.id);
+                        queue.push(piece.id);
+                    }
+                    delete paths[p.id];
+                } else {
+                    // cannot be placed: remove it from the board
+                    p.cells.forEach(c => own[c.y][c.x] = 0);
+                    delete paths[p.id];
+                }
+            }
+
+            // drop any pointer whose cells were reassigned by a split (safety) and measure coverage
+            const list = finished.filter(p => paths[p.id]);
+            const covered = list.reduce((s, p) => s + p.cells.length, 0);
+            return { list, coverage: covered / (n * n) };
+        }
+
+        function rebuildOccupancy() {
+            occ = Array(gridSize).fill(null).map(() => Array(gridSize).fill(0));
+            pointers.forEach(p => p.segments.forEach(s => occ[s.y][s.x] = p.id));
+        }
+
+        function getDirectionFromPoints(p1, p2) {
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            if (dx === 1) return 1;
+            if (dx === -1) return 3;
+            if (dy === 1) return 2;
+            return 0;
+        }
+
+        function getFreePointers() {
+            return pointers.filter(ptr => isPointerUnblocked(ptr));
+        }
+
+        function isPointerUnblocked(ptr) {
+            const dir = DIRS[ptr.dirIndex];
+            let cx = ptr.head.x + dir.x, cy = ptr.head.y + dir.y;
+            while (cx >= 0 && cx < gridSize && cy >= 0 && cy < gridSize) {
+                if (occ[cy][cx] !== 0) return false;
+                cx += dir.x; cy += dir.y;
+            }
+            return true;
+        }
+
+        // ---------- Input ----------
+        function handleInput(e) {
+            sound.init();
+            if (gameOver || levelDone) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const cellSize = rect.width / gridSize;
+            const gx = Math.floor(x / cellSize);
+            const gy = Math.floor(y / cellSize);
+            if (gx < 0 || gy < 0 || gx >= gridSize || gy >= gridSize) return;
+
+            // Exact cell first, otherwise the closest body segment nearby (cells are small on big boards)
+            let target = null;
+            if (occ[gy][gx] !== 0) {
+                target = pointers.find(p => p.id === occ[gy][gx]);
+            } else {
+                let bestDist = cellSize * 0.8;
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        const nx = gx + dx, ny = gy + dy;
+                        if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize || occ[ny][nx] === 0) continue;
+                        const d = Math.hypot(x - (nx + 0.5) * cellSize, y - (ny + 0.5) * cellSize);
+                        if (d < bestDist) {
+                            bestDist = d;
+                            target = pointers.find(p => p.id === occ[ny][nx]);
+                        }
+                    }
+                }
+            }
+            if (target) attemptMovePointer(target);
+        }
+
+        function attemptMovePointer(ptr) {
+            pointers.forEach(p => p.highlight = false);
+
+            if (isPointerUnblocked(ptr)) {
+                sound.playSwoosh();
+                ptr.exitDist = 0;
+                pointers = pointers.filter(p => p.id !== ptr.id);
+                ptr.segments.forEach(sg => occ[sg.y][sg.x] = 0);
+                exitingPointers.push(ptr);
+                checkWinCondition();
+            } else {
+                sound.playError();
+                ptr.errorTimer = ERROR_FLASH;
+                loseLife();
+            }
+        }
+
+        function loseLife() {
+            lives--;
+            updateHeartsUI();
+            if (lives <= 0) {
+                gameOver = true;
+                sound.playGameOver();
+                setTimeout(() => showModal(false), 450);
+            }
+        }
+
+        function updateHeartsUI() {
+            for (let i = 1; i <= 3; i++) {
+                const heart = document.getElementById(`heart-${i}`);
+                heart.classList.toggle('heart-lost', i > lives);
+            }
+        }
+
+        function updateHintUI() {
+            document.getElementById('hint-count').innerText = hintsLeft;
+            document.getElementById('hint-btn').style.opacity = hintsLeft > 0 ? '1' : '0.5';
+        }
+
+        function checkWinCondition() {
+            if (!levelDone && !gameOver && pointers.length === 0 && exitingPointers.length === 0) {
+                levelDone = true;
+                setTimeout(() => {
+                    sound.playWin();
+                    showModal(true);
+                }, 300);
+            }
+        }
+
+        // ---------- Update & render ----------
+        function update(dt) {
+            for (let i = exitingPointers.length - 1; i >= 0; i--) {
+                const ptr = exitingPointers[i];
+                ptr.exitDist += EXIT_SPEED * dt;
+                if (ptr.exitDist >= ptr.bodyLen + gridSize + 1) {
+                    exitingPointers.splice(i, 1);
+                }
+            }
+            pointers.forEach(ptr => {
+                if (ptr.errorTimer > 0) ptr.errorTimer = Math.max(0, ptr.errorTimer - dt);
+            });
+            checkWinCondition();
+        }
+
+        function render() {
+            const cellSize = canvasSize / gridSize;
+            ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+            ctx.strokeStyle = "rgba(43, 58, 74, 0.06)";
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i <= gridSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, canvasSize);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(canvasSize, i * cellSize);
+                ctx.stroke();
+            }
+
+            pointers.forEach(ptr => {
+                const isError = ptr.errorTimer > 0;
+                const color = isError ? ERROR_COLOR : (ptr.highlight ? HINT_COLOR : POINTER_COLOR);
+                drawSnake(ptr, 0, cellSize, color, Math.max(cellSize * 0.12, 2.5), 0.34, ptr.highlight);
+            });
+
+            exitingPointers.forEach(ptr => {
+                drawSnake(ptr, ptr.exitDist, cellSize, ptr.trailColor, Math.max(cellSize * 0.14, 3), 0.36, false);
+            });
+        }
+
+        function loop(ts) {
+            const dt = Math.min((ts - (lastTime || ts)) / 1000, 0.05);
+            lastTime = ts;
+            update(dt);
+            render();
+            requestAnimationFrame(loop);
+        }
+
+        // Point at distance d (in cells) along a pointer's path
+        function pointAt(pts, d) {
+            const max = pts.length - 1;
+            d = Math.max(0, Math.min(d, max));
+            const i = Math.min(Math.floor(d), max - 1);
+            const f = d - i;
+            return { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f };
+        }
+
+        // Draw the pointer as a snake occupying [s, s + bodyLen] along its path
+        function drawSnake(ptr, s, cellSize, color, lineWidth, headScale, glow) {
+            const e = s + ptr.bodyLen;
+            const verts = [pointAt(ptr.pts, s)];
+            for (let i = Math.floor(s) + 1; i < e; i++) verts.push({ x: ptr.pts[i].x, y: ptr.pts[i].y });
+            verts.push(pointAt(ptr.pts, e));
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            if (glow) {
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 12;
+            }
+
+            ctx.beginPath();
+            verts.forEach((v, idx) => {
+                const px = (v.x + 0.5) * cellSize;
+                const py = (v.y + 0.5) * cellSize;
+                if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            });
+            ctx.stroke();
+
+            const h = verts[verts.length - 1];
+            drawArrowHead((h.x + 0.5) * cellSize, (h.y + 0.5) * cellSize, DIRS[ptr.dirIndex], cellSize * headScale, color);
+            ctx.restore();
+        }
+
+        function drawArrowHead(x, y, dir, size, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(Math.atan2(dir.y, dir.x));
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(size, 0);
+            ctx.lineTo(-size * 0.8, -size * 0.75);
+            ctx.lineTo(-size * 0.4, 0);
+            ctx.lineTo(-size * 0.8, size * 0.75);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // ---------- Hint ----------
+        function useHint() {
+            sound.init();
+            if (gameOver || levelDone || hintsLeft <= 0 || pointers.length === 0) return;
+            if (pointers.some(p => p.highlight)) return; // a hint is already showing, don't waste another
+
+            const freeList = getFreePointers();
+            if (freeList.length > 0) {
+                freeList[Math.floor(Math.random() * freeList.length)].highlight = true;
+                hintsLeft--;
+                updateHintUI();
+            }
+        }
+
+        // ---------- Modal ----------
+        function showModal(isWin) {
+            const overlay = document.getElementById('modal-overlay');
+            const box = document.getElementById('modal-box');
+            const iconContainer = document.getElementById('modal-icon-container');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            const btn = document.getElementById('modal-action-btn');
+
+            if (isWin) {
+                iconContainer.className = "w-20 h-20 rounded-full bg-emerald-100 text-emerald-500 mx-auto flex items-center justify-center text-4xl mb-4";
+                icon.innerHTML = ICONS.trophy;
+                title.innerText = "Level Cleared!";
+                desc.innerText = `You successfully cleared Level ${currentLevel}!`;
+                btn.innerText = "Next Level";
+                btn.className = "w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95 text-lg";
+                btn.onclick = () => {
+                    hideModal();
+                    currentLevel++;
+                    resetGame();
+                };
+            } else {
+                iconContainer.className = "w-20 h-20 rounded-full bg-rose-100 text-rose-500 mx-auto flex items-center justify-center text-4xl mb-4";
+                icon.innerHTML = ICONS.crack;
+                title.innerText = "Out of Hearts!";
+                desc.innerText = "Be careful! Make sure the arrow's path is clear before tapping.";
+                btn.innerText = "Try Again";
+                btn.className = "w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95 text-lg";
+                btn.onclick = () => {
+                    hideModal();
+                    resetGame();
+                };
+            }
+
+            clearTimeout(modalTimer);
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.remove('scale-95', 'opacity-0');
+                box.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function hideModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const box = document.getElementById('modal-box');
+
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-95', 'opacity-0');
+            clearTimeout(modalTimer);
+            modalTimer = setTimeout(() => overlay.classList.add('hidden'), 200);
+        }
+
+        function resetGame() {
+            lives = 3;
+            hintsLeft = MAX_HINTS;
+            gameOver = false;
+            levelDone = false;
+            updateHeartsUI();
+            updateHintUI();
+            generateLevel(currentLevel);
+            resizeCanvas();
+        }
+
+        // ---------- Event listeners ----------
+        // pointerdown covers mouse, touch and pen (no double firing)
+        canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            handleInput(e);
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            sound.init();
+            hideModal();
+            resetGame();
+        });
+
+        document.getElementById('hint-btn').addEventListener('click', useHint);
+
+        document.getElementById('sound-btn').addEventListener('click', () => {
+            sound.enabled = !sound.enabled;
+            const icon = document.getElementById('sound-icon');
+            icon.innerHTML = sound.enabled ? ICONS.volume : ICONS.mute;
+            icon.classList.toggle('text-slate-400', !sound.enabled);
+        });
+
+        // Initialize (a single animation loop only)
+        window.addEventListener('load', () => {
+            resetGame();
+            requestAnimationFrame(loop);
+        });
+    </script>
+</body>
+</html>
