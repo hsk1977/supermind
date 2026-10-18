@@ -324,6 +324,13 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
       if(el.getAttribute('data-fa')===null) el.setAttribute('data-fa',el.innerHTML);
       el.innerHTML=el.getAttribute(intl?'data-en':'data-fa');
     }
+    var nums=document.querySelectorAll('.num');
+    for(var j=0;j<nums.length;j++){
+      var n=nums[j];
+      if(n.getAttribute('data-fa')===null) n.setAttribute('data-fa',n.textContent);
+      var fa=n.getAttribute('data-fa');
+      n.textContent=intl?fa.replace(/[\u06F0-\u06F9]/g,function(d){return d.charCodeAt(0)-0x06F0;}):fa;
+    }
     document.title=intl?'Dreams of the Mind - Brain Games Hub':'رویاهای ذهن - مرکز بازی‌های فکری';
   }
   try{ var cached=localStorage.getItem(KEY); if(cached) apply(cached); }catch(e){}
