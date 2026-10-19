@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Escape</title>
+<style>
+:root{--bg:#232b27;--board:#1f2224;--cell:max(34px,min(14vw,78px,calc((100dvh - 290px)/6)))}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;touch-action:none}
+html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:system-ui,"Segoe UI",Arial,sans-serif;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:16px}
+.screen.on{display:flex}
+.screen>*{flex:none}
+.home{position:absolute;top:14px;left:14px;width:46px;height:46px;border-radius:50%;background:#e53935;display:grid;place-items:center;box-shadow:0 3px 0 #9b1c1a;z-index:5;text-decoration:none}
+.home svg{width:26px;height:26px;fill:#fff}
+.round{width:46px;height:46px;border-radius:50%;border:0;background:#fff;display:grid;place-items:center;box-shadow:0 3px 0 #c9c9c9;cursor:pointer}
+.round svg{width:24px;height:24px;fill:#d86a9a}
+h1{margin:60px 0 4px;font-size:44px;letter-spacing:4px;color:#ff5a5f}
+.sub{opacity:.7;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:min(92vw,420px)}
+.lv{aspect-ratio:1;border-radius:14px;border:0;background:#3b4a43;color:#fff;font-size:22px;font-weight:700;cursor:pointer;position:relative;box-shadow:0 4px 0 #26302b}
+.lv.done{background:#3f8f5a;box-shadow:0 4px 0 #2a6340}
+.lv.cur{background:#e0a431;box-shadow:0 4px 0 #a97813}
+.lv.lock{opacity:.45;cursor:not-allowed}
+.lv small{display:block;font-size:10px;font-weight:600;opacity:.8}
+.top{width:100%;display:flex;justify-content:center;align-items:center;margin-top:0;height:46px;position:relative}
+.top .title{text-align:center}
+.tag{font-size:11px;font-weight:700;letter-spacing:1px;background:#00000040;border-radius:8px;padding:2px 10px;display:inline-block}
+.top h2{margin:2px 0 0;font-size:26px}
+.top .r{position:absolute;right:0}
+.info{display:flex;gap:22px;margin:22px 0 14px;font-size:15px;opacity:.9}
+.info b{color:#ffd166}
+#board{flex:none;position:relative;width:calc(var(--cell)*6);height:calc(var(--cell)*6);background:var(--board);border-radius:10px;border:6px solid #8a8d8f;box-sizing:content-box;touch-action:none}
+#board:after{content:"";position:absolute;right:-12px;top:calc(var(--cell)*2 + 6px);width:6px;height:calc(var(--cell) - 12px);background:var(--bg)}
+.exit{position:absolute;right:-34px;top:calc(var(--cell)*2.5 + 6px);transform:translateY(-50%);font-size:26px;color:#ffd166;letter-spacing:-6px;animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.3}}
+.car{position:absolute;padding:5px;cursor:grab;transition:transform .12s ease-out}
+.car.drag{transition:none;cursor:grabbing;z-index:2}
+.car .b{position:absolute;inset:5px;border-radius:12px;box-shadow:0 3px 0 #0006,inset 0 0 0 3px #0003;display:flex;overflow:hidden}
+.car.v .b{flex-direction:column}
+.car .w{background:#222a;border-radius:6px;margin:auto;flex:none}
+.car .cargo{flex:1;background:#fff3;margin:4px;border-radius:6px;box-shadow:inset 0 0 0 2px #0002}
+.car.h .w{width:22%;height:70%}.car.v .w{height:22%;width:70%}
+.car.red .b:after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 0 0 0 3px #fff3}
+.wall{position:absolute;padding:6px}
+.wall i{display:block;width:100%;height:100%;border-radius:12px;background:#2f6f3a;box-shadow:inset 0 0 0 4px #4caf50,0 3px 0 #0006;background-image:radial-gradient(circle at 30% 30%,#8bd45a 0 22%,transparent 24%),radial-gradient(circle at 70% 65%,#6fbf45 0 26%,transparent 28%)}
+.bar{display:flex;justify-content:space-between;width:min(92vw,420px);margin-top:26px}
+.yb{width:58px;height:58px;border-radius:50%;border:0;background:#f5b21f;box-shadow:0 4px 0 #b97f0a;display:grid;place-items:center;cursor:pointer}
+.yb svg{width:30px;height:30px;fill:#fff}
+.ov{position:absolute;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:9}
+.ov.on{display:flex}
+.card{background:#3b2a20;border:6px solid #a65a3f;border-radius:22px;padding:26px 30px;text-align:center;width:min(86vw,340px)}
+.card h3{margin:0 0 6px;font-size:30px;color:#ff5a5f}
+.stars{font-size:34px;letter-spacing:6px;color:#ffd166;margin:8px 0}
+.btn{display:block;width:100%;margin-top:10px;padding:12px;border:0;border-radius:12px;background:#ff5a5f;color:#fff;font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #b83a3e}
+.btn.g{background:#556;box-shadow:0 4px 0 #334}
+.snd{position:absolute;top:14px;right:14px}
+.yb{position:relative}
+.yb.mn{background:#6c7a86;box-shadow:0 4px 0 #46515a}
+.yb.dis{opacity:.45}
+.badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:#e53935;color:#fff;font-size:13px;font-weight:800;display:grid;place-items:center;border:2px solid var(--bg)}
+.car.hl .b{animation:hl .6s infinite alternate;box-shadow:0 0 0 4px #ffd166,0 0 18px 4px #ffd166}
+@keyframes hl{to{filter:brightness(1.35)}}
+.ghost{position:absolute;left:0;top:0;pointer-events:none;padding:5px;z-index:1}
+.ghost i{display:block;width:100%;height:100%;border:3px dashed #ffd166;border-radius:12px;background:#ffd16638;animation:bl .8s infinite}
+.hmsg{position:absolute;bottom:92px;left:0;right:0;text-align:center;font-size:14px;color:#ffd166;opacity:0;transition:opacity .3s;pointer-events:none}
+.hmsg.on{opacity:1}
+</style></head><body>
+<a class="home" href="index.html" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg></a>
+
+<div class="screen on" id="menu">
+ <button class="round snd" id="sndBtn" aria-label="Sound"><svg viewBox="0 0 24 24"><path id="sndI" d="M3 9v6h4l5 4V5L7 9zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
+ <h1>ESCAPE</h1><div class="sub">Slide the cars. Free the red truck!</div>
+ <div class="grid" id="lvls"></div>
+</div>
+
+<div class="screen" id="game">
+ <div class="top"><div class="title"><span class="tag" id="tag">EASY</span><h2 id="lt">Level 1</h2></div>
+  <button class="round r" id="rs" aria-label="Restart"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button></div>
+ <div class="info"><span>Moves: <b id="mv">0</b></span><span>Best possible: <b id="par">0</b></span></div>
+ <div id="board"><div class="exit">›››</div></div>
+ <div class="bar"><button class="yb" id="undo" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M12.5 8c-2.6 0-5 1-6.800 2.600L2 7v9h9l-3.600-3.600A7.960 7.960 0 0 1 12.500 10c3.500 0 6.500 2.300 7.600 5.500l2.400-.8C21.100 10.700 17.200 8 12.500 8z"/></svg></button>
+ <button class="yb mn" id="menu2" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg></button>
+ <button class="yb" id="hint" aria-label="Hint"><svg viewBox="0 0 24 24"><path d="M9 21h6v-1H9zm3-19a7 7 0 0 0-4 12.700V17h8v-2.300A7 7 0 0 0 12 2z"/></svg><span class="badge" id="hc">5</span></button></div>
+ <div class="hmsg" id="hm"></div>
+ <div class="ov" id="win"><div class="card"><h3>Escaped!</h3><div class="stars" id="st"></div><div id="wm"></div>
+  <button class="btn" id="nx">Next Level</button><button class="btn g" id="rp">Replay</button><button class="btn g" id="mn">Level Select</button></div></div>
+</div>
+
+<script>
+const LEVELS=[{"m":2,"c":[[2,1,2,1],[3,0,2,1],[3,3,3,1],[4,2,2,0],[1,4,2,0],[4,0,2,0],[0,0,2,0],[1,1,2,1],[4,4,2,0]],"w":[[1,5]]},{"m":3,"c":[[2,1,2,1],[0,3,2,0],[3,1,3,0],[0,4,2,1],[5,3,3,1],[0,0,3,1],[4,2,2,1],[1,5,3,0]],"w":[]},{"m":4,"c":[[2,0,2,1],[5,1,2,1],[2,2,3,0],[5,3,2,1],[1,3,2,0],[0,4,2,0]],"w":[]},{"m":5,"c":[[2,0,2,1],[2,2,2,0],[4,5,2,0],[4,0,2,1],[3,3,3,0],[3,4,2,0],[1,4,2,0],[0,0,2,0],[1,3,2,0],[0,5,2,0],[0,3,2,1]],"w":[]},{"m":6,"c":[[2,0,2,1],[5,4,2,1],[4,3,3,1],[3,0,2,1],[0,3,2,0],[4,0,3,1],[2,2,2,0],[0,1,2,1],[1,1,2,1]],"w":[[1,0]]},{"m":7,"c":[[2,0,2,1],[5,3,3,1],[2,4,3,0],[1,2,2,1],[0,2,2,1],[3,1,3,0],[4,2,2,0],[3,3,2,0],[3,0,2,0],[0,1,2,0],[1,5,3,0]],"w":[[0,4]]},{"m":8,"c":[[2,1,2,1],[4,3,2,1],[1,4,3,0],[3,0,2,1],[0,1,2,1],[1,2,2,1],[5,2,2,1],[3,5,3,0],[5,0,2,1],[3,2,2,0],[2,3,2,0],[0,3,2,1],[1,0,2,0]],"w":[]},{"m":9,"c":[[2,1,2,1],[5,3,3,1],[2,3,2,0],[5,1,2,1],[1,4,2,1],[1,1,2,1],[4,3,2,1],[3,2,2,0],[3,0,2,0],[0,0,2,0],[0,1,2,1],[2,4,2,0],[2,5,2,0]],"w":[]},{"m":10,"c":[[2,0,2,1],[0,1,2,0],[5,1,2,1],[1,2,2,1],[4,3,2,0],[1,4,3,0],[5,4,2,1],[3,0,2,1],[0,0,2,0],[2,3,2,0],[2,5,2,0],[0,2,2,1]],"w":[]},{"m":11,"c":[[2,0,2,1],[5,1,2,1],[1,3,2,0],[4,3,2,1],[4,0,3,1],[5,3,2,1],[3,4,2,1],[1,0,2,1],[0,0,3,1],[1,2,2,0],[4,5,2,0]],"w":[]},{"m":12,"c":[[2,0,2,1],[0,5,2,0],[4,0,2,1],[3,3,2,1],[4,4,2,0],[4,2,2,1],[0,0,3,1],[1,2,3,0],[5,1,3,1]],"w":[[4,5]]},{"m":13,"c":[[2,0,2,1],[3,1,2,0],[0,0,2,0],[4,2,2,0],[0,4,2,0],[1,2,2,0],[4,4,2,0],[3,4,2,1],[1,5,2,0],[2,3,2,0],[5,0,2,1],[4,3,2,0],[0,1,2,1]],"w":[]},{"m":14,"c":[[2,0,2,1],[1,4,3,0],[5,1,2,1],[0,2,2,0],[3,1,2,0],[4,2,2,1],[2,2,2,0],[1,3,3,0],[4,0,2,0]],"w":[]},{"m":15,"c":[[2,1,2,1],[0,1,3,1],[1,2,3,1],[3,1,2,1],[1,5,2,0],[5,3,2,1],[2,4,2,0],[3,0,2,0],[4,3,3,1],[1,0,2,0],[4,2,2,0],[4,1,2,0]],"w":[[1,1]]},{"m":16,"c":[[2,1,2,1],[4,2,2,1],[1,4,2,1],[2,4,3,0],[1,0,2,0],[3,5,3,0],[0,2,3,1],[1,3,2,0],[3,1,2,0],[3,0,2,0],[5,2,3,1]],"w":[[0,0]]},{"m":17,"c":[[2,0,2,1],[0,4,3,0],[4,4,2,1],[5,0,2,1],[1,1,2,1],[0,0,2,0],[3,1,2,1],[4,3,2,0],[3,4,2,1],[4,2,2,0]],"w":[[4,1],[5,5]]},{"m":19,"c":[[2,0,2,1],[1,4,3,0],[4,0,2,0],[0,0,3,1],[3,0,2,1],[5,1,3,1],[1,2,2,0],[1,5,2,0],[0,4,2,1],[3,5,2,0],[4,3,2,1]],"w":[]},{"m":20,"c":[[2,0,2,1],[0,3,3,0],[3,2,3,1],[0,0,2,1],[4,1,3,1],[3,0,3,0],[1,2,2,0]],"w":[]},{"m":24,"c":[[2,0,2,1],[5,0,2,1],[4,1,3,1],[0,2,2,1],[1,2,2,0],[3,4,2,1],[0,0,2,0],[2,3,2,0],[4,5,2,0],[3,0,2,1],[0,4,2,1]],"w":[[1,3]]},{"m":27,"c":[[2,0,2,1],[0,3,2,0],[4,3,2,0],[1,5,3,0],[3,1,3,0],[0,4,3,0],[0,1,2,1],[0,0,2,0],[3,2,2,0],[5,4,2,1],[3,3,2,1],[1,2,2,0]],"w":[[1,1]]}];
+const COLORS=['#e8d3a2','#b9a3d6','#8fc4e8','#f2f2f2','#e6a06c','#9bd3a0','#f0c75e','#d98fb0'];
+const $=id=>document.getElementById(id);
+let prog=1,sound=true,hints=5;
+try{prog=+localStorage.getItem('escape_prog')||1;sound=localStorage.getItem('escape_snd')!=='0';const h=localStorage.getItem('escape_hints');if(h!==null)hints=+h}catch(e){}
+const save=()=>{try{localStorage.setItem('escape_prog',prog);localStorage.setItem('escape_snd',sound?1:0);localStorage.setItem('escape_hints',hints)}catch(e){}};
+/* ---------- sound ---------- */
+let ac;
+function tone(f,d,type='sine',v=.15,when=0,slide){
+ if(!sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+ const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
+ if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);
+ g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const sfx={pick:()=>tone(520,.07,'triangle',.1),move:()=>{tone(200,.12,'sawtooth',.06,0,120);tone(330,.06,'square',.04)},
+ bump:()=>tone(90,.1,'square',.1),click:()=>tone(660,.06,'triangle',.12),
+ win:()=>{[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.15,i*.12));tone(150,.6,'sawtooth',.07,.1,500)},
+ undo:()=>tone(400,.1,'triangle',.1,0,250),lock:()=>tone(130,.15,'square',.1)};
+function updSnd(){$('sndI').style.opacity=sound?1:.35}
+$('sndBtn').onclick=()=>{sound=!sound;save();updSnd();sfx.click()};updSnd();
+/* ---------- menu ---------- */
+const tier=i=>i<7?'EASY':i<14?'MEDIUM':'HARD';
+function menu(){
+ const g=$('lvls');g.innerHTML='';
+ LEVELS.forEach((L,i)=>{const n=i+1,b=document.createElement('button');
+  b.className='lv '+(n<prog?'done':n==prog?'cur':'lock');
+  b.innerHTML=(n>prog?'🔒':n)+'<small>'+tier(i)+'</small>';
+  b.onclick=()=>{if(n>prog){sfx.lock();return}sfx.click();start(i)};g.appendChild(b)});
+ $('menu').classList.add('on');$('game').classList.remove('on');
+}
+/* ---------- game ---------- */
+let cur=0,cars=[],walls=[],hist=[],moves=0,busy=false;
+const board=$('board');
+const cell=()=>board.clientWidth/6;
+function start(i){
+ clearHint();cur=i;const L=LEVELS[i];
+ cars=L.c.map((c,k)=>({r:c[0],c:c[1],l:c[2],h:!!c[3],red:k==0,col:k==0?'#e53935':COLORS[(k*3+i)%COLORS.length],truck:c[2]==3}));
+ walls=L.w;hist=[];moves=0;busy=false;
+ $('tag').textContent=tier(i);$('lt').textContent='Level '+(i+1);$('par').textContent=L.m;
+ $('win').classList.remove('on');$('menu').classList.remove('on');$('game').classList.add('on');
+ board.querySelectorAll('.car,.wall').forEach(e=>e.remove());
+ walls.forEach(w=>{const e=document.createElement('div');e.className='wall';e.innerHTML='<i></i>';e.dataset.r=w[0];e.dataset.c=w[1];board.appendChild(e)});
+ cars.forEach((c,k)=>{const e=document.createElement('div');e.className='car '+(c.h?'h':'v')+(c.red?' red':'');
+  let inner='';
+  const win=()=>'<span class="w"></span>';
+  if(c.truck||c.red){inner=c.red?'<span class="cargo"></span>'+win():win()+'<span class="cargo"></span>'}
+  else inner=win()+win();
+  e.innerHTML='<div class="b" style="background:'+c.col+'">'+inner+'</div>';
+  c.el=e;board.appendChild(e);bind(c)});
+ layout();upd();
+}
+function layout(){const s=cell();
+ board.querySelectorAll('.wall').forEach(e=>{e.style.cssText+=`left:${e.dataset.c*s}px;top:${e.dataset.r*s}px;width:${s}px;height:${s}px`});
+ cars.forEach(c=>{const e=c.el;e.style.width=(c.h?c.l:1)*s+'px';e.style.height=(c.h?1:c.l)*s+'px';e.style.left=0;e.style.top=0;place(c,c.r,c.c)})}
+function place(c,r,col){c.el.style.transform=`translate(${col*cell()}px,${r*cell()}px)`}
+addEventListener('resize',layout);
+function upd(){$('mv').textContent=moves}
+function grid(skip){const g=Array.from({length:6},()=>Array(6).fill(0));
+ walls.forEach(w=>g[w[0]][w[1]]=1);
+ cars.forEach(c=>{if(c===skip)return;for(let k=0;k<c.l;k++)g[c.h?c.r:c.r+k][c.h?c.c+k:c.c]=1});return g}
+function range(c){const g=grid(c);let lo=c.h?c.c:c.r,hi=lo,max=6-c.l;
+ const free=p=>c.h?!g[c.r][p]:!g[p][c.c];
+ while(lo>0&&free(lo-1))lo--;
+ while(hi<max&&free(hi+c.l))hi++;
+ // red may exit through the right edge when path is clear
+ return[lo,hi]}
+function bind(c){let sx,sy,s0,lo,hi,cur0,drag=false;
+ c.el.addEventListener('pointerdown',ev=>{if(busy)return;ev.preventDefault();c.el.setPointerCapture(ev.pointerId);
+  clearHint();drag=true;sx=ev.clientX;sy=ev.clientY;[lo,hi]=range(c);cur0=c.h?c.c:c.r;c.el.classList.add('drag');sfx.pick();c.f=cur0});
+ c.el.addEventListener('pointermove',ev=>{if(!drag)return;const d=((c.h?ev.clientX-sx:ev.clientY-sy))/cell();
+  let p=Math.max(lo,Math.min(hi,cur0+d));
+  if(p!==cur0+d&&Math.abs(c.f-p)<.01&&Math.abs(d)>.05&&!c.bumped){sfx.bump();c.bumped=1}
+  if(p===cur0+d)c.bumped=0;
+  c.f=p;c.h?place(c,c.r,p):place(c,p,c.c)});
+ const end=()=>{if(!drag)return;drag=false;c.el.classList.remove('drag');
+  const np=Math.round(c.f);const old=cur0;
+  c.h?place(c,c.r,np):place(c,np,c.c);
+  if(np!==old){hist.push({c,old});if(c.h)c.c=np;else c.r=np;moves++;upd();sfx.move();
+   if(c.red&&c.c===4)win()}};
+ c.el.addEventListener('pointerup',end);c.el.addEventListener('pointercancel',end)}
+function win(){busy=true;
+ const c=cars[0];setTimeout(()=>{c.el.classList.remove('drag');c.el.style.transition='transform .6s ease-in';place(c,c.r,7);sfx.win();
+  setTimeout(()=>{const p=LEVELS[cur].m;const st=moves<=p?3:moves<=p*1.5+1?2:1;
+   $('st').textContent='★'.repeat(st)+'☆'.repeat(3-st);$('wm').textContent=moves+' moves (best: '+p+')';
+   if(cur+2>prog&&cur<19){prog=cur+2;save()}
+   $('nx').style.display=cur<19?'block':'none';
+   $('win').classList.add('on')},650)},120)}
+$('undo').onclick=()=>{if(busy||!hist.length)return;const h=hist.pop();
+ if(h.c.h)h.c.c=h.old;else h.c.r=h.old;place(h.c,h.c.r,h.c.c);moves++;upd();sfx.undo()};
+$('rs').onclick=()=>{sfx.click();start(cur)};
+$('rp').onclick=()=>{sfx.click();start(cur)};
+$('nx').onclick=()=>{sfx.click();start(cur+1)};
+$('mn').onclick=()=>{sfx.click();menu()};
+
+
+/* ---------- hints ---------- */
+sfx.hint=()=>{tone(784,.12,'triangle',.12);tone(1175,.2,'triangle',.12,.1)};
+function updHint(){$('hc').textContent=hints;$('hint').classList.toggle('dis',hints<=0)}
+function clearHint(){document.querySelectorAll('.ghost').forEach(e=>e.remove());cars.forEach(c=>c.el&&c.el.classList.remove('hl'));clearTimeout(clearHint.t);$('hm').classList.remove('on')}
+function solveStep(){
+ const n=cars.length,start=cars.map(c=>c.h?c.c:c.r);
+ const occ=p=>{const g=Array.from({length:6},()=>Array(6).fill(0));walls.forEach(w=>g[w[0]][w[1]]=1);
+  cars.forEach((c,i)=>{for(let k=0;k<c.l;k++)g[c.h?c.r:p[i]+k][c.h?p[i]+k:c.c]=1});return g};
+ const key=p=>p.join(','),par=new Map([[key(start),null]]);let q=[start],qi=0,goal=null;
+ if(start[0]===4)return null;
+ while(qi<q.length&&!goal){const p=q[qi++],g=occ(p);
+  for(let i=0;i<n&&!goal;i++){const c=cars[i];
+   for(const d of[-1,1])for(let s=1;s<6;s++){const np=p[i]+d*s,cell=d<0?np:np+c.l-1;
+    if(np<0||np+c.l>6||cell<0||cell>5)break;
+    if(c.h?g[c.r][cell]:g[cell][c.c])break;
+    const m=p.slice();m[i]=np;const k=key(m);
+    if(!par.has(k)){par.set(k,{prev:p,i,to:np});q.push(m);if(np&&i===0&&np===4){goal=m;break}}}}}
+ if(!goal)return null;
+ let k=key(goal),step=null;
+ while(par.get(k)){step=par.get(k);k=key(step.prev)}
+ return step}
+$('hint').onclick=()=>{
+ if(busy)return;
+ if(hints<=0){sfx.lock();$('hm').textContent='No hints left!';$('hm').classList.add('on');clearTimeout(clearHint.t);clearHint.t=setTimeout(clearHint,1800);return}
+ const s=solveStep();if(!s)return;
+ clearHint();hints--;save();updHint();sfx.hint();
+ const c=cars[s.i];c.el.classList.add('hl');
+ const gh=document.createElement('div');gh.className='ghost';gh.innerHTML='<i></i>';
+ gh.style.width=c.el.style.width;gh.style.height=c.el.style.height;
+ gh.style.transform='translate('+(c.h?s.to:c.c)*cell()+'px,'+(c.h?c.r:s.to)*cell()+'px)';
+ board.appendChild(gh);
+ $('hm').textContent='Move the glowing vehicle to the dashed spot ('+hints+' hints left)';$('hm').classList.add('on');
+ clearHint.t=setTimeout(clearHint,4000)};
+$('menu2').onclick=()=>{sfx.click();clearHint();menu()};
+updHint();
+menu();
+</script></body></html>
