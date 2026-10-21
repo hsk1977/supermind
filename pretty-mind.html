@@ -271,6 +271,27 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   }
 
+  .hint-row{
+    display:flex;
+    margin-bottom: 10px;
+  }
+  button.hint-btn{
+    flex: 1;
+    background: #fff7dc;
+    color: var(--accent-onbg);
+    border: 1.5px solid var(--gold);
+  }
+  button.hint-btn:not(:disabled):hover{ filter: brightness(0.97); }
+  button.hint-btn:disabled{
+    background: #efeae1;
+    color: #9c9586;
+    border-color: #d3ccbe;
+    cursor: not-allowed;
+  }
+  .peg-slot.hinted{
+    box-shadow: 0 0 0 3px var(--gold-bright), 0 0 10px rgba(209,163,36,0.6);
+  }
+
   .status{
     text-align:center;
     margin-top: 14px;
@@ -362,6 +383,10 @@
       <button class="reset-btn" id="resetBtn" data-i18n="reset">بازی جدید</button>
     </div>
 
+    <div class="hint-row">
+      <button class="hint-btn" id="hintBtn" type="button" disabled>راهنمایی (۲)</button>
+    </div>
+
     <div class="mode-row">
       <button class="mode-btn active" id="easyBtn" data-i18n="easy">آسان (بدون تکرار)</button>
       <button class="mode-btn" id="hardBtn" data-i18n="hard">سخت (با تکرار)</button>
@@ -410,6 +435,8 @@
       hard: 'سخت (با تکرار)',
       legendBlack: 'رنگ درست، جای درست',
       legendWhite: 'رنگ درست، جای غلط',
+      hint: 'راهنمایی',
+      hintTip: 'از نوبت ۸ فعال می‌شود؛ یک مهرهٔ مشکی (رنگ درست در جای درست) نشان می‌دهد',
       win: 'آفرین! رمز رو شکستی! 🎉',
       lose: 'نوبت‌ها تموم شد. رمز فاش شد.'
     },
@@ -425,6 +452,8 @@
       hard: 'Hard (with repeats)',
       legendBlack: 'Right color, right place',
       legendWhite: 'Right color, wrong place',
+      hint: 'Hint',
+      hintTip: 'Unlocks at turn 8; reveals one black-pin placement (right color, right place)',
       win: 'Well done! You cracked the code! 🎉',
       lose: 'Out of turns. The code is revealed.'
     }
@@ -453,6 +482,10 @@
   let selectedColor = COLORS[0];
   let gameOver = false;
   let allowDuplicates = false;
+  const HINT_MAX = 2;          // تعداد راهنمایی در هر بازی
+  const HINT_FROM_ROW = 8;     // از این نوبت به بعد فعال می‌شود
+  let hintsLeft = HINT_MAX;
+  let hintSlot = -1;
 
   const secretSlotEl = document.getElementById('secretSlot');
   const rowsEl = document.getElementById('rows');
@@ -463,6 +496,7 @@
   const easyBtn = document.getElementById('easyBtn');
   const hardBtn = document.getElementById('hardBtn');
   const statusEl = document.getElementById('status');
+  const hintBtn = document.getElementById('hintBtn');
   const gameDescEl = document.getElementById('gameDesc');
   const langFaBtn = document.getElementById('langFa');
   const langEnBtn = document.getElementById('langEn');
@@ -473,6 +507,16 @@
 
   function updateStatusText(){
     statusEl.textContent = statusKey ? I18N[lang][statusKey] : '';
+  }
+
+  function updateHintState(){
+    const t = I18N[lang];
+    const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    const n = lang === 'fa' ? String(hintsLeft).replace(/\d/g, d => faDigits[d]) : hintsLeft;
+    hintBtn.textContent = t.hint + ' (' + n + ')';
+    hintBtn.title = t.hintTip;
+    const idx = activeRowIndex();
+    hintBtn.disabled = gameOver || hintsLeft <= 0 || idx === -1 || idx < HINT_FROM_ROW - 1;
   }
 
   function applyLang(){
@@ -487,6 +531,7 @@
     langEnBtn.classList.toggle('active', lang === 'en');
     updateDesc();
     updateStatusText();
+    updateHintState();
   }
 
   function setLang(l){
@@ -524,6 +569,8 @@
     currentGuess = [null,null,null,null];
     selectedColor = COLORS[0];
     gameOver = false;
+    hintsLeft = HINT_MAX;
+    hintSlot = -1;
     statusKey = null;
     statusEl.textContent = '';
     statusEl.className = 'status';
@@ -605,8 +652,13 @@
           slot.appendChild(peg);
         }
 
+        if(idx === active && !gameOver && !row.locked && i === hintSlot && currentGuess[i] === secret[i]){
+          slot.classList.add('hinted');
+        }
+
         if(idx === active && !gameOver && !row.locked){
           slot.addEventListener('click', () => {
+            if (i === hintSlot) hintSlot = -1;
             if (currentGuess[i] === selectedColor) {
               currentGuess[i] = null;
             } else {
@@ -643,6 +695,7 @@
 
       rowsEl.appendChild(rowEl);
     });
+    updateHintState();
   }
 
   function updateSubmitState(){
@@ -774,6 +827,7 @@
     rows[idx].guess = [...currentGuess];
     rows[idx].locked = true;
     rows[idx].feedback = feedback;
+    hintSlot = -1;
 
     if(feedback.black === CODE_LENGTH){
       gameOver = true;
@@ -798,6 +852,23 @@
   clearBtn.addEventListener('click', () => {
     if(gameOver) return;
     currentGuess = [null,null,null,null];
+    hintSlot = -1;
+    renderRows();
+    updateSubmitState();
+  });
+
+  hintBtn.addEventListener('click', () => {
+    if(hintBtn.disabled || gameOver || hintsLeft <= 0) return;
+    // خانه‌هایی که هنوز رنگ درستِ همان جایگاه در آن‌ها نیست
+    const candidates = [];
+    for(let i=0;i<CODE_LENGTH;i++){
+      if(currentGuess[i] !== secret[i]) candidates.push(i);
+    }
+    if(candidates.length === 0) return;
+    const pos = candidates[Math.floor(Math.random()*candidates.length)];
+    currentGuess[pos] = secret[pos];
+    hintSlot = pos;
+    hintsLeft--;
     renderRows();
     updateSubmitState();
   });
