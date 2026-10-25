@@ -23,7 +23,7 @@ html{background:var(--ink)}
 body{
   min-height:100vh;color:var(--text);
   background:
-    radial-gradient(ellipse 70% 45% at 50% -5%,rgba(233,185,92,.28),transparent 70%),
+    radial-gradient(ellipse 70% 45% at 50% -5%,rgba(255,110,20,.30),transparent 70%),
     radial-gradient(ellipse 60% 40% at 90% 100%,rgba(122,92,255,.30),transparent 70%),
     radial-gradient(ellipse 50% 40% at 5% 70%,rgba(255,98,146,.16),transparent 70%),
     linear-gradient(180deg,var(--ink),var(--ink2));
@@ -48,23 +48,34 @@ body::before{
 main{position:relative;max-width:880px;margin:0 auto}
 
 header{text-align:center;margin-bottom:clamp(24px,5vw,44px)}
-.moon{
-  width:clamp(64px,14vw,92px);aspect-ratio:1;margin:0 auto 14px;border-radius:50%;
-  background:radial-gradient(circle at 36% 34%,#fffaf0,var(--moon) 55%,#e2c27c);
-  box-shadow:0 0 40px 8px rgba(246,231,193,.35),0 0 120px 30px rgba(233,185,92,.18);
-  position:relative;
-}
-.moon::after{ /* crescent cut */
-  content:"";position:absolute;inset:0;border-radius:50%;
-  background:var(--ink);transform:translate(26%,-8%) scale(.82);
-  box-shadow:inset 0 0 18px rgba(122,92,255,.25);
-}
+header{position:relative}
+.halloween{position:relative;width:clamp(130px,34vw,180px);margin:0 auto 6px}
+.pumpkin{display:block;width:100%;overflow:visible;
+  filter:drop-shadow(0 0 22px rgba(255,120,0,.55)) drop-shadow(0 0 60px rgba(255,90,0,.30));
+  animation:bob 5s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-1deg)}}
+.face{animation:flicker 3.2s infinite}
+@keyframes flicker{0%,100%{opacity:1}42%{opacity:.82}46%{opacity:1}70%{opacity:.7}74%{opacity:1}}
+.bat{position:absolute;width:clamp(30px,8vw,46px);fill:#1b1347;stroke:#8a6bff;stroke-width:1.2;stroke-linejoin:round;
+  animation:fly 6s ease-in-out infinite}
+.bat path{transform-box:fill-box;transform-origin:center;animation:flap .5s ease-in-out infinite alternate}
+.bat.b1{left:-34%;top:6%}
+.bat.b2{right:-38%;top:-4%;width:clamp(24px,6vw,36px);animation-delay:-2.5s;animation-direction:reverse}
+.bat.b3{right:-14%;top:60%;width:clamp(20px,5vw,28px);animation-delay:-4s}
+@keyframes fly{0%,100%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(12px,-14px) rotate(6deg)}}
+@keyframes flap{from{transform:scaleY(1)}to{transform:scaleY(.55)}}
+.spider{position:absolute;top:calc(-1 * clamp(20px,5vw,56px));right:10%;display:flex;flex-direction:column;align-items:center;
+  transform-origin:top center;animation:swing 4s ease-in-out infinite}
+.spider::before{content:"";width:1.5px;height:clamp(40px,10vw,84px);background:linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.55))}
+.spider span{font-size:clamp(1.1rem,3.5vw,1.6rem);line-height:1;filter:drop-shadow(0 0 6px rgba(138,107,255,.7))}
+@keyframes swing{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
 h1{
   font-size:clamp(2.2rem,8vw,3.8rem);font-weight:900;line-height:1.2;
-  background:linear-gradient(180deg,#fff7de 10%,var(--gold) 90%);
+  background:linear-gradient(180deg,#ffd27a 5%,#ff8a1f 55%,#ff5a00 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 16px rgba(255,110,0,.45));
 }
-.subtitle{margin-top:8px;color:var(--muted);font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600}
+.subtitle{margin-top:8px;color:#c9b8ff;font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600}
 
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2.5vw,18px)}
 @media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
@@ -132,7 +143,27 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
 <body>
 <main>
   <header>
-    <div class="moon" aria-hidden="true"></div>
+    <div class="halloween" aria-hidden="true">
+      <svg class="pumpkin" viewBox="0 0 120 100">
+        <defs>
+          <radialGradient id="pk" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#ffa63d"/><stop offset=".6" stop-color="#ff7a12"/><stop offset="1" stop-color="#c2410c"/></radialGradient>
+          <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a0"/><stop offset="1" stop-color="#ffc424"/></linearGradient>
+        </defs>
+        <path d="M56 24C55 13 60 8 69 5L72 11C67 13 65 18 65 25Z" fill="#5d7f2b" stroke="#3d5a1c" stroke-width="1.5" stroke-linejoin="round"/>
+        <g fill="url(#pk)" stroke="#b83c06" stroke-width="2">
+          <ellipse cx="32" cy="60" rx="29" ry="36"/><ellipse cx="88" cy="60" rx="29" ry="36"/>
+          <ellipse cx="60" cy="60" rx="30" ry="39"/>
+        </g>
+        <g class="face" fill="url(#gl)">
+          <path d="M33 56L49 56L41 41Z"/><path d="M71 56L87 56L79 41Z"/><path d="M56 66L64 66L60 59Z"/>
+          <path d="M31 74L42 70L48 78L54 72L60 80L66 72L72 78L78 70L89 74C85 91 73 95 60 95C47 95 35 91 31 74Z"/>
+        </g>
+      </svg>
+      <svg class="bat b1" viewBox="0 0 40 20" aria-hidden="true"><path d="M20 6C17 2 12 1 2 4C6 7 6 11 9 14C12 11 14 12 16 15C18 11 19 9 20 9C21 9 22 11 24 15C26 12 28 11 31 14C34 11 34 7 38 4C28 1 23 2 20 6Z"/></svg>
+      <svg class="bat b2" viewBox="0 0 40 20" aria-hidden="true"><path d="M20 6C17 2 12 1 2 4C6 7 6 11 9 14C12 11 14 12 16 15C18 11 19 9 20 9C21 9 22 11 24 15C26 12 28 11 31 14C34 11 34 7 38 4C28 1 23 2 20 6Z"/></svg>
+      <svg class="bat b3" viewBox="0 0 40 20" aria-hidden="true"><path d="M20 6C17 2 12 1 2 4C6 7 6 11 9 14C12 11 14 12 16 15C18 11 19 9 20 9C21 9 22 11 24 15C26 12 28 11 31 14C34 11 34 7 38 4C28 1 23 2 20 6Z"/></svg>
+    </div>
+    <div class="spider" aria-hidden="true"><span>🕷️</span></div>
     <h1 data-en="Dreams of the Mind">رویاهای ذهن</h1>
     <p class="subtitle" data-en="A collection of brain games &amp; fun">مجموعه بازی‌های فکری و سرگرمی</p>
   </header>
@@ -397,18 +428,27 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
     }
     document.title=intl?'Dreams of the Mind - Brain Games Hub':'رویاهای ذهن - مرکز بازی‌های فکری';
   }
-  try{ var cached=localStorage.getItem(KEY); if(cached) apply(cached); }catch(e){}
-  function save(cc){ if(!cc) return; apply(cc); try{ localStorage.setItem(KEY,cc); }catch(e){} }
+  var m=location.search.match(/[?&]lang=(fa|en)/);   // manual test: ?lang=en or ?lang=fa
+  if(m){ apply(m[1]==='fa'?'IR':'XX'); return; }
+  try{ localStorage.removeItem('geo_cc'); }catch(e){}  // remove stale value saved by older versions
   function get(url,pick){
     var ctrl=('AbortController' in window)?new AbortController():null;
-    var t=setTimeout(function(){ if(ctrl) ctrl.abort(); },4000);
-    return fetch(url,ctrl?{signal:ctrl.signal}:{}).then(function(r){return r.json();})
+    var t=setTimeout(function(){ if(ctrl) ctrl.abort(); },3500);
+    return fetch(url,ctrl?{signal:ctrl.signal,cache:'no-store'}:{cache:'no-store'})
+      .then(function(r){return r.json();})
       .then(function(j){ clearTimeout(t); return pick(j); });
   }
-  get('https://api.country.is/',function(j){return j.country;})
-    .catch(function(){ return get('https://ipwho.is/',function(j){return j.country_code;}); })
-    .then(save)
-    .catch(function(){ /* on failure keep the default Persian layout */ });
+  var sources=[
+    ['https://api.country.is/',function(j){return j.country;}],
+    ['https://get.geojs.io/v1/ip/country.json',function(j){return j.country;}],
+    ['https://ipwho.is/',function(j){return j.country_code;}]
+  ];
+  (function next(i){
+    if(i>=sources.length){ apply('IR'); return; }   // every lookup failed -> keep Persian
+    get(sources[i][0],sources[i][1]).then(function(cc){
+      if(cc && /^[A-Za-z]{2}$/.test(cc)) apply(cc.toUpperCase()); else next(i+1);
+    }).catch(function(){ next(i+1); });
+  })(0);
 })();
 </script>
 </body>
