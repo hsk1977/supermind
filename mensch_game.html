@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classic Mensch (منچ) - Human vs Bot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: radial-gradient(circle at center, #1e293b, #0f172a);
+      user-select: none;
+    }
+
+    /* Classic Mensch Board Container */
+    .board-container {
+      background-color: #d1b48c; /* Authentic tan/beige wooden background */
+      border: 12px solid #5c3a21;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 20px 30px rgba(0,0,0,0.7);
+      border-radius: 24px;
+      position: relative;
+    }
+
+    /* SVG Board styling */
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 3D Dice Styling */
+    .dice-container {
+      perspective: 600px;
+    }
+
+    .dice {
+      width: 60px;
+      height: 60px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.25);
+    }
+
+    .dice-face {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      display: grid;
+      grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+      padding: 6px;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .dot {
+      background-color: #1e293b;
+      border-radius: 50%;
+      align-self: center;
+      justify-self: center;
+      width: 10px;
+      height: 10px;
+    }
+
+    /* Face Orientations */
+    .face-1 { transform: rotateY(0deg) translateZ(30px); }
+    .face-6 { transform: rotateY(180deg) translateZ(30px); }
+    .face-2 { transform: rotateY(-90deg) translateZ(30px); }
+    .face-5 { transform: rotateY(90deg) translateZ(30px); }
+    .face-3 { transform: rotateX(90deg) translateZ(30px); }
+    .face-4 { transform: rotateX(-90deg) translateZ(30px); }
+
+    /* Dot Layouts */
+    .face-1 .dot:nth-child(1) { grid-area: 2 / 2; background-color: #dc2626; width: 14px; height: 14px; }
+    .face-2 .dot:nth-child(1) { grid-area: 1 / 1; } .face-2 .dot:nth-child(2) { grid-area: 3 / 3; }
+    .face-3 .dot:nth-child(1) { grid-area: 1 / 1; } .face-3 .dot:nth-child(2) { grid-area: 2 / 2; } .face-3 .dot:nth-child(3) { grid-area: 3 / 3; }
+    .face-4 .dot:nth-child(1) { grid-area: 1 / 1; } .face-4 .dot:nth-child(2) { grid-area: 1 / 3; } .face-4 .dot:nth-child(3) { grid-area: 3 / 1; } .face-4 .dot:nth-child(4) { grid-area: 3 / 3; }
+    .face-5 .dot:nth-child(1) { grid-area: 1 / 1; } .face-5 .dot:nth-child(2) { grid-area: 1 / 3; } .face-5 .dot:nth-child(3) { grid-area: 2 / 2; } .face-5 .dot:nth-child(4) { grid-area: 3 / 1; } .face-5 .dot:nth-child(5) { grid-area: 3 / 3; }
+    .face-6 .dot:nth-child(1) { grid-area: 1 / 1; } .face-6 .dot:nth-child(2) { grid-area: 2 / 1; } .face-6 .dot:nth-child(3) { grid-area: 3 / 1; } .face-6 .dot:nth-child(4) { grid-area: 1 / 3; } .face-6 .dot:nth-child(5) { grid-area: 2 / 3; } .face-6 .dot:nth-child(6) { grid-area: 3 / 3; }
+
+    /* Interactive Pawns */
+    .pawn {
+      cursor: pointer;
+      transition: transform 0.25s ease-out;
+      filter: drop-shadow(0px 4px 5px rgba(0,0,0,0.4));
+    }
+
+    .pawn-selectable {
+      cursor: pointer;
+    }
+
+    .glow-ring {
+      animation: svg-pulse 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes svg-pulse {
+      0% { r: 32px; opacity: 0.5; stroke-width: 4px; }
+      100% { r: 42px; opacity: 1; stroke-width: 8px; }
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col justify-between overflow-x-hidden p-2 sm:p-4">
+
+  <!-- Header Navigation -->
+  <header class="w-full max-w-4xl mx-auto flex items-center justify-between py-2 px-4 mb-2">
+    <!-- Red Home Button (Requirement) -->
+    <a href="index.html" class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-red-500/30 transition-all duration-200 border border-red-400/30 active:scale-95">
+      <i class="fa-solid fa-house text-lg"></i>
+      <span class="hidden sm:inline">Home</span>
+    </a>
+
+    <!-- Game Title -->
+    <div class="text-center">
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider bg-gradient-to-r from-red-400 via-yellow-300 to-blue-400 bg-clip-text text-transparent">
+        CLASSIC MENSCH (منچ)
+      </h1>
+      <p class="text-xs text-slate-400 font-semibold">HUMAN (RED) VS BOT (BLUE)</p>
+    </div>
+
+    <!-- Mute / Sound toggle -->
+    <button id="audio-toggle" class="bg-slate-800 hover:bg-slate-700 text-slate-200 p-2 px-3.5 rounded-xl border border-slate-700 transition-all">
+      <i id="audio-icon" class="fa-solid fa-volume-high text-lg"></i>
+    </button>
+  </header>
+
+  <!-- Main Game Layout -->
+  <main class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-6 my-auto">
+    
+    <!-- Authentic Mensch Board (SVG Vector Canvas for pixel-perfect match with reference) -->
+    <div class="w-full max-w-[500px] aspect-square board-container p-2 sm:p-3 flex items-center justify-center relative">
+      <svg id="mensch-svg" viewBox="0 0 1000 1000">
+        <!-- Connecting lines & Spots rendered dynamically via JS -->
+        <g id="svg-connections"></g>
+        <g id="svg-spots"></g>
+        <g id="svg-pawns"></g>
+      </svg>
+    </div>
+
+    <!-- Dashboard & Controls -->
+    <div class="w-full max-w-[500px] lg:w-80 flex flex-col gap-4">
+      
+      <!-- Current Status & Player Turn Panel -->
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-700/60">
+          <span class="text-xs font-semibold uppercase tracking-widest text-slate-400">Current Turn</span>
+          <span id="turn-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+            YOUR TURN (RED)
+          </span>
+        </div>
+        
+        <!-- Status Box -->
+        <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800 text-center min-h-[60px] flex items-center justify-center">
+          <p id="status-text" class="text-sm font-medium text-slate-200 leading-snug">
+            Roll a 6 to bring a token out onto the board!
+          </p>
+        </div>
+      </div>
+
+      <!-- Interactive 3D Dice Box -->
+      <div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center gap-4">
+        <div class="dice-container py-2">
+          <div id="dice" class="dice">
+            <div class="dice-face face-1"><div class="dot"></div></div>
+            <div class="dice-face face-2"><div class="dot"></div><div class="dot"></div></div>
+            <div class="dice-face face-3"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <div class="dice-face face-4"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <div class="dice-face face-5"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <div class="dice-face face-6"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          </div>
+        </div>
+
+        <button id="roll-btn" class="w-full py-3.5 px-6 rounded-xl font-extrabold text-white text-base tracking-wide bg-gradient-to-r from-red-600 via-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 shadow-lg shadow-red-600/30 transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none flex items-center justify-center gap-2">
+          <i class="fa-solid fa-dice text-xl"></i>
+          <span>ROLL DICE</span>
+        </button>
+      </div>
+
+      <!-- Game Progress -->
+      <div class="glass-card rounded-2xl p-4 grid grid-cols-2 gap-3">
+        <!-- Red Player Stats -->
+        <div class="bg-red-950/30 border border-red-800/40 rounded-xl p-3 flex flex-col items-center">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <span class="text-xs font-bold text-red-300">YOU (RED)</span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="red-home-count" class="text-2xl font-black text-red-400">0</span>
+            <span class="text-xs text-slate-400">/ 4 Home</span>
+          </div>
+        </div>
+
+        <!-- Blue Player Stats -->
+        <div class="bg-blue-950/30 border border-blue-800/40 rounded-xl p-3 flex flex-col items-center">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+            <span class="text-xs font-bold text-blue-300">BOT (BLUE)</span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="blue-home-count" class="text-2xl font-black text-blue-400">0</span>
+            <span class="text-xs text-slate-400">/ 4 Home</span>
+          </div>
+        </div>
+      </div>
+
+      <button id="reset-btn" class="w-full py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 transition-all">
+        <i class="fa-solid fa-rotate-right mr-1.5"></i> Restart Game
+      </button>
+
+    </div>
+  </main>
+
+  <footer class="w-full text-center py-2 text-xs text-slate-500">
+    Authentic Mensch (منچ) Game &bull; Web Audio API Synthesizer & SVG Rendering
+  </footer>
+
+  <!-- Victory Overlay Modal -->
+  <div id="victory-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl">
+      <div id="victory-icon-bg" class="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 bg-red-500/20 text-red-400">
+        <i id="victory-icon" class="fa-solid fa-trophy text-4xl"></i>
+      </div>
+      <h2 id="victory-title" class="text-3xl font-black mb-2 text-white">VICTORY!</h2>
+      <p id="victory-msg" class="text-sm text-slate-300 mb-6">Congratulations! You defeated the Bot.</p>
+      <button id="modal-restart-btn" class="w-full py-3 px-6 rounded-xl font-bold bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg hover:from-red-500 hover:to-red-400 transition-all">
+        Play Again
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Web Audio API Synthesizer (No external sound files required)
+     */
+    class SoundController {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playDiceRoll() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        for (let i = 0; i < 6; i++) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(160 + Math.random() * 220, now + i * 0.05);
+          gain.gain.setValueAtTime(0.08, now + i * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.04);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.05);
+          osc.stop(now + i * 0.05 + 0.04);
+        }
+      }
+
+      playStep() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      }
+
+      playCapture() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(70, now + 0.28);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.28);
+      }
+
+      playHome() {
+        if (this.muted) return;
+        this.init();
+        const notes = [523.25, 659.25, 783.99];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.15);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.08);
+          osc.stop(this.ctx.currentTime + idx * 0.08 + 0.15);
+        });
+      }
+
+      playVictory() {
+        if (this.muted) return;
+        this.init();
+        const notes = [440, 554.37, 659.25, 880];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.12);
+          gain.gain.setValueAtTime(0.25, this.ctx.currentTime + idx * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.12 + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.12);
+          osc.stop(this.ctx.currentTime + idx * 0.12 + 0.3);
+        });
+      }
+    }
+
+    const sound = new SoundController();
+
+    /**
+     * Exact Authentic Mensch Geometry (11x11 Grid Matrix mapping into 1000x1000 SVG Canvas)
+     */
+    const GRID_SIZE = 11;
+    const SPOT_RADIUS = 30; // Circle radius in SVG units
+    const COLOR_MAP = {
+      red: '#dc2626',
+      blue: '#2563eb',
+      green: '#16a34a',
+      yellow: '#ca8a04',
+      white: '#ffffff',
+      darkRed: '#991b1b',
+      darkBlue: '#1e40af',
+      border: '#000000'
+    };
+
+    function gridToSvg(x, y) {
+      const margin = 80;
+      const step = (1000 - margin * 2) / 10;
+      return {
+        cx: margin + x * step,
+        cy: margin + y * step
+      };
+    }
+
+    // 40 Circuit Track Spots around the classic Mensch cross (Clockwise sequence)
+    // Starts at Red Start Spot (Bottom-left of bottom arm: [4, 10])
+    const MAIN_CIRCUIT_GRID = [
+      [4, 10], [4, 9], [4, 8], [4, 7], [4, 6],   // Bottom Left up to center
+      [3, 6], [2, 6], [1, 6], [0, 6],          // Left arm lower
+      [0, 5],                                  // Leftmost peak
+      [0, 4], [1, 4], [2, 4], [3, 4], [4, 4],   // Left arm upper to center
+      [4, 3], [4, 2], [4, 1], [4, 0],          // Top arm left
+      [5, 0],                                  // Topmost peak
+      [6, 0], [6, 1], [6, 2], [6, 3], [6, 4],   // Top arm right to center
+      [7, 4], [8, 4], [9, 4], [10, 4],         // Right arm upper
+      [10, 5],                                 // Rightmost peak
+      [10, 6], [9, 6], [8, 6], [7, 6], [6, 6], // Right arm lower to center
+      [6, 7], [6, 8], [6, 9], [6, 10],         // Bottom arm right
+      [5, 10]                                  // Bottommost peak
+    ];
+
+    // Home Stretch Columns (4 spots each)
+    const HOME_PATHS_GRID = {
+      red: [[5, 9], [5, 8], [5, 7], [5, 6]],     // Vertical pointing up into center
+      blue: [[5, 1], [5, 2], [5, 3], [5, 4]],    // Vertical pointing down into center
+      green: [[1, 5], [2, 5], [3, 5], [4, 5]],   // Horizontal pointing right into center
+      yellow: [[9, 5], [8, 5], [7, 5], [6, 5]]   // Horizontal pointing left into center
+    };
+
+    // Starting Nests (4 spots in each corner)
+    const NESTS_GRID = {
+      red: [[0, 9], [1, 9], [0, 10], [1, 10]],
+      blue: [[9, 0], [10, 0], [9, 1], [10, 1]],
+      green: [[0, 0], [1, 0], [0, 1], [1, 1]],
+      yellow: [[9, 9], [10, 9], [9, 10], [10, 10]]
+    };
+
+    // Start index on MAIN_CIRCUIT_GRID for each player
+    const PLAYER_START_INDEX = {
+      red: 0,      // Grid [4, 10]
+      green: 10,   // Grid [0, 4]
+      blue: 20,    // Grid [6, 0]
+      yellow: 30   // Grid [10, 6]
+    };
+
+    // State
+    let gameState = {
+      turn: 'red', // 'red' or 'blue'
+      diceValue: 0,
+      canRoll: true,
+      awaitingMove: false,
+      pieces: {
+        red: [{ id: 0, state: 'nest', pos: -1 }, { id: 1, state: 'nest', pos: -1 }, { id: 2, state: 'nest', pos: -1 }, { id: 3, state: 'nest', pos: -1 }],
+        blue: [{ id: 0, state: 'nest', pos: -1 }, { id: 1, state: 'nest', pos: -1 }, { id: 2, state: 'nest', pos: -1 }, { id: 3, state: 'nest', pos: -1 }]
+      }
+    };
+
+    /**
+     * Board Renderer (Renders SVG matching classic Mensch layout)
+     */
+    function renderSvgBoard() {
+      const connGroup = document.getElementById('svg-connections');
+      const spotsGroup = document.getElementById('svg-spots');
+      
+      connGroup.innerHTML = '';
+      spotsGroup.innerHTML = '';
+
+      // 1. Draw Connecting Lines around the Main Circuit
+      for (let i = 0; i < MAIN_CIRCUIT_GRID.length; i++) {
+        const p1 = gridToSvg(...MAIN_CIRCUIT_GRID[i]);
+        const p2 = gridToSvg(...MAIN_CIRCUIT_GRID[(i + 1) % MAIN_CIRCUIT_GRID.length]);
+        
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', p1.cx);
+        line.setAttribute('y1', p1.cy);
+        line.setAttribute('x2', p2.cx);
+        line.setAttribute('y2', p2.cy);
+        line.setAttribute('stroke', '#000000');
+        line.setAttribute('stroke-width', '8');
+        connGroup.appendChild(line);
+      }
+
+      // 2. Draw Circuit Spots
+      MAIN_CIRCUIT_GRID.forEach((grid, idx) => {
+        const pt = gridToSvg(...grid);
+        let fillColor = COLOR_MAP.white;
+        let strokeColor = COLOR_MAP.border;
+        let strokeWidth = '6';
+
+        // Colored Starting Spots
+        if (idx === PLAYER_START_INDEX.red) strokeColor = COLOR_MAP.red, strokeWidth = '10', fillColor = '#fee2e2';
+        else if (idx === PLAYER_START_INDEX.blue) strokeColor = COLOR_MAP.blue, strokeWidth = '10', fillColor = '#dbeafe';
+        else if (idx === PLAYER_START_INDEX.green) strokeColor = COLOR_MAP.green, strokeWidth = '10', fillColor = '#dcfce7';
+        else if (idx === PLAYER_START_INDEX.yellow) strokeColor = COLOR_MAP.yellow, strokeWidth = '10', fillColor = '#fef9c3';
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', pt.cx);
+        circle.setAttribute('cy', pt.cy);
+        circle.setAttribute('r', SPOT_RADIUS);
+        circle.setAttribute('fill', fillColor);
+        circle.setAttribute('stroke', strokeColor);
+        circle.setAttribute('stroke-width', strokeWidth);
+        spotsGroup.appendChild(circle);
+      });
+
+      // 3. Draw Home Paths & Nest Spots for all 4 colors (to maintain classic board design)
+      ['red', 'blue', 'green', 'yellow'].forEach(color => {
+        // Nests
+        NESTS_GRID[color].forEach(grid => {
+          const pt = gridToSvg(...grid);
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', pt.cx);
+          circle.setAttribute('cy', pt.cy);
+          circle.setAttribute('r', SPOT_RADIUS * 1.1);
+          circle.setAttribute('fill', COLOR_MAP[color]);
+          circle.setAttribute('stroke', COLOR_MAP.border);
+          circle.setAttribute('stroke-width', '6');
+          spotsGroup.appendChild(circle);
+        });
+
+        // Home Columns
+        HOME_PATHS_GRID[color].forEach(grid => {
+          const pt = gridToSvg(...grid);
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', pt.cx);
+          circle.setAttribute('cy', pt.cy);
+          circle.setAttribute('r', SPOT_RADIUS * 0.85);
+          circle.setAttribute('fill', COLOR_MAP.white);
+          circle.setAttribute('stroke', COLOR_MAP[color]);
+          circle.setAttribute('stroke-width', '8');
+          spotsGroup.appendChild(circle);
+        });
+      });
+    }
+
+    // Get pixel coords for a piece based on color and position
+    function getPieceSvgCoords(color, piece) {
+      if (piece.state === 'nest') {
+        const grid = NESTS_GRID[color][piece.id];
+        return gridToSvg(...grid);
+      }
+      
+      if (piece.pos < 40) {
+        // Circuit
+        const startIdx = PLAYER_START_INDEX[color];
+        const circuitIdx = (startIdx + piece.pos) % MAIN_CIRCUIT_GRID.length;
+        const grid = MAIN_CIRCUIT_GRID[circuitIdx];
+        return gridToSvg(...grid);
+      } else {
+        // Home Stretch
+        const homeIdx = piece.pos - 40;
+        const grid = HOME_PATHS_GRID[color][homeIdx];
+        return gridToSvg(...grid);
+      }
+    }
+
+    function renderPawns() {
+      const pawnsGroup = document.getElementById('svg-pawns');
+      pawnsGroup.innerHTML = '';
+
+      ['red', 'blue'].forEach(color => {
+        gameState.pieces[color].forEach(piece => {
+          const pt = getPieceSvgCoords(color, piece);
+
+          const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          group.setAttribute('class', 'pawn');
+
+          // Check if piece is selectable by human
+          const isSelectable = (color === 'red' && gameState.turn === 'red' && gameState.awaitingMove && canMovePiece('red', piece, gameState.diceValue));
+
+          if (isSelectable) {
+            group.classList.add('pawn-selectable');
+
+            // Static pulsing highlight ring behind selectable pawns
+            const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            ring.setAttribute('cx', pt.cx);
+            ring.setAttribute('cy', pt.cy);
+            ring.setAttribute('r', SPOT_RADIUS * 1.2);
+            ring.setAttribute('fill', 'none');
+            ring.setAttribute('stroke', '#facc15');
+            ring.setAttribute('class', 'glow-ring');
+            group.appendChild(ring);
+          }
+
+          // Render 3D-styled pawn
+          const base = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          base.setAttribute('cx', pt.cx);
+          base.setAttribute('cy', pt.cy + 4);
+          base.setAttribute('r', SPOT_RADIUS * 0.75);
+          base.setAttribute('fill', 'rgba(0,0,0,0.3)');
+
+          const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          head.setAttribute('cx', pt.cx);
+          head.setAttribute('cy', pt.cy);
+          head.setAttribute('r', SPOT_RADIUS * 0.7);
+          head.setAttribute('fill', COLOR_MAP[color]);
+          head.setAttribute('stroke', '#ffffff');
+          head.setAttribute('stroke-width', '4');
+
+          const innerHighlight = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          innerHighlight.setAttribute('cx', pt.cx - 6);
+          innerHighlight.setAttribute('cy', pt.cy - 6);
+          innerHighlight.setAttribute('r', SPOT_RADIUS * 0.25);
+          innerHighlight.setAttribute('fill', 'rgba(255,255,255,0.45)');
+
+          group.appendChild(base);
+          group.appendChild(head);
+          group.appendChild(innerHighlight);
+
+          // Invisible enlarged hit box for easy touch/click selection
+          if (isSelectable) {
+            const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            hitArea.setAttribute('cx', pt.cx);
+            hitArea.setAttribute('cy', pt.cy);
+            hitArea.setAttribute('r', SPOT_RADIUS * 1.4);
+            hitArea.setAttribute('fill', 'transparent');
+            hitArea.style.cursor = 'pointer';
+            
+            // Event listeners attached to the hit area
+            hitArea.addEventListener('click', (e) => {
+              e.stopPropagation();
+              handleHumanPieceClick(piece);
+            });
+            group.appendChild(hitArea);
+          }
+
+          pawnsGroup.appendChild(group);
+        });
+      });
+
+      // Update HUD Counters
+      const redHome = gameState.pieces.red.filter(p => p.pos >= 40).length;
+      const blueHome = gameState.pieces.blue.filter(p => p.pos >= 40).length;
+      document.getElementById('red-home-count').textContent = redHome;
+      document.getElementById('blue-home-count').textContent = blueHome;
+
+      checkWinCondition(redHome, blueHome);
+    }
+
+    /**
+     * Logic & Rules Engine
+     */
+    function canMovePiece(color, piece, dice) {
+      if (piece.pos >= 43) return false; // Already finished at the end of home column
+
+      if (piece.state === 'nest') {
+        return dice === 6; // Requires a 6 to come out
+      }
+
+      if (piece.state === 'active') {
+        const targetPos = piece.pos + dice;
+        return targetPos <= 43; // Max distance includes home column
+      }
+
+      return false;
+    }
+
+    function getValidMoves(color, dice) {
+      return gameState.pieces[color].filter(p => canMovePiece(color, p, dice));
+    }
+
+    function movePiece(color, piece, steps) {
+      sound.playStep();
+
+      if (piece.state === 'nest' && steps === 6) {
+        piece.state = 'active';
+        piece.pos = 0; // Placed on start spot
+      } else if (piece.state === 'active') {
+        piece.pos += steps;
+        if (piece.pos >= 40) {
+          sound.playHome();
+        }
+      }
+
+      // Capture opponent pieces if landing on the main circuit (<40)
+      if (piece.state === 'active' && piece.pos < 40) {
+        const myCoords = getPieceSvgCoords(color, piece);
+        const opponent = color === 'red' ? 'blue' : 'red';
+
+        gameState.pieces[opponent].forEach(oppPiece => {
+          if (oppPiece.state === 'active' && oppPiece.pos < 40) {
+            const oppCoords = getPieceSvgCoords(opponent, oppPiece);
+            if (Math.abs(myCoords.cx - oppCoords.cx) < 5 && Math.abs(myCoords.cy - oppCoords.cy) < 5) {
+              // Capture! Send back to nest
+              oppPiece.state = 'nest';
+              oppPiece.pos = -1;
+              sound.playCapture();
+              updateStatus(`BOOM! ${color.toUpperCase()} captured ${opponent.toUpperCase()}'s pawn!`);
+            }
+          }
+        });
+      }
+
+      renderPawns();
+    }
+
+    /**
+     * Turn Management
+     */
+    const rollBtn = document.getElementById('roll-btn');
+    const diceEl = document.getElementById('dice');
+    const statusText = document.getElementById('status-text');
+    const turnBadge = document.getElementById('turn-badge');
+
+    function rollDice() {
+      if (!gameState.canRoll) return;
+
+      sound.playDiceRoll();
+      gameState.canRoll = false;
+      rollBtn.disabled = true;
+
+      // Higher chance for rolling a 6
+      // Red (Human): 40% chance of rolling 6
+      // Blue (Bot): 25% chance of rolling 6
+      let rollVal;
+      const rand = Math.random();
+      
+      if (gameState.turn === 'red') {
+        if (rand < 0.40) {
+          rollVal = 6;
+        } else {
+          rollVal = Math.floor(Math.random() * 5) + 1; // 1 to 5
+        }
+      } else {
+        if (rand < 0.25) {
+          rollVal = 6;
+        } else {
+          rollVal = Math.floor(Math.random() * 5) + 1; // 1 to 5
+        }
+      }
+
+      gameState.diceValue = rollVal;
+
+      const rotations = {
+        1: 'rotateY(0deg)',
+        6: 'rotateY(180deg)',
+        2: 'rotateY(90deg)',
+        5: 'rotateY(-90deg)',
+        3: 'rotateX(-90deg)',
+        4: 'rotateX(90deg)'
+      };
+
+      const spinX = (Math.floor(Math.random() * 3) + 2) * 360;
+      const spinY = (Math.floor(Math.random() * 3) + 2) * 360;
+
+      diceEl.style.transform = `rotateX(${spinX}deg) rotateY(${spinY}deg) ${rotations[rollVal]}`;
+
+      setTimeout(() => {
+        processTurnAfterRoll(rollVal);
+      }, 650);
+    }
+
+    function processTurnAfterRoll(dice) {
+      const current = gameState.turn;
+      const validMoves = getValidMoves(current, dice);
+
+      updateStatus(`${current.toUpperCase()} rolled a ${dice}!`);
+
+      if (validMoves.length === 0) {
+        setTimeout(() => {
+          updateStatus(`No valid moves for ${current.toUpperCase()}.`);
+          switchTurn(dice === 6);
+        }, 800);
+      } else {
+        if (current === 'red') {
+          gameState.awaitingMove = true;
+          renderPawns();
+        } else {
+          // AI Turn
+          setTimeout(() => {
+            makeAiMove(validMoves);
+          }, 800);
+        }
+      }
+    }
+
+    function handleHumanPieceClick(piece) {
+      if (!gameState.awaitingMove || gameState.turn !== 'red') return;
+
+      gameState.awaitingMove = false;
+      movePiece('red', piece, gameState.diceValue);
+
+      const gotExtraTurn = gameState.diceValue === 6;
+      switchTurn(gotExtraTurn);
+    }
+
+    function makeAiMove(validMoves) {
+      let chosenPiece = validMoves[0];
+
+      // Prioritize bringing tokens out of nest on 6
+      for (let p of validMoves) {
+        if (p.state === 'nest') {
+          chosenPiece = p;
+          break;
+        }
+        if (p.pos > chosenPiece.pos) {
+          chosenPiece = p;
+        }
+      }
+
+      movePiece('blue', chosenPiece, gameState.diceValue);
+      const gotExtraTurn = gameState.diceValue === 6;
+      switchTurn(gotExtraTurn);
+    }
+
+    function switchTurn(extraTurn = false) {
+      if (extraTurn) {
+        updateStatus(`${gameState.turn.toUpperCase()} rolled a 6! Roll again.`);
+        gameState.canRoll = true;
+        if (gameState.turn === 'red') {
+          rollBtn.disabled = false;
+        } else {
+          setTimeout(rollDice, 1000);
+        }
+        return;
+      }
+
+      gameState.turn = gameState.turn === 'red' ? 'blue' : 'red';
+      gameState.canRoll = true;
+
+      if (gameState.turn === 'red') {
+        turnBadge.textContent = "YOUR TURN (RED)";
+        turnBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30";
+        rollBtn.disabled = false;
+        updateStatus("Your turn! Roll the dice.");
+      } else {
+        turnBadge.textContent = "BOT TURN (BLUE)";
+        turnBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30";
+        rollBtn.disabled = true;
+        updateStatus("Bot is rolling...");
+        setTimeout(rollDice, 1200);
+      }
+    }
+
+    function updateStatus(msg) {
+      statusText.textContent = msg;
+    }
+
+    function checkWinCondition(redHome, blueHome) {
+      if (redHome === 4) {
+        sound.playVictory();
+        showVictoryModal('human');
+      } else if (blueHome === 4) {
+        sound.playVictory();
+        showVictoryModal('bot');
+      }
+    }
+
+    function showVictoryModal(winner) {
+      const modal = document.getElementById('victory-modal');
+      const title = document.getElementById('victory-title');
+      const msg = document.getElementById('victory-msg');
+      const iconBg = document.getElementById('victory-icon-bg');
+
+      if (winner === 'human') {
+        title.textContent = "YOU WON!";
+        msg.textContent = "Excellent strategy! You completed all 4 tokens.";
+        iconBg.className = "w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 bg-red-500/20 text-red-400 border border-red-500/40";
+      } else {
+        title.textContent = "BOT WON!";
+        msg.textContent = "The Blue Bot finished first. Try another game!";
+        iconBg.className = "w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 bg-blue-500/20 text-blue-400 border border-blue-500/40";
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function resetGame() {
+      gameState = {
+        turn: 'red',
+        diceValue: 0,
+        canRoll: true,
+        awaitingMove: false,
+        pieces: {
+          red: [{ id: 0, state: 'nest', pos: -1 }, { id: 1, state: 'nest', pos: -1 }, { id: 2, state: 'nest', pos: -1 }, { id: 3, state: 'nest', pos: -1 }],
+          blue: [{ id: 0, state: 'nest', pos: -1 }, { id: 1, state: 'nest', pos: -1 }, { id: 2, state: 'nest', pos: -1 }, { id: 3, state: 'nest', pos: -1 }]
+        }
+      };
+
+      document.getElementById('victory-modal').classList.add('hidden');
+      rollBtn.disabled = false;
+      turnBadge.textContent = "YOUR TURN (RED)";
+      turnBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30";
+      updateStatus("Roll a 6 to bring a token out onto the board!");
+      renderPawns();
+    }
+
+    // Controls Initialization
+    rollBtn.addEventListener('click', rollDice);
+    document.getElementById('reset-btn').addEventListener('click', resetGame);
+    document.getElementById('modal-restart-btn').addEventListener('click', resetGame);
+
+    const audioToggleBtn = document.getElementById('audio-toggle');
+    const audioIcon = document.getElementById('audio-icon');
+
+    audioToggleBtn.addEventListener('click', () => {
+      sound.muted = !sound.muted;
+      if (sound.muted) {
+        audioIcon.className = "fa-solid fa-volume-xmark text-lg text-red-400";
+      } else {
+        audioIcon.className = "fa-solid fa-volume-high text-lg text-slate-200";
+      }
+    });
+
+    window.onload = () => {
+      renderSvgBoard();
+      renderPawns();
+    };
+  </script>
+</body>
+</html>
