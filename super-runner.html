@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="screen-orientation" content="landscape">
 <title>Super Runner Bros</title>
 <style>
 html,body{margin:0;height:100%;background:#111;overflow:hidden;font-family:"Trebuchet MS",Arial,sans-serif;color:#fff;user-select:none;touch-action:none}
@@ -15,17 +16,29 @@ canvas{background:#5c94fc;image-rendering:pixelated}
 #ov button:hover{background:#5fd164}
 #tc{display:none;position:fixed;bottom:14px;left:0;right:0;z-index:15;justify-content:space-between;padding:0 16px}
 #tc div{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.3);border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:28px}
-@media (pointer:coarse){#tc{display:flex}}
+#tc span{align-items:flex-end}
+#rot{display:none;position:fixed;inset:0;z-index:50;background:#0d1230;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:22px;padding:30px;gap:16px}
+#rot b{font-size:72px;display:block;animation:tw 1.8s ease-in-out infinite}
+@keyframes tw{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+@media (pointer:coarse){#tc{display:flex;bottom:12px;padding:0 max(16px,env(safe-area-inset-left)) env(safe-area-inset-bottom)}#tc div{width:76px;height:76px;font-size:26px;font-weight:700;-webkit-touch-callout:none}#ba{width:92px!important;height:92px!important;font-size:17px!important;background:rgba(80,200,90,.45)!important}#bb{font-size:15px!important;background:rgba(255,200,60,.4)!important}#home{padding:6px 11px;font-size:14px;top:6px;left:max(6px,env(safe-area-inset-left))}}
+@media (pointer:coarse) and (orientation:portrait){#rot{display:flex}}
+@media (max-height:500px){#ov h1{font-size:26px;margin:0 0 4px}#ov p{font-size:13px;line-height:1.35;margin:4px 0 8px}#ov button{font-size:16px;padding:6px 20px}}
 </style></head><body>
 <a id="home" href="index.html">🏠 Home</a>
 <div id="wrap"><canvas id="c"></canvas></div>
-<div id="tc"><span style="display:flex;gap:12px"><div id="bl">◀</div><div id="br">▶</div></span><span style="display:flex;gap:12px"><div id="bb">B</div><div id="ba">A</div></span></div>
+<div id="tc"><span style="display:flex;gap:12px"><div id="bl">◀</div><div id="br">▶</div></span><span style="display:flex;gap:12px"><div id="bb">RUN</div><div id="ba">JUMP</div></span></div>
+<div id="rot"><b>📱</b><div>Please rotate your phone<br>to landscape to play</div></div>
 <div id="ov"></div>
 <script>
 const C=document.getElementById('c'),X=C.getContext('2d'),W=960,HH=544,T=32,R=17;
 C.width=W;C.height=HH;
-function fit(){const s=Math.min(innerWidth/W,innerHeight/HH);C.style.width=W*s+'px';C.style.height=HH*s+'px'}
-addEventListener('resize',fit);fit();
+let pt=false;function chk(){pt=matchMedia('(pointer:coarse) and (orientation:portrait)').matches}
+function fit(){chk();const s=Math.min(innerWidth/W,innerHeight/HH);C.style.width=W*s+'px';C.style.height=HH*s+'px'}
+addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));fit();
+addEventListener('contextmenu',e=>e.preventDefault());
+function goL(){if(!matchMedia('(pointer:coarse)').matches)return;const e=document.documentElement,lk=()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');
+ try{const rq=e.requestFullscreen||e.webkitRequestFullscreen;if(rq&&!document.fullscreenElement&&!document.webkitFullscreenElement){const pr=rq.call(e);Promise.resolve(pr).then(lk).catch(()=>{})}else{const q=lk();q&&q.catch&&q.catch(()=>{})}}catch(x){}}
+addEventListener('pointerdown',goL);try{goL()}catch(x){}
 
 /* ---------- Sound ---------- */
 let AC,muted=false;
@@ -94,7 +107,7 @@ function load(n){L=n;gen(n);p={x:2*T,y:13*T,w:22,h:30,vx:0,vy:0,g:0,dir:1,dead:0
 function ov(h,t,btns){const o=document.getElementById('ov');
  if(!h){o.style.display='none';return}
  o.style.display='flex';o.innerHTML='<h1>'+h+'</h1><p>'+t+'</p><div></div>';
- btns.forEach(([l,f])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();f()};o.lastChild.appendChild(b)})}
+ btns.forEach(([l,f])=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();goL();f()};o.lastChild.appendChild(b)})}
 function title(){st='title';ov('SUPER RUNNER BROS','Run, jump and stomp your way through 20 levels — from easy to brutal!<br>← → / A D: move &nbsp; Space / ↑: jump (hold = higher) &nbsp; Shift / X: run &nbsp; M: mute',
  [['▶ Start Game',()=>{score=0;lives=3;coinN=0;ov();load(1)}]].concat(best>1?[['Continue — Level '+best,()=>{score=0;lives=3;coinN=0;ov();load(best)}]]:[]))}
 function die(){if(p.dead)return;p.dead=1;p.vy=-11;p.dt=100;S.die();burst(p.x+11,p.y+15,'#e8271f',18)}
@@ -239,6 +252,6 @@ function draw(){
  if(st==='clear'){X.fillStyle='rgba(0,0,0,.55)';X.fillRect(0,HH/2-65,W,130);X.fillStyle='#ffd23f';X.textAlign='center';X.font='bold 46px "Trebuchet MS",Arial';X.shadowColor='#b8321a';X.shadowBlur=0;X.shadowOffsetY=3;X.fillText(L>=20?'ALL LEVELS CLEARED!':'LEVEL '+L+' CLEAR!',W/2,HH/2-10);X.shadowOffsetY=0;X.font='20px "Trebuchet MS",Arial';X.fillStyle='#fff';X.fillText('Score '+score,W/2,HH/2+32)}
 }
 let last=0,acc=0;
-function loop(t){requestAnimationFrame(loop);acc+=Math.min(100,t-last);last=t;while(acc>=16.667){update();acc-=16.667}if(col)draw();else{X.fillStyle='#5c94fc';X.fillRect(0,0,W,HH)}}
+function loop(t){requestAnimationFrame(loop);acc+=Math.min(100,t-last);last=t;while(acc>=16.667){if(!pt)update();acc-=16.667}if(col)draw();else{X.fillStyle='#5c94fc';X.fillRect(0,0,W,HH)}}
 gen(1);p={x:0,y:0,w:22,h:30,vx:0,vy:0,g:0,dir:1,dead:0};title();requestAnimationFrame(loop);
 </script></body></html>
