@@ -23,6 +23,7 @@ canvas{background:#5c94fc;image-rendering:pixelated}
 @media (pointer:coarse){#tc{display:flex;bottom:12px;padding:0 max(16px,env(safe-area-inset-left)) env(safe-area-inset-bottom)}#tc div{width:76px;height:76px;font-size:26px;font-weight:700;-webkit-touch-callout:none}#ba{width:92px!important;height:92px!important;font-size:17px!important;background:rgba(80,200,90,.45)!important}#bb{font-size:15px!important;background:rgba(255,200,60,.4)!important}#home{padding:6px 11px;font-size:14px;top:6px;left:max(6px,env(safe-area-inset-left))}}
 @media (pointer:coarse) and (orientation:portrait){#rot{display:flex}}
 @media (max-height:500px){#ov h1{font-size:26px;margin:0 0 4px}#ov p{font-size:13px;line-height:1.35;margin:4px 0 8px}#ov button{font-size:16px;padding:6px 20px}}
+@media (pointer:coarse){#tc div{width:64px!important;height:64px!important;background:rgba(255,255,255,.16)!important;border:2px solid rgba(255,255,255,.5)!important}#ba{width:78px!important;height:78px!important;background:rgba(80,200,90,.28)!important}#bb{background:rgba(255,200,60,.26)!important}}
 </style></head><body>
 <a id="home" href="index.html">🏠 Home</a>
 <div id="wrap"><canvas id="c"></canvas></div>
@@ -103,7 +104,7 @@ const solid=(tx,ty)=>tx<0||tx>=len?true:(ty<0||ty>=R?false:col[tx][ty]>0);
 /* ---------- Game state ---------- */
 let st='title',p,score=0,lives=3,coinN=0,time=0,tick=0,clearT=0,cam=0,best=1;
 try{best=+localStorage.getItem('sr_best')||1}catch(e){}
-function load(n){L=n;gen(n);p={x:2*T,y:13*T,w:22,h:30,vx:0,vy:0,g:0,dir:1,dead:0,dt:0,coy:0,jh:0};time=Math.max(70,150-n*3)*60;cam=0;st='play';tick=0}
+function load(n){L=n;gen(n);p={x:6*T,y:13*T,w:22,h:30,vx:0,vy:0,g:0,dir:1,dead:0,dt:0,coy:0,jh:0};time=Math.max(70,150-n*3)*60;cam=0;st='play';tick=0}
 function ov(h,t,btns){const o=document.getElementById('ov');
  if(!h){o.style.display='none';return}
  o.style.display='flex';o.innerHTML='<h1>'+h+'</h1><p>'+t+'</p><div></div>';
@@ -162,7 +163,9 @@ const TH=[{a:'#2f78f0',b:'#c4e8ff',m1:'#8dbbe6',m2:'#5fa56c',gr:'#4fc23a',sun:'#
 {a:'#4a2f8a',b:'#ffb070',m1:'#b86a8f',m2:'#6e4170',gr:'#8cc23a',sun:'#ffe08a',bush:'#5a9a2a'},
 {a:'#070c26',b:'#2b3a7a',m1:'#26356b',m2:'#1a2450',gr:'#3ab08a',sun:'#e8eeff',bush:'#1f7a5a',night:1},
 {a:'#220822',b:'#9a2a3a',m1:'#5e1a3c',m2:'#3a0f2a',gr:'#c0583a',sun:'#ff8a50',bush:'#8a3a2a',night:1}];
-function mk(w,h,f){const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d'));return c}
+function mk(w,h,f){const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d',{willReadFrequently:true}));return c}
+['resize','orientationchange','fullscreenchange','webkitfullscreenchange'].forEach(e=>addEventListener(e,()=>{tkey=null}));document.addEventListener('visibilitychange',()=>{tkey=null});
+setInterval(()=>{tkey=null},4000);
 function build(th){
  const dirt=c=>{const q=c.createLinearGradient(0,0,0,T);q.addColorStop(0,'#c8803c');q.addColorStop(1,'#86461a');c.fillStyle=q;c.fillRect(0,0,T,T);
   c.fillStyle='rgba(60,25,5,.35)';[[6,12,2],[20,7,1.6],[14,23,2.5],[26,25,1.6],[4,27,1.5]].forEach(([a,b,r])=>{c.beginPath();c.arc(a,b,r,0,7);c.fill()});
