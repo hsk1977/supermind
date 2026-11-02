@@ -23,8 +23,8 @@ html{background:var(--ink)}
 body{
   min-height:100vh;color:var(--text);
   background:
-    radial-gradient(ellipse 70% 45% at 50% -5%,rgba(255,110,20,.30),transparent 70%),
-    radial-gradient(ellipse 60% 40% at 90% 100%,rgba(122,92,255,.30),transparent 70%),
+    radial-gradient(ellipse 70% 45% at 50% -5%,rgba(245,150,50,.30),transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 100%,rgba(190,80,40,.26),transparent 70%),
     radial-gradient(ellipse 50% 40% at 5% 70%,rgba(255,98,146,.16),transparent 70%),
     linear-gradient(180deg,var(--ink),var(--ink2));
   background-attachment:fixed;
@@ -49,33 +49,33 @@ main{position:relative;max-width:880px;margin:0 auto}
 
 header{text-align:center;margin-bottom:clamp(24px,5vw,44px)}
 header{position:relative}
-.halloween{position:relative;width:clamp(130px,34vw,180px);margin:0 auto 6px}
-.pumpkin{display:block;width:100%;overflow:visible;
-  filter:drop-shadow(0 0 22px rgba(255,120,0,.55)) drop-shadow(0 0 60px rgba(255,90,0,.30));
-  animation:bob 5s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-6px) rotate(-1deg)}}
-.face{animation:flicker 3.2s infinite}
-@keyframes flicker{0%,100%{opacity:1}42%{opacity:.82}46%{opacity:1}70%{opacity:.7}74%{opacity:1}}
-.bat{position:absolute;width:clamp(30px,8vw,46px);fill:#1b1347;stroke:#8a6bff;stroke-width:1.2;stroke-linejoin:round;
-  animation:fly 6s ease-in-out infinite}
-.bat path{transform-box:fill-box;transform-origin:center;animation:flap .5s ease-in-out infinite alternate}
-.bat.b1{left:-34%;top:6%}
-.bat.b2{right:-38%;top:-4%;width:clamp(24px,6vw,36px);animation-delay:-2.5s;animation-direction:reverse}
-.bat.b3{right:-14%;top:60%;width:clamp(20px,5vw,28px);animation-delay:-4s}
-@keyframes fly{0%,100%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(12px,-14px) rotate(6deg)}}
-@keyframes flap{from{transform:scaleY(1)}to{transform:scaleY(.55)}}
-.spider{position:absolute;top:calc(-1 * clamp(20px,5vw,56px));right:10%;display:flex;flex-direction:column;align-items:center;
-  transform-origin:top center;animation:swing 4s ease-in-out infinite}
-.spider::before{content:"";width:1.5px;height:clamp(40px,10vw,84px);background:linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.55))}
-.spider span{font-size:clamp(1.1rem,3.5vw,1.6rem);line-height:1;filter:drop-shadow(0 0 6px rgba(138,107,255,.7))}
-@keyframes swing{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+.thanks{position:relative;width:clamp(150px,40vw,210px);margin:0 auto 6px}
+.turkey{display:block;width:100%;overflow:visible;
+  filter:drop-shadow(0 0 22px rgba(255,150,40,.45)) drop-shadow(0 0 60px rgba(230,110,30,.25));
+  animation:bob 5s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-1.2deg)}}
+.leaf{position:absolute;top:0;width:clamp(16px,4vw,26px);opacity:.9;pointer-events:none;
+  stroke:rgba(60,25,5,.45);stroke-width:.8;stroke-linejoin:round;animation:fall 10s linear infinite}
+.leaf.l1{left:6%;fill:#e8631a}
+.leaf.l2{left:20%;fill:#f4b024;animation-delay:-3.5s;animation-duration:12s}
+.leaf.l3{left:34%;fill:#c0392b;animation-delay:-7s;animation-duration:11s}
+.leaf.l4{left:66%;fill:#f4a21b;animation-delay:-2s;animation-duration:13s}
+.leaf.l5{left:80%;fill:#d2541b;animation-delay:-5.5s}
+.leaf.l6{left:93%;fill:#b5651d;animation-delay:-8.5s;animation-duration:12s}
+@keyframes fall{
+  0%{transform:translate(0,-14px) rotate(0);opacity:0}
+  10%{opacity:.95}
+  50%{transform:translate(22px,120px) rotate(190deg)}
+  90%{opacity:.9}
+  100%{transform:translate(-10px,250px) rotate(380deg);opacity:0}
+}
 h1{
   font-size:clamp(2.2rem,8vw,3.8rem);font-weight:900;line-height:1.2;
-  background:linear-gradient(180deg,#ffd27a 5%,#ff8a1f 55%,#ff5a00 100%);
+  background:linear-gradient(180deg,#ffe3a6 5%,#f2a03a 55%,#d9531e 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 16px rgba(255,110,0,.45));
+  filter:drop-shadow(0 0 16px rgba(240,140,40,.4));
 }
-.subtitle{margin-top:8px;color:#c9b8ff;font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600}
+.subtitle{margin-top:8px;color:#f0d8b2;font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600}
 
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2.5vw,18px)}
 @media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
@@ -143,27 +143,34 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
 <body>
 <main>
   <header>
-    <div class="halloween" aria-hidden="true">
-      <svg class="pumpkin" viewBox="0 0 120 100">
-        <defs>
-          <radialGradient id="pk" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#ffa63d"/><stop offset=".6" stop-color="#ff7a12"/><stop offset="1" stop-color="#c2410c"/></radialGradient>
-          <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a0"/><stop offset="1" stop-color="#ffc424"/></linearGradient>
-        </defs>
-        <path d="M56 24C55 13 60 8 69 5L72 11C67 13 65 18 65 25Z" fill="#5d7f2b" stroke="#3d5a1c" stroke-width="1.5" stroke-linejoin="round"/>
-        <g fill="url(#pk)" stroke="#b83c06" stroke-width="2">
-          <ellipse cx="32" cy="60" rx="29" ry="36"/><ellipse cx="88" cy="60" rx="29" ry="36"/>
-          <ellipse cx="60" cy="60" rx="30" ry="39"/>
-        </g>
-        <g class="face" fill="url(#gl)">
-          <path d="M33 56L49 56L41 41Z"/><path d="M71 56L87 56L79 41Z"/><path d="M56 66L64 66L60 59Z"/>
-          <path d="M31 74L42 70L48 78L54 72L60 80L66 72L72 78L78 70L89 74C85 91 73 95 60 95C47 95 35 91 31 74Z"/>
-        </g>
+    <div class="thanks" aria-hidden="true">
+      <svg class="turkey" viewBox="0 0 120 112">
+        <g transform="rotate(-78 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#b3341c" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
+        <g transform="rotate(-52 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#e8631a" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
+        <g transform="rotate(-26 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#f4a21b" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
+        <g transform="rotate(0 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#c98a2b" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
+        <g transform="rotate(26 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#f4a21b" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
+        <g transform="rotate(52 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#e8631a" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
+        <g transform="rotate(78 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#b3341c" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
+        <ellipse cx="60" cy="82" rx="30" ry="26" fill="#8b5a2b" stroke="#4a2a10" stroke-width="2"/>
+        <ellipse cx="60" cy="88" rx="19" ry="17" fill="#b98350"/>
+        <ellipse cx="34" cy="84" rx="8" ry="14" fill="#6e4520" stroke="#4a2a10" stroke-width="1.6" transform="rotate(14 34 84)"/>
+        <ellipse cx="86" cy="84" rx="8" ry="14" fill="#6e4520" stroke="#4a2a10" stroke-width="1.6" transform="rotate(-14 86 84)"/>
+        <path d="M50 106V111M54 106V111M66 106V111M70 106V111" stroke="#f6a416" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="60" cy="56" r="15" fill="#8b5a2b" stroke="#4a2a10" stroke-width="2"/>
+        <circle cx="54" cy="52" r="4.2" fill="#fff"/><circle cx="66" cy="52" r="4.2" fill="#fff"/>
+        <circle cx="55" cy="52.6" r="2" fill="#1c1209"/><circle cx="65" cy="52.6" r="2" fill="#1c1209"/>
+        <path d="M49 46Q54 43 58 46M62 46Q66 43 71 46" stroke="#4a2a10" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M55 58L65 58L60 67Z" fill="#f6b21a" stroke="#b9770e" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M58.5 66Q56 74 60 77Q64 74 61.5 66Z" fill="#d62828" stroke="#8f1717" stroke-width="1.2" stroke-linejoin="round"/>
       </svg>
-      <svg class="bat b1" viewBox="0 0 40 20" aria-hidden="true"><path d="M20 6C17 2 12 1 2 4C6 7 6 11 9 14C12 11 14 12 16 15C18 11 19 9 20 9C21 9 22 11 24 15C26 12 28 11 31 14C34 11 34 7 38 4C28 1 23 2 20 6Z"/></svg>
-      <svg class="bat b2" viewBox="0 0 40 20" aria-hidden="true"><path d="M20 6C17 2 12 1 2 4C6 7 6 11 9 14C12 11 14 12 16 15C18 11 19 9 20 9C21 9 22 11 24 15C26 12 28 11 31 14C34 11 34 7 38 4C28 1 23 2 20 6Z"/></svg>
-      <svg class="bat b3" viewBox="0 0 40 20" aria-hidden="true"><path d="M20 6C17 2 12 1 2 4C6 7 6 11 9 14C12 11 14 12 16 15C18 11 19 9 20 9C21 9 22 11 24 15C26 12 28 11 31 14C34 11 34 7 38 4C28 1 23 2 20 6Z"/></svg>
     </div>
-    <div class="spider" aria-hidden="true"><span>🕷️</span></div>
+    <svg class="leaf l1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
+    <svg class="leaf l2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
+    <svg class="leaf l3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
+    <svg class="leaf l4" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
+    <svg class="leaf l5" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
+    <svg class="leaf l6" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
     <h1 data-en="Dreams of the Mind">رویاهای ذهن</h1>
     <p class="subtitle" data-en="A collection of brain games &amp; fun">مجموعه بازی‌های فکری و سرگرمی</p>
   </header>
@@ -425,7 +432,7 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
       <div class="name">منچ</div><div class="en">Mensch</div>
     </a>
     <a href="./super-runner.html" class="card" style="--c:#5fb3ff">
-      <span class="num">۲۶</span><span class="tag" data-en="New">جدید</span>
+      <span class="num">۲۶</span>
       <div class="icon">
         <svg viewBox="0 0 64 64" fill="none">
           <defs>
@@ -456,6 +463,32 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
         </svg>
       </div>
       <div class="name">سوپر رانر</div><div class="en">Super Runner</div>
+    </a>
+    <a href="./Poor-Cows.html" class="card" style="--c:#f0b35f">
+      <span class="num">۲۷</span><span class="tag" data-en="New">جدید</span>
+      <div class="icon">
+        <svg viewBox="0 0 64 64" fill="none" stroke-linejoin="round">
+          <g stroke="#2b2b2b" stroke-width="1.8">
+            <ellipse cx="11" cy="24" rx="7" ry="4" transform="rotate(-20 11 24)" fill="#6b4a3a"/>
+            <ellipse cx="53" cy="24" rx="7" ry="4" transform="rotate(20 53 24)" fill="#6b4a3a"/>
+            <path d="M20 13Q17 6 12 7Q14 13 19 18Z" fill="#f4e6c8"/>
+            <path d="M44 13Q47 6 52 7Q50 13 45 18Z" fill="#f4e6c8"/>
+            <ellipse cx="32" cy="30" rx="18" ry="20" fill="#fff"/>
+            <path d="M18 24Q18 14 28 12Q26 22 24 30Q18 32 18 24Z" fill="#2b2b2b"/>
+            <ellipse cx="32" cy="45" rx="12" ry="9" fill="#ffb3c1"/>
+          </g>
+          <g fill="#fff" stroke="#2b2b2b" stroke-width="1.6">
+            <circle cx="24" cy="27" r="4"/><circle cx="40" cy="27" r="4"/>
+          </g>
+          <g fill="#2b2b2b"><circle cx="24.8" cy="28" r="1.8"/><circle cx="39.2" cy="28" r="1.8"/>
+            <ellipse cx="27.5" cy="45" rx="1.8" ry="2.4"/><ellipse cx="36.5" cy="45" rx="1.8" ry="2.4"/></g>
+          <circle cx="54" cy="11" r="6.5" fill="#e53935" stroke="#7f1d1d" stroke-width="1.5"/>
+          <circle cx="52" cy="10" r="1.8" fill="#fff"/><circle cx="56.5" cy="10" r="1.8" fill="#fff"/>
+          <path d="M49.5 6.5L54 8.5M58.5 6.5L54.5 8.5" stroke="#2b2b2b" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M53 12.5L56 14L53 15Z" fill="#ffc83d" stroke="none"/>
+        </svg>
+      </div>
+      <div class="name">گاوهای بیچاره</div><div class="en">Poor Cows</div>
     </a>
   </nav>
 </main>
