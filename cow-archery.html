@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Cow Archery</title>
+<style>
+  html,body{margin:0;height:100%;background:#111;overflow:hidden;font-family:Arial,Helvetica,sans-serif;touch-action:none}
+  body{display:flex;align-items:center;justify-content:center}
+  #wrap{position:relative;height:100vh;max-width:100vw;aspect-ratio:400/640}
+  canvas{width:100%;height:100%;display:block;background:#d8cdb8}
+  #home{position:fixed;top:10px;left:10px;width:46px;height:46px;border-radius:50%;background:#e02424;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.5);z-index:10;
+    border:2px solid #fff;text-decoration:none}
+  #home:active{transform:scale(.92)}
+  #mute{position:fixed;top:10px;right:10px;width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.55);
+    color:#fff;font-size:22px;border:2px solid #fff;z-index:10;cursor:pointer}
+  #over{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.7);color:#fff;text-align:center;z-index:5}
+  #over h1{font-size:44px;margin:0 0 8px;color:#ff5252}
+  #over p{margin:4px 0;font-size:20px}
+  #over button{margin-top:18px;padding:12px 30px;font-size:20px;border:0;border-radius:10px;background:#ffcc00;cursor:pointer;font-weight:bold}
+  #hint{position:absolute;bottom:8px;width:100%;text-align:center;color:#fff;font-size:13px;text-shadow:0 1px 3px #000;pointer-events:none}
+</style>
+</head>
+<body>
+<a id="home" href="index.html" title="Home" aria-label="Home">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg>
+</a>
+<button id="mute" aria-label="Sound">🔊</button>
+<div id="wrap">
+  <canvas id="c" width="400" height="640"></canvas>
+  <div id="hint">Tap anywhere (or press Space) to shoot. Slide the bow, then thread the arrow through the narrow gap to hit the cow!</div>
+  <div id="over">
+    <h1>Game Over</h1>
+    <p>Your arrow hit another arrow!</p>
+    <p id="final"></p>
+    <button id="again">Play Again</button>
+  </div>
+</div>
+<script>
+const W=400,H=640;
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const BOW={x:200,y:560};
+const WALL={top:190,h:28};
+const HOLE_W=18;
+
+/* ---------- Audio ---------- */
+let AC=null,muted=false,beatTimer=null,beatN=0;
+function initAudio(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } if(AC&&AC.state==='suspended')AC.resume(); }
+function tone(f1,f2,dur,type='sine',vol=.2,delay=0){
+  if(!AC||muted)return;
+  const t=AC.currentTime+delay,o=AC.createOscillator(),g=AC.createGain();
+  o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+dur);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g).connect(AC.destination);o.start(t);o.stop(t+dur+.02);
+}
+function noise(dur,vol=.15,hp=1000){
+  if(!AC||muted)return;
+  const n=AC.sampleRate*dur,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+  const s=AC.createBufferSource();s.buffer=b;
+  const f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=hp;
+  const g=AC.createGain();g.gain.value=vol;
+  s.connect(f).connect(g).connect(AC.destination);s.start();
+}
+const sfx={
+  shoot(){tone(500,120,.25,'triangle',.18);noise(.2,.12,2500);},
+  thud(){tone(140,50,.2,'square',.2);noise(.1,.15,300);},
+  moo(){tone(220,130,.55,'sawtooth',.14);tone(223,128,.55,'sawtooth',.1);},
+  hit(){tone(600,1200,.15,'square',.12);sfx.moo();},
+  needle(){tone(900,1500,.08,'sine',.05);},
+  over(){tone(400,80,.9,'sawtooth',.22);tone(300,60,1,'square',.12,.15);noise(.4,.2,500);}
+};
+function startBeat(){
+  stopBeat();
+  beatTimer=setInterval(()=>{
+    if(!AC||muted||over)return;
+    const s=beatN%8;
+    if(s%4===0)tone(120,45,.18,'sine',.25);
+    if(s%2===1)noise(.05,.05,6000);
+    if(s===2||s===6)tone(330+(s===6?60:0),300,.1,'triangle',.06);
+    beatN++;
+  },250);
+}
+function stopBeat(){if(beatTimer)clearInterval(beatTimer);beatTimer=null;}
+document.getElementById('mute').onclick=e=>{initAudio();muted=!muted;e.target.textContent=muted?'🔇':'🔊';};
+
+/* ---------- State ---------- */
+const NEEDLE_LEN=100;
+let t=0,hits=0,over=false,arrows=[],stuck=[],cooldown=0,bubble=0,hitFlash=0,particles=[],bowX=200,fall=0;
+const keys={};
+function reset(){t=0;hits=0;over=false;arrows=[];stuck=[];cooldown=0;bubble=0;hitFlash=0;particles=[];fall=0;
+  document.getElementById('over').style.display='none';}
+function speedF(){return 1+Math.min(hits,60)*0.025;}
+function cowX(){return 200;}
+function holeX(){return cowX();}
+function bowPos(){return 200+Math.sin(t*1.7*speedF())*155;}
+const aim=0;
+function rankFor(h){return h>=100?'Gold':h>=50?'Silver':h>=10?'Bronze':'Rookie';}
+
+/* ---------- Input ---------- */
+function fire(){initAudio();startBeat();if(over)return;shoot();}
+cv.addEventListener('pointerdown',e=>{e.preventDefault();fire();});
+addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.key===' '){e.preventDefault();initAudio();startBeat();if(over)restart();else shoot();}
+});
+function restart(){reset();}
+document.getElementById('again').onclick=()=>{initAudio();restart();};
+
+function shoot(){
+  if(over||cooldown>0)return;
+  arrows.push({x:bowX,y:BOW.y-10,dx:0,dy:-1,state:'fly',life:0});
+  cooldown=.22;sfx.shoot();
+}
+function burst(x,y,col,n=18){
+  for(let i=0;i<n;i++){const a=Math.random()*6.28,s=60+Math.random()*180;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-40,life:.7,col});}
+}
+function endGame(){
+  over=true;sfx.over();
+  document.getElementById('final').textContent='Hits: '+hits+'  —  Rank: '+rankFor(hits);
+  document.getElementById('over').style.display='flex';
+}
+
+/* ---------- Update ---------- */
+function update(dt){
+  t+=dt;
+  bowX=bowPos();
+  if(cooldown>0)cooldown-=dt;
+  if(bubble>0)bubble-=dt;
+  if(hitFlash>0)hitFlash-=dt;
+  const cx=cowX(),cy=WALL.top-46,wallBot=WALL.top+WALL.h;
+  for(const a of arrows){
+    a.life+=dt;
+    a.y+=a.dy*640*dt;
+    const tipY=a.y-18;
+    // crashes into an arrow already stuck in the wall
+    if(tipY>wallBot&&tipY<wallBot+NEEDLE_LEN){
+      for(const s of stuck){
+        if(Math.abs(a.x-s.x)<7){burst(a.x,tipY,'#ff5252',24);sfx.thud();endGame();return;}
+      }
+    }
+    // wall
+    if(tipY<wallBot&&tipY>WALL.top-2){
+      if(Math.abs(a.x-holeX())>HOLE_W/2){
+        a.state='dead';stuck.push({x:a.x});
+        sfx.thud();burst(a.x,wallBot,'#b9a58a',8);
+        continue;
+      }
+    }
+    // through the hole -> hits the cow
+    if(tipY<WALL.top&&Math.hypot((a.x-cx)/42,(tipY-cy)/56)<1){
+      a.state='dead';hits++;stuck=[];bubble=1;hitFlash=.5;sfx.hit();burst(cx,cy,'#ffcc00',24);
+      continue;
+    }
+    if(tipY<-40)a.state='dead';
+  }
+  arrows=arrows.filter(a=>a.state!=='dead');
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=400*dt;p.life-=dt;}
+  particles=particles.filter(p=>p.life>0);
+}
+
+/* ---------- Drawing ---------- */
+function drawBackground(){
+  // wall paint
+  ctx.fillStyle='#e9e2d3';ctx.fillRect(0,0,W,H);
+  // curtain
+  ctx.fillStyle='#d8c7a6';ctx.fillRect(10,40,380,330);
+  for(let i=0;i<10;i++){
+    const x=10+i*38;
+    const g=ctx.createLinearGradient(x,0,x+38,0);
+    g.addColorStop(0,'#cdbb98');g.addColorStop(.5,'#e6d8bb');g.addColorStop(1,'#cdbb98');
+    ctx.fillStyle=g;ctx.fillRect(x,40,38,330);
+  }
+  // rod
+  ctx.fillStyle='#333';ctx.fillRect(0,36,W,7);
+  for(const x of [60,200,330]){ctx.fillRect(x,30,6,20);}
+  // sofa
+  ctx.fillStyle='#6b5d52';ctx.beginPath();ctx.roundRect(0,370,W,H-370,22);ctx.fill();
+  ctx.fillStyle='#7d6d60';
+  ctx.beginPath();ctx.roundRect(10,400,180,150,24);ctx.fill();
+  ctx.beginPath();ctx.roundRect(210,400,180,150,24);ctx.fill();
+  ctx.fillStyle='#8a7968';ctx.beginPath();ctx.roundRect(8,500,384,130,18);ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(200,500);ctx.lineTo(200,632);ctx.stroke();
+}
+function drawWall(){
+  const hx=holeX(),y=WALL.top,h=WALL.h;
+  ctx.save();
+  ctx.beginPath();ctx.rect(0,y,W,h);ctx.clip();
+  ctx.fillStyle='#6e7378';ctx.fillRect(0,y,W,h);
+  ctx.strokeStyle='#40454a';ctx.lineWidth=2;
+  const bw=40,bh=h/2;
+  for(let r=0;r<2;r++){
+    const off=r?bw/2:0;
+    for(let x=-bw+off;x<W+bw;x+=bw){
+      ctx.fillStyle=(Math.floor(x/bw)+r)%2?'#7b8085':'#868b90';
+      ctx.fillRect(x,y+r*bh,bw,bh);ctx.strokeRect(x,y+r*bh,bw,bh);
+    }
+  }
+  // hole
+  ctx.globalCompositeOperation='destination-out';
+  ctx.fillRect(hx-HOLE_W/2,y-2,HOLE_W,h+4);
+  ctx.restore();
+  // hole frame
+  ctx.strokeStyle='#ffd54a';ctx.lineWidth=3;
+  ctx.strokeRect(hx-HOLE_W/2,y,HOLE_W,h);
+}
+function drawCow(){
+  const x=cowX(),base=WALL.top;
+  const beat=t*8;
+  const bob=Math.abs(Math.sin(beat))*7;
+  const tilt=Math.sin(beat/2)*0.14;
+  ctx.save();
+  ctx.translate(x,base-bob);
+  ctx.rotate(tilt+(hitFlash>0?Math.sin(t*40)*.3:0));
+  const W1='#ffffff',BLK='#222',PINK='#f4a6b5';
+  ctx.lineCap='round';ctx.lineJoin='round';
+  const lk=Math.sin(beat)*8;
+  // legs + hooves
+  ctx.strokeStyle=W1;ctx.lineWidth=12;
+  ctx.beginPath();ctx.moveTo(-13,-14);ctx.lineTo(-14+lk,0+bob);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(13,-14);ctx.lineTo(14-lk,0+bob);ctx.stroke();
+  ctx.fillStyle=BLK;
+  ctx.beginPath();ctx.ellipse(-14+lk,bob,10,5.5,0,0,6.3);ctx.fill();
+  ctx.beginPath();ctx.ellipse(14-lk,bob,10,5.5,0,0,6.3);ctx.fill();
+  // arms
+  const aL=Math.sin(beat)*.9,aR=Math.sin(beat+Math.PI)*.9;
+  const lx=-28-Math.cos(aL)*20,ly=-40-Math.sin(aL)*26,rx=28+Math.cos(aR)*20,ry=-40-Math.sin(aR)*26;
+  ctx.strokeStyle=W1;ctx.lineWidth=10;
+  ctx.beginPath();ctx.moveTo(-26,-40);ctx.lineTo(lx,ly);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(26,-40);ctx.lineTo(rx,ry);ctx.stroke();
+  ctx.fillStyle=BLK;ctx.beginPath();ctx.arc(lx,ly,6,0,6.3);ctx.arc(rx,ry,6,0,6.3);ctx.fill();
+  // body
+  ctx.fillStyle=hitFlash>0?'#fff3c4':W1;
+  ctx.strokeStyle=BLK;ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(0,-36,30,32,0,0,6.3);ctx.fill();ctx.stroke();
+  // black patches (clipped to body)
+  ctx.save();ctx.beginPath();ctx.ellipse(0,-36,30,32,0,0,6.3);ctx.clip();
+  ctx.fillStyle=BLK;
+  ctx.beginPath();ctx.ellipse(-18,-50,14,12,.4,0,6.3);ctx.fill();
+  ctx.beginPath();ctx.ellipse(16,-24,12,14,-.3,0,6.3);ctx.fill();
+  ctx.beginPath();ctx.ellipse(6,-62,9,6,0,0,6.3);ctx.fill();
+  ctx.restore();
+  // udder/belly pink
+  ctx.fillStyle=PINK;ctx.beginPath();ctx.ellipse(0,-10,11,7,0,0,6.3);ctx.fill();
+  // head
+  ctx.save();ctx.translate(0,-80);ctx.rotate(Math.sin(beat/2)*.18);
+  // horns
+  ctx.strokeStyle='#f3ead0';ctx.lineWidth=6;
+  ctx.beginPath();ctx.moveTo(-14,-18);ctx.quadraticCurveTo(-20,-32,-30,-28);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(14,-18);ctx.quadraticCurveTo(20,-32,30,-28);ctx.stroke();
+  // ears
+  ctx.fillStyle=BLK;
+  ctx.beginPath();ctx.ellipse(-30,-6,13,7,-.35,0,6.3);ctx.fill();
+  ctx.beginPath();ctx.ellipse(30,-6,13,7,.35,0,6.3);ctx.fill();
+  ctx.fillStyle=PINK;
+  ctx.beginPath();ctx.ellipse(-30,-6,7,3.5,-.35,0,6.3);ctx.fill();
+  ctx.beginPath();ctx.ellipse(30,-6,7,3.5,.35,0,6.3);ctx.fill();
+  // face
+  ctx.fillStyle=W1;ctx.strokeStyle=BLK;ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(0,0,25,22,0,0,6.3);ctx.fill();ctx.stroke();
+  // eye patch
+  ctx.fillStyle=BLK;ctx.beginPath();ctx.ellipse(-12,-6,10,9,.3,0,6.3);ctx.fill();
+  // eyes
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-10,-5,6,0,6.3);ctx.arc(10,-5,6,0,6.3);ctx.fill();
+  ctx.fillStyle='#111';
+  const dx2=hitFlash>0?0:Math.sin(t*3)*1.5;
+  ctx.beginPath();ctx.arc(-10+dx2,-5,3,0,6.3);ctx.arc(10+dx2,-5,3,0,6.3);ctx.fill();
+  // big pink muzzle
+  ctx.fillStyle=PINK;ctx.strokeStyle='#d98095';ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(0,10,19,12,0,0,6.3);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#b8566e';
+  ctx.beginPath();ctx.ellipse(-7,8,3,4.5,0,0,6.3);ctx.ellipse(7,8,3,4.5,0,0,6.3);ctx.fill();
+  ctx.strokeStyle='#8a3a50';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,12,7,.2,Math.PI-.2);ctx.stroke();
+  ctx.restore();
+  ctx.restore();
+  // musical notes
+  ctx.fillStyle='#fff';ctx.font='bold 18px Arial';
+  ctx.globalAlpha=.7+.3*Math.sin(t*6);
+  ctx.fillText('♪',x+38,base-90-Math.abs(Math.sin(t*4))*10);
+  ctx.fillText('♫',x-52,base-70-Math.abs(Math.cos(t*4))*10);
+  ctx.globalAlpha=1;
+  if(bubble>0){
+    ctx.fillStyle='#fff';ctx.strokeStyle='#333';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(x+20,base-150,64,30,10);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#d33';ctx.font='bold 18px Arial';ctx.fillText('Moo!',x+28,base-129);
+  }
+}
+function drawStuck(){
+  const y0=WALL.top+WALL.h;
+  for(const q of stuck){
+    ctx.strokeStyle='#e8cf8f';ctx.lineWidth=3;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(q.x,y0);ctx.lineTo(q.x,y0+NEEDLE_LEN);ctx.stroke();
+    ctx.fillStyle='#e03a3a';
+    ctx.beginPath();ctx.moveTo(q.x,y0+NEEDLE_LEN);ctx.lineTo(q.x-5,y0+NEEDLE_LEN-12);ctx.lineTo(q.x,y0+NEEDLE_LEN-8);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(q.x,y0+NEEDLE_LEN);ctx.lineTo(q.x+5,y0+NEEDLE_LEN-12);ctx.lineTo(q.x,y0+NEEDLE_LEN-8);ctx.closePath();ctx.fill();
+  }
+}
+function drawNeedles(){
+  for(const n of needles){
+    const g=ctx.createLinearGradient(0,n.y-50,0,n.y);
+    g.addColorStop(0,'rgba(255,220,100,0)');g.addColorStop(1,'rgba(255,235,140,.9)');
+    ctx.strokeStyle=g;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(n.x,n.y-50);ctx.lineTo(n.x,n.y);ctx.stroke();
+    const r=ctx.createRadialGradient(n.x,n.y,1,n.x,n.y,13);
+    r.addColorStop(0,'#fff');r.addColorStop(.4,'rgba(255,215,90,.9)');r.addColorStop(1,'rgba(255,200,50,0)');
+    ctx.fillStyle=r;ctx.beginPath();ctx.arc(n.x,n.y,13,0,6.3);ctx.fill();
+  }
+}
+function drawArrow(x,y,dx,dy,len=46,alpha=1){
+  const tx=x+dx*18,ty=y+dy*18,fx=tx-dx*len,fy=ty-dy*len;
+  ctx.globalAlpha=alpha;
+  ctx.lineCap='round';
+  ctx.strokeStyle='#e6c28a';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(tx,ty);ctx.stroke();
+  const px=-dy,py=dx;
+  ctx.fillStyle='#ff9a1f';
+  ctx.beginPath();ctx.moveTo(tx+dx*10,ty+dy*10);ctx.lineTo(tx+px*6,ty+py*6);ctx.lineTo(tx-px*6,ty-py*6);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#e03a3a';
+  ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(fx+dx*12+px*6,fy+dy*12+py*6);ctx.lineTo(fx+dx*12,fy+dy*12);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(fx+dx*12-px*6,fy+dy*12-py*6);ctx.lineTo(fx+dx*12,fy+dy*12);ctx.closePath();ctx.fill();
+  ctx.globalAlpha=1;
+}
+function drawBow(){
+  const dx=0,dy=-1;
+  ctx.save();ctx.translate(bowX,BOW.y);
+  // limbs
+  ctx.strokeStyle='#d99a2b';ctx.lineWidth=6;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(-60,-18);ctx.quadraticCurveTo(-48,22,0,26);ctx.quadraticCurveTo(48,22,60,-18);ctx.stroke();
+  ctx.strokeStyle='#6b3fa0';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-8,22);ctx.lineTo(8,22);ctx.stroke();
+  // string
+  const pull=cooldown>0?0:8;
+  ctx.strokeStyle='#f1d8a5';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-60,-18);ctx.lineTo(0,pull+10);ctx.lineTo(60,-18);ctx.stroke();
+  ctx.restore();
+  if(cooldown<=0){drawArrow(bowX,BOW.y+10,0,-1,52);}
+}
+function render(){
+  drawBackground();
+  drawWall();
+  drawStuck();
+  drawCow();
+  for(const a of arrows)drawArrow(a.x,a.y,a.dx,a.dy,46,a.state==='stuck'?Math.max(0,1-(a.life-a.stuckAt)/.6):1);
+  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/.7);ctx.fillStyle=p.col;ctx.fillRect(p.x-2,p.y-2,4,4);}
+  ctx.globalAlpha=1;
+  drawBow();
+  // HUD
+  ctx.font='bold 20px Arial';ctx.fillStyle='#ffe35a';ctx.strokeStyle='rgba(0,0,0,.6)';ctx.lineWidth=4;
+  const txt=hits+' Hits';
+  ctx.strokeText(txt,16,150);ctx.fillText(txt,16,150);
+}
+
+/* ---------- Loop ---------- */
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(.033,(now-last)/1000);last=now;
+  if(!over)update(dt);
+  else{for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=400*dt;p.life-=dt;}particles=particles.filter(p=>p.life>0);}
+  render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
