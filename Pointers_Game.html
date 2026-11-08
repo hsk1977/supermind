@@ -287,10 +287,11 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        const MAX_HINTS = 3;
+        // Fewer hints on expert levels
+        const hintsForLevel = (lvl) => lvl >= 15 ? 1 : lvl >= 10 ? 2 : 3;
         let currentLevel = 1;
         let lives = 3;
-        let hintsLeft = MAX_HINTS;
+        let hintsLeft = 3;
         let gridSize = 5;          // Grid dimensions (N x N)
         let pointers = [];         // Active pointers
         let exitingPointers = [];  // Pointers currently animating out
@@ -388,9 +389,19 @@
         let occ = [];  // occ[y][x] = id of the active pointer on that cell, or 0
 
         function levelSettings(levelNum) {
+            if (levelNum >= 10) {
+                // Expert levels: bigger board, much longer snakes, tighter dependency chains
+                return {
+                    size: Math.min(20 + Math.floor((levelNum - 8) / 2), 24),
+                    maxLen: Math.min(28 + (levelNum - 9) * 2, 46),
+                    secondChance: 0.04,
+                    label: "EXPERT"
+                };
+            }
             return {
                 size: Math.min(12 + (levelNum - 1), 20),
                 maxLen: Math.min(8 + levelNum * 2, 28),
+                secondChance: 0.25,
                 label: levelNum <= 3 ? "MEDIUM" : "HARD"
             };
         }
@@ -411,7 +422,7 @@
 
             let best = null;
             for (let attempt = 0; attempt < 40; attempt++) {
-                const result = buildBoard(gridSize, cfg.maxLen);
+                const result = buildBoard(gridSize, cfg.maxLen, cfg.secondChance);
                 if (!best || result.coverage > best.coverage) best = result;
                 if (result.coverage >= 0.9) break;
             }
@@ -421,7 +432,7 @@
             rebuildOccupancy();
         }
 
-        function buildBoard(n, maxLen) {
+        function buildBoard(n, maxLen, secondChance) {
             // ----- 1) partition into winding paths -----
             const own = Array(n).fill(null).map(() => Array(n).fill(0));
             let nextId = 1;
@@ -519,7 +530,7 @@
                 if (options.length > 0) {
                     // prefer the more entangled option most of the time -> harder levels
                     options.sort((a, b) => b.depCount - a.depCount);
-                    const pick = (options.length > 1 && Math.random() > 0.75) ? options[1] : options[0];
+                    const pick = (options.length > 1 && Math.random() < secondChance) ? options[1] : options[0];
                     p.cells = pick.cells; p.dirIndex = pick.dirIndex; p.ray = pick.ray; p.assigned = true;
                     finished.push(p);
                 } else if (p.cells.length >= 4) {
@@ -833,7 +844,7 @@
 
         function resetGame() {
             lives = 3;
-            hintsLeft = MAX_HINTS;
+            hintsLeft = hintsForLevel(currentLevel);
             gameOver = false;
             levelDone = false;
             updateHeartsUI();
