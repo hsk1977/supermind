@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Plank Shot</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:#1b2433;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;user-select:none}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  canvas{background:linear-gradient(#8fd3f4,#e8f7ff 70%);max-width:100%;max-height:100%;touch-action:none;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  #home{position:fixed;top:10px;left:10px;z-index:10;background:#e02424;color:#fff;text-decoration:none;font-weight:700;padding:9px 16px;border-radius:10px;font-size:16px;box-shadow:0 3px 8px rgba(0,0,0,.4);display:flex;align-items:center;gap:6px}
+  #home:active{transform:scale(.95)}
+  #snd{position:fixed;top:10px;right:10px;z-index:10;background:#fff;border:none;border-radius:10px;padding:9px 12px;font-size:16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+  #ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,15,30,.65);z-index:5}
+  #box{background:#fff;border-radius:18px;padding:26px 30px;text-align:center;max-width:90%;width:380px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+  #box h1{font-size:30px;color:#222;margin-bottom:8px}
+  #box p{color:#555;margin-bottom:16px;line-height:1.5}
+  #btn{background:#2563eb;color:#fff;border:none;border-radius:12px;padding:12px 30px;font-size:19px;font-weight:700;cursor:pointer}
+  #btn:active{transform:scale(.95)}
+</style>
+</head>
+<body>
+<a id="home" href="index.html">&#8962; Home</a>
+<button id="snd" title="Sound">&#128266;</button>
+<div id="wrap"><canvas id="c" width="900" height="560"></canvas></div>
+<div id="ov"><div id="box"><h1>Plank Shot</h1><p>The revolver moves up and down.<br>Shoot at the right moment and hit the <b>wooden plank</b> between the straw and the bottle!<br><small>Tap, click or press Space to fire.</small></p><button id="btn">Start</button></div></div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=900,H=560,GROUND=520,GUNX=110,TX=680,MAXLV=10;
+let state='menu',lvl=1,score=0,shots=3,t=0,last=0,bullet=null,flash=0,msg='',msgT=0,endT=0;
+let plank,bottle,shards=[],sparks=[],bob=0;
+
+/* ---------- Audio ---------- */
+let AC=null,muted=false;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function tone(f,d,type='sine',v=.2,f2){const a=ac();if(!a||muted)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,a.currentTime);if(f2)o.frequency.exponentialRampToValueAtTime(f2,a.currentTime+d);g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+d)}
+function noise(d,v=.3,hp=500){const a=ac();if(!a||muted)return;const n=a.sampleRate*d,b=a.createBuffer(1,n,a.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource();s.buffer=b;const f=a.createBiquadFilter();f.type='highpass';f.frequency.value=hp;const g=a.createGain();g.gain.value=v;s.connect(f).connect(g).connect(a.destination);s.start()}
+const SFX={
+ shoot(){noise(.25,.5,200);tone(160,.2,'square',.25,40)},
+ wood(){tone(120,.18,'triangle',.5,60);noise(.12,.3,800)},
+ glass(){noise(.5,.5,3000);tone(2400,.3,'triangle',.1,1200);setTimeout(()=>tone(3100,.2,'triangle',.08),90)},
+ ping(){tone(1800,.25,'sine',.25,900)},
+ empty(){tone(300,.05,'square',.15)},
+ win(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.25,'triangle',.25),i*110))},
+ lose(){[392,330,262,196].forEach((f,i)=>setTimeout(()=>tone(f,.3,'sawtooth',.18),i*160))},
+ fall(){tone(900,.6,'sine',.12,200)}
+};
+document.getElementById('snd').onclick=e=>{muted=!muted;e.target.innerHTML=muted?'&#128263;':'&#128266;';e.stopPropagation()};
+
+/* ---------- Level setup ---------- */
+function cfg(){return{w:2.4,ph:7,amp:190,bob:0}}
+function setupLevel(){
+  const c=cfg();
+  plank={x:TX,y:250,w:170,h:c.ph,fly:false,vx:0,vy:0,rot:0,vr:0};
+  bottle={off:0,vy:0,fall:false,broken:false};
+  shards=[];sparks=[];bullet=null;shots=3;endT=0;state='play';
+}
+function targetY(){return 250+Math.sin(t*1.1)*cfg().bob}
+function gunY(){const c=cfg();return 270+Math.sin(t*c.w)*c.amp}
+
+/* ---------- Input ---------- */
+function fire(){
+  if(state!=='play'||bullet||endT>0)return;
+  if(shots<=0){SFX.empty();return}
+  shots--;SFX.shoot();flash=.08;
+  bullet={x:GUNX+110,y:gunY()-6,done:false};
+}
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();fire()}});
+cv.addEventListener('pointerdown',e=>{e.preventDefault();ac();fire()});
+document.getElementById('btn').onclick=()=>{ac();if(state==='menu'||state==='lost'||state==='over'){if(state!=='menu'){lvl=1;score=0}}document.getElementById('ov').style.display='none';setupLevel()};
+function showOv(title,text,btn){document.querySelector('#box h1').textContent=title;document.querySelector('#box p').innerHTML=text;document.getElementById('btn').textContent=btn;document.getElementById('ov').style.display='flex'}
+
+/* ---------- Effects ---------- */
+function say(s){msg=s;msgT=1.2}
+function burstShards(x,y,n,col,sp=300){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=Math.random()*sp;shards.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-120,r:Math.random()*6,vr:(Math.random()-.5)*14,s:3+Math.random()*7,col,life:1.5})}}
+function missBullet(){ // lose attempt feedback
+  if(shots<=0&&state==='play'&&!bottle.fall){endT=.9;setTimeout(()=>{if(state==='play'){state='lost';SFX.lose();showOv('Out of shots!','Final score: <b>'+score+'</b>','Try again')}},900)}
+}
+
+/* ---------- Update ---------- */
+function update(dt){
+  t+=dt;
+  if(flash>0)flash-=dt;if(msgT>0)msgT-=dt;
+  if(state!=='play'&&state!=='won')return;
+  const ty=targetY();
+  if(!plank.fly)plank.y=ty;
+  // bullet
+  if(bullet&&!bullet.done){
+    bullet.x+=1500*dt;
+    const bt=plank.y+plank.h/2+20,bx=plank.x;
+    if(!plank.fly&&bullet.x>=bx-85&&Math.abs(bullet.y-plank.y)<=plank.h/2){
+      bullet.done=true;bullet=null;SFX.wood();
+      plank.fly=true;plank.vx=420;plank.vy=-380;plank.vr=9;
+      burstShards(bx-80,plank.y,14,'#a8672d',260);
+      bottle.fall=true;bottle.vy=0;score+=100*lvl+shots*50;say('Great shot! +'+(100*lvl+shots*50)+' - new round');
+      state='won';
+    }else if(!bottle.fall&&bullet.x>=bx-45&&bullet.y>bt+35&&bullet.y<bt+135){
+      bullet.done=true;bullet=null;SFX.glass();bottle.broken=true;
+      burstShards(bx,bt+85,30,'rgba(160,220,200,.9)',350);say('You broke the bottle!');endT=1;setTimeout(()=>{if(state==='play'){state='lost';SFX.lose();showOv('Bottle broken!','You hit the bottle.<br>Final score: <b>'+score+'</b>','Try again')}},1000);
+    }else if(!bottle.fall&&bullet.x>=bx-8&&bullet.y>plank.y-150&&bullet.y<bt+35){
+      bullet.done=true;SFX.ping();for(let i=0;i<8;i++)sparks.push({x:bx-8,y:bullet.y,vx:-Math.random()*250,vy:(Math.random()-.5)*300,l:.4});
+      bullet=null;say('Missed! Hit the straw');missBullet();
+    }else if(bullet.x>W+20){bullet=null;say('Missed!');missBullet()}
+  }
+  // plank flight
+  if(plank.fly){plank.x+=plank.vx*dt;plank.y+=plank.vy*dt;plank.vy+=900*dt;plank.rot+=plank.vr*dt}
+  // bottle fall
+  if(bottle.fall&&!bottle.broken){
+    bottle.vy+=1400*dt;bottle.off+=bottle.vy*dt;
+    const bt=250+targetY()-250+plank.h/2+20; // base top
+    const baseTop=targetY()+plank.h/2+20;
+    if(baseTop+bottle.off+135>=GROUND){
+      bottle.broken=true;SFX.glass();burstShards(TX,GROUND-10,40,'rgba(160,220,200,.9)',420);
+      if(state==='won')endT=1;
+      setTimeout(()=>{ if(state==='won'){
+        SFX.win();
+        setupLevel();
+      }},1100);
+    }
+  }
+  for(const s of shards){s.x+=s.vx*dt;s.y+=s.vy*dt;s.vy+=900*dt;s.r+=s.vr*dt;s.life-=dt;if(s.y>GROUND&&s.vy>0){s.y=GROUND;s.vy*=-.3;s.vx*=.6}}
+  shards=shards.filter(s=>s.life>0);
+  for(const s of sparks){s.x+=s.vx*dt;s.y+=s.vy*dt;s.l-=dt}
+  sparks=sparks.filter(s=>s.l>0);
+}
+document.getElementById('btn').addEventListener('click',()=>{if(state==='between'){setupLevel()}});
+
+/* ---------- Drawing ---------- */
+function drawBg(){
+  // sky is CSS; draw hills & ground
+  ctx.clearRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#8fd3f4');g.addColorStop(.75,'#e8f7ff');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fff';[[120,80,60],[400,60,45],[760,110,55]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.arc(x+r*.8,y+8,r*.7,0,7);ctx.arc(x-r*.8,y+10,r*.6,0,7);ctx.fill()});
+  ctx.fillStyle='#7bc36b';ctx.beginPath();ctx.moveTo(0,GROUND-40);ctx.quadraticCurveTo(250,GROUND-110,500,GROUND-40);ctx.quadraticCurveTo(750,GROUND+10,W,GROUND-50);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+  ctx.fillStyle='#5a9c4c';ctx.fillRect(0,GROUND,W,H-GROUND);
+  ctx.fillStyle='#8b5a2b';ctx.fillRect(0,GROUND,W,6);
+}
+function drawGun(y){
+  ctx.save();ctx.translate(GUNX,y);
+  // rail
+  ctx.fillStyle='rgba(0,0,0,.12)';ctx.fillRect(-30,-300,6,600);
+  // barrel
+  ctx.fillStyle='#4b5563';ctx.fillRect(10,-14,100,13);ctx.fillStyle='#6b7280';ctx.fillRect(10,-14,100,4);
+  ctx.fillStyle='#111';ctx.fillRect(106,-14,5,13);
+  // sight
+  ctx.fillStyle='#374151';ctx.fillRect(98,-20,6,6);
+  // body / cylinder
+  ctx.fillStyle='#374151';ctx.fillRect(-20,-18,38,26);
+  ctx.fillStyle='#9ca3af';ctx.beginPath();ctx.arc(8,-5,14,0,7);ctx.fill();ctx.strokeStyle='#374151';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#4b5563';for(let i=0;i<6;i++){const a=i*Math.PI/3+t;ctx.beginPath();ctx.arc(8+Math.cos(a)*7,-5+Math.sin(a)*7,2.5,0,7);ctx.fill()}
+  // hammer
+  ctx.fillStyle='#374151';ctx.beginPath();ctx.moveTo(-20,-18);ctx.lineTo(-30,-30);ctx.lineTo(-14,-22);ctx.fill();
+  // grip
+  ctx.fillStyle='#7c4a1e';ctx.beginPath();ctx.moveTo(-20,8);ctx.lineTo(8,8);ctx.lineTo(-4,56);ctx.lineTo(-28,50);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#4a2a0c';ctx.lineWidth=2;ctx.stroke();
+  // trigger guard
+  ctx.strokeStyle='#374151';ctx.lineWidth=3;ctx.beginPath();ctx.arc(10,12,10,0,Math.PI);ctx.stroke();
+  if(flash>0){ctx.fillStyle='rgba(255,210,60,.95)';ctx.beginPath();ctx.moveTo(112,-8);ctx.lineTo(150,-26);ctx.lineTo(138,-8);ctx.lineTo(156,6);ctx.lineTo(112,-4);ctx.fill()}
+  ctx.restore();
+  // arrows
+  ctx.fillStyle='rgba(220,38,38,.8)';
+  ctx.beginPath();ctx.moveTo(GUNX-27,y-55);ctx.lineTo(GUNX-37,y-40);ctx.lineTo(GUNX-17,y-40);ctx.fill();
+  ctx.beginPath();ctx.moveTo(GUNX-27,y+70);ctx.lineTo(GUNX-37,y+55);ctx.lineTo(GUNX-17,y+55);ctx.fill();
+}
+function drawStraw(py,ph,bt){
+  const top=py-150,bot=bt+40;
+  ctx.fillStyle='#fff';ctx.fillRect(TX-7,top,14,bot-top);
+  ctx.fillStyle='#ef4444';for(let y=top;y<bot;y+=16)ctx.fillRect(TX-7,y,14,8);
+  ctx.strokeStyle='#999';ctx.lineWidth=1;ctx.strokeRect(TX-7,top,14,bot-top);
+}
+function drawBottle(bt){
+  if(bottle.broken)return;
+  ctx.save();ctx.translate(TX,bt);
+  ctx.fillStyle='rgba(120,200,170,.75)';ctx.strokeStyle='#2f7d63';ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(-11,0);ctx.lineTo(11,0);ctx.lineTo(11,32);
+  ctx.bezierCurveTo(48,50,50,125,32,135);ctx.lineTo(-32,135);
+  ctx.bezierCurveTo(-50,125,-48,50,-11,32);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.45)';ctx.fillRect(-26,68,8,45);
+  ctx.fillStyle='#f4e7c1';ctx.fillRect(-30,80,60,28);ctx.strokeStyle='#b59a54';ctx.lineWidth=1;ctx.strokeRect(-30,80,60,28);
+  ctx.fillStyle='#8a6d1e';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillText('WATER',0,99);
+  ctx.restore();
+}
+function drawPlank(){
+  ctx.save();ctx.translate(plank.x,plank.y);ctx.rotate(plank.rot);
+  ctx.fillStyle='#b9772f';ctx.fillRect(-plank.w/2,-plank.h/2,plank.w,plank.h);
+  ctx.strokeStyle='#7a4a17';ctx.lineWidth=1.5;
+  for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(-plank.w/2+10,i*plank.h/6);ctx.lineTo(plank.w/2-10,i*plank.h/6);ctx.stroke()}
+  ctx.lineWidth=2.5;ctx.strokeRect(-plank.w/2,-plank.h/2,plank.w,plank.h);
+  ctx.restore();
+}
+function render(){
+  drawBg();
+  const ty=targetY();
+  const bt=ty+plank.h/2+20+bottle.off;
+  // target group
+  if(!bottle.fall&&!plank.fly){/* straw goes through plank */}
+  drawStraw(ty,plank.h,bottle.fall?ty+plank.h/2+20:bt);
+  drawBottle(bt);
+  drawPlank();
+  // plank in front of straw look: draw straw over plank partially (straw passes through)
+  if(!plank.fly){ctx.fillStyle='#fff';ctx.fillRect(TX-7,plank.y-plank.h/2-2,14,0)}
+  drawGun(gunY());
+  // bullet
+  if(bullet){ctx.fillStyle='#222';ctx.fillRect(bullet.x-10,bullet.y-3,16,6);ctx.fillStyle='#d4a017';ctx.fillRect(bullet.x+3,bullet.y-3,6,6)}
+  for(const s of shards){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.r);ctx.globalAlpha=Math.min(1,s.life);ctx.fillStyle=s.col;ctx.fillRect(-s.s/2,-s.s/4,s.s,s.s/2);ctx.restore()}
+  for(const s of sparks){ctx.fillStyle='rgba(255,220,80,'+(s.l*2.5)+')';ctx.fillRect(s.x,s.y,3,3)}
+  // HUD
+  ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(W/2-170,10,340,40);
+  ctx.fillStyle='#fff';ctx.font='bold 18px Arial';ctx.textAlign='center';
+  ctx.fillText('Score '+score,W/2,35);
+  // shots
+  for(let i=0;i<3;i++){ctx.fillStyle=i<shots?'#d4a017':'rgba(0,0,0,.25)';ctx.fillRect(W-40-i*22,64,12,28);ctx.fillStyle=i<shots?'#555':'rgba(0,0,0,.25)';ctx.fillRect(W-40-i*22,60,12,8)}
+  if(msgT>0){ctx.globalAlpha=Math.min(1,msgT*2);ctx.fillStyle='#111';ctx.font='bold 30px Arial';ctx.fillText(msg,W/2,110);ctx.globalAlpha=1}
+}
+function loop(ts){const dt=Math.min(.04,(ts-last)/1000||0);last=ts;update(dt);render();requestAnimationFrame(loop)}
+setupLevel();state='menu';requestAnimationFrame(loop);
+</script>
+</body>
+</html>
