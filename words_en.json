@@ -1,136 +1,522 @@
 [
-  {"word": "airplane", "hint": "A vehicle that flies in the sky"},
-  {"word": "hospital", "hint": "A place where sick people get medical care"},
-  {"word": "computer", "hint": "An electronic device for storing and processing data"},
-  {"word": "rainbow", "hint": "A colorful arch in the sky after rain"},
-  {"word": "elephant", "hint": "A very large animal with a long trunk"},
-  {"word": "sandwich", "hint": "Food made with two slices of bread"},
-  {"word": "umbrella", "hint": "Used to protect yourself from rain or sun"},
-  {"word": "guitar", "hint": "A musical string instrument"},
-  {"word": "bicycle", "hint": "A two-wheeled vehicle powered by pedaling"},
-  {"word": "sunflower", "hint": "A tall yellow flower that faces the sun"},
-  {"word": "Hunt", "hint": "Catching wild animals"},
-  {"word": "Elbow", "hint": "Arm joint"},
-  {"word": "Treatment", "hint": "Medical care"},
-  {"word": "Animal", "hint": "Living creature"},
-  {"word": "Album", "hint": "Photo collection"},
-  {"word": "Elevator", "hint": "Building lift"},
-  {"word": "Geometry", "hint": "Math of shapes"},
-  {"word": "Hammer", "hint": "Nail-driving tool"},
-  {"word": "Sled", "hint": "Snow vehicle"},
-  {"word": "Spice", "hint": "Food seasoning"},
-  {"word": "Gorilla", "hint": "Large ape"},
-  {"word": "Bride", "hint": "Woman on wedding day"},
-  {"word": "England", "hint": "European country"},
-  {"word": "Raisin", "hint": "Dried grape"},
-  {"word": "Riddle", "hint": "A puzzling question"},
-  {"word": "Embrace", "hint": "Holding someone close"},
-  {"word": "Trench", "hint": "A military ditch"},
-  {"word": "Remorse", "hint": "Deep regret"},
-  {"word": "Blossom", "hint": "A flower before opening"},
-  {"word": "Torch", "hint": "A flaming stick for light"},
-  {"word": "Lantern", "hint": "A portable lamp"},
-  {"word": "Blacksmith", "hint": "A metalworker"},
-  {"word": "Pizza", "hint": "An Italian cheese dish"},
-  {"word": "Nurse", "hint": "A medical caregiver"},
-  {"word": "Travel", "hint": "Taking a journey"},
-  {"word": "Duck", "hint": "An aquatic bird"},
-  {"word": "Fossil", "hint": "Ancient remains in stone"},
-  {"word": "Soap", "hint": "A cleaning substance"},
-  {"word": "Shot", "hint": "Firing a weapon"},
-  {"word": "Missile", "hint": "A guided projectile"},
-  {"word": "Satan", "hint": "The devil"},
-  {"word": "Giraffe", "hint": "Tall African animal"},
-  {"word": "Metro", "hint": "Suburban underground train"},
-  {"word": "Lie", "hint": "False statement"},
-  {"word": "Clothing", "hint": "Garments worn"},
-  {"word": "Concert", "hint": "Live musical performance"},
-  {"word": "Everest", "hint": "Highest mountain peak"},
-  {"word": "Divorce", "hint": "Legal marriage dissolution"},
-  {"word": "Thermos", "hint": "Insulated liquid container"},
-  {"word": "Skeleton", "hint": "Bony body framework"},
-  {"word": "Boxing", "hint": "Combat sport with fists"},
-  {"word": "Taxi", "hint": "Urban public transport vehicle"},
-  {"word": "Skate", "hint": "Glide on ice or wheels"},
-  {"word": "Coconut", "hint": "Large tropical drupe fruit"},
-  {"word": "Vitamin", "hint": "Essential organic nutrient"},
-  {"word": "Grape", "hint": "Small clustering fruit"},
-  {"word": "Fruit juice", "hint": "Pressed fruit liquid"},
-  {"word": "Police", "hint": "Law enforcement officers"},
-  {"word": "Omelet", "hint": "Folded beaten egg dish"},
-  {"word": "Clown", "hint": "Comic circus performer"},
-  {"word": "Theft", "hint": "Act of stealing property"},
-  {"word": "Squirrel", "hint": "Bushy-tailed rodent"},
-  {"word": "smile", "hint": "facial expression showing happiness"},
-  {"word": "light bulb", "hint": "glass globe emitting light"},
-  {"word": "square", "hint": "four-sided equal shape"},
-  {"word": "tennis", "hint": "racket sport played over net"},
-    {"word": "orange", "hint": "citrus fruit or color"},
-  {"word": "scary", "hint": "causing fear or terror"},
-  {"word": "display", "hint": "screen or visual presentation"},
-  {"word": "stadium", "hint": "large arena for sports"},
-  {"word": "makeup", "hint": "cosmetics applied to face"},
-  {"word": "villa", "hint": "large luxurious country house"},
-  {"word": "cowardly", "hint": "lacking courage or brave spirit"},
-  {"word": "gloves", "hint": "hand coverings with separate fingers"},
-  {"word": "mirror", "hint": "reflective glass surface"},
-  {"word": "chips", "hint": "crispy fried potato slices"},
-  {"word": "Olympics", "hint": "international multi-sport event"},
-  {"word": "meeting", "hint": "assembly of people for discussion"},
-  {"word": "archive", "hint": "collection of historical records"},
-  {"word": "skirt", "hint": "garment hanging from waist"},
-  {"word": "Courage", "hint": "Bravery in facing danger"},
-  {"word": "Club", "hint": "A group or society"},
-  {"word": "Spokesperson", "hint": "Speaks on behalf of others"},
-  {"word": "Cheating", "hint": "Breaking rules to gain advantage"},
-  {"word": "Scale", "hint": "Device for measuring weight"},
-  {"word": "Neighbor", "hint": "Person living next door"},
-  {"word": "Statue", "hint": "Carved or cast figure"},
-  {"word": "Scarecrow", "hint": "Field figure scaring birds"},
-  {"word": "Lighter", "hint": "Device that makes a flame"},
-  {"word": "Hamster", "hint": "Small pet rodent"},
-  {"word": "Vanilla", "hint": "Sweet flavoring from orchid pods"},
-  {"word": "East", "hint": "Direction of sunrise"},
-  {"word": "Barrel", "hint": "Large round wooden container"},
-  {"word": "Sugarcane", "hint": "Tall plant that yields sugar"},
-  {"word": "Diamond", "hint": "Hard, brilliant gemstone"},
-  {"word": "Happy", "hint": "Feeling joy or pleasure"},
-  {"word": "Chain", "hint": "Linked metal rings"},
-  {"word": "Invention", "hint": "Creating something new"},
-  {"word": "Marten", "hint": "Furry weasel-like mammal"},
-  {"word": "Vaccine", "hint": "Shot preventing disease"},
-  {"word": "Mountain", "hint": "Very high landform"},
-  {"word": "Rooster", "hint": "Male chicken that crows"},
-  {"word": "Barracks", "hint": "Housing for soldiers"},
-  {"word": "Swamp", "hint": "Wet, muddy wetland"},
-  {"word": "Battery", "hint": "Stores electrical energy"},
-  {"word": "Heater", "hint": "Device that warms a room"},
-  {"word": "Praise", "hint": "Expressing admiration"},
-  {"word": "Termite", "hint": "Wood-eating insect"},
-  {"word": "Winter", "hint": "Coldest season"},
-  {"word": "Fireplace", "hint": "Hearth for burning wood"},
-  {"word": "Candlestick", "hint": "Holder for a candle"},
-  {"word": "Armed", "hint": "Carrying weapons"},
-  {"word": "Crab", "hint": "Sea creature with claws"},
-  {"word": "Parking", "hint": "Leaving a car in a spot"},
-  {"word": "Cinema", "hint": "Place to watch films"},
-  {"word": "Cactus", "hint": "Spiny desert plant"},
-  {"word": "Shampoo", "hint": "Hair-washing liquid"},
-  {"word": "Diabetes", "hint": "High blood sugar disease"},
-  {"word": "Exercise", "hint": "Physical activity for fitness"},
-  {"word": "Bench", "hint": "Long seat for several people"},
-  {"word": "Crocodile", "hint": "Large reptile in rivers"},
-  {"word": "Hearing aid", "hint": "Device that improves hearing"},
-  {"word": "Artificial", "hint": "Made by humans"},
-  {"word": "Deer", "hint": "Antlered forest animal"},
-  {"word": "University", "hint": "Place of higher education"},
-  {"word": "Satellite", "hint": "Object orbiting a planet"},
-  {"word": "Widow", "hint": "Woman whose husband died"},
-  {"word": "Platinum", "hint": "Precious silvery-white metal"},
-  {"word": "Penalty", "hint": "Punishment or free kick"},
-  {"word": "Establishment", "hint": "Founding of an institution"},
-  {"word": "Tenant", "hint": "Person renting a home"},
-  {"word": "Diplomat", "hint": "Official representing a country"},
-  {"word": "Pigeon", "hint": "Common city bird"},
-  {"word": "Suitcase", "hint": "Bag for travel clothes"}
+  {
+    "word": "airplane",
+    "hint": "A vehicle that flies in the sky",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "hospital",
+    "hint": "A place where sick people get medical care",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "computer",
+    "hint": "An electronic device for storing and processing data",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "rainbow",
+    "hint": "A colorful arch in the sky after rain",
+    "category": "Nature"
+  },
+  {
+    "word": "elephant",
+    "hint": "A very large animal with a long trunk",
+    "category": "Animals"
+  },
+  {
+    "word": "sandwich",
+    "hint": "Food made with two slices of bread",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "umbrella",
+    "hint": "Used to protect yourself from rain or sun",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "guitar",
+    "hint": "A musical string instrument",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "bicycle",
+    "hint": "A two-wheeled vehicle powered by pedaling",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "sunflower",
+    "hint": "A tall yellow flower that faces the sun",
+    "category": "Nature"
+  },
+  {
+    "word": "hunt",
+    "hint": "Catching wild animals",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "elbow",
+    "hint": "Arm joint",
+    "category": "Body & Health"
+  },
+  {
+    "word": "treatment",
+    "hint": "Medical care",
+    "category": "Body & Health"
+  },
+  {
+    "word": "animal",
+    "hint": "Living creature",
+    "category": "Animals"
+  },
+  {
+    "word": "album",
+    "hint": "Photo collection",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "elevator",
+    "hint": "Building lift",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "geometry",
+    "hint": "Math of shapes",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "hammer",
+    "hint": "Nail-driving tool",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "sled",
+    "hint": "Snow vehicle",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "spice",
+    "hint": "Food seasoning",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "gorilla",
+    "hint": "Large ape",
+    "category": "Animals"
+  },
+  {
+    "word": "bride",
+    "hint": "Woman on wedding day",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "england",
+    "hint": "European country",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "raisin",
+    "hint": "Dried grape",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "riddle",
+    "hint": "A puzzling question",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "embrace",
+    "hint": "Holding someone close",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "trench",
+    "hint": "A military ditch",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "remorse",
+    "hint": "Deep regret",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "blossom",
+    "hint": "A flower before opening",
+    "category": "Nature"
+  },
+  {
+    "word": "torch",
+    "hint": "A flaming stick for light",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "lantern",
+    "hint": "A portable lamp",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "blacksmith",
+    "hint": "A metalworker",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "pizza",
+    "hint": "An Italian cheese dish",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "nurse",
+    "hint": "A medical caregiver",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "travel",
+    "hint": "Taking a journey",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "duck",
+    "hint": "An aquatic bird",
+    "category": "Animals"
+  },
+  {
+    "word": "fossil",
+    "hint": "Ancient remains in stone",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "soap",
+    "hint": "A cleaning substance",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "shot",
+    "hint": "Firing a weapon",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "missile",
+    "hint": "A guided projectile",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "satan",
+    "hint": "The devil",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "giraffe",
+    "hint": "Tall African animal",
+    "category": "Animals"
+  },
+  {
+    "word": "metro",
+    "hint": "Urban underground train",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "lie",
+    "hint": "False statement",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "clothing",
+    "hint": "Garments worn",
+    "category": "Clothing"
+  },
+  {
+    "word": "concert",
+    "hint": "Live musical performance",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "everest",
+    "hint": "Highest mountain peak",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "divorce",
+    "hint": "Legal marriage dissolution",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "thermos",
+    "hint": "Insulated liquid container",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "skeleton",
+    "hint": "Bony body framework",
+    "category": "Body & Health"
+  },
+  {
+    "word": "boxing",
+    "hint": "Combat sport with fists",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "taxi",
+    "hint": "Urban public transport vehicle",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "skate",
+    "hint": "Glide on ice or wheels",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "coconut",
+    "hint": "Large tropical drupe fruit",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "vitamin",
+    "hint": "Essential organic nutrient",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "grape",
+    "hint": "Small clustering fruit",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "juice",
+    "hint": "Pressed fruit liquid",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "police",
+    "hint": "Law enforcement officers",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "omelet",
+    "hint": "Folded beaten egg dish",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "clown",
+    "hint": "Comic circus performer",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "theft",
+    "hint": "Act of stealing property",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "squirrel",
+    "hint": "Bushy-tailed rodent",
+    "category": "Animals"
+  },
+  {
+    "word": "smile",
+    "hint": "Facial expression showing happiness",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "lightbulb",
+    "hint": "Glass globe emitting light",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "square",
+    "hint": "Four-sided equal shape",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "tennis",
+    "hint": "Racket sport played over net",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "gem",
+    "hint": "Precious or semiprecious stone",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "orange",
+    "hint": "Citrus fruit or color",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "scary",
+    "hint": "Causing fear or terror",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "display",
+    "hint": "Screen or visual presentation",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "stadium",
+    "hint": "Large arena for sports",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "makeup",
+    "hint": "Cosmetics applied to face",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "villa",
+    "hint": "Large luxurious country house",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "cowardly",
+    "hint": "Lacking courage or brave spirit",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "gloves",
+    "hint": "Hand coverings with separate fingers",
+    "category": "Clothing"
+  },
+  {
+    "word": "mirror",
+    "hint": "Reflective glass surface",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "chips",
+    "hint": "Crispy fried potato slices",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "olympics",
+    "hint": "International multi-sport event",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "meeting",
+    "hint": "Assembly of people for discussion",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "archive",
+    "hint": "Collection of historical records",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "skirt",
+    "hint": "Garment hanging from waist",
+    "category": "Clothing"
+  },
+  {
+    "word": "courage",
+    "hint": "Bravery in facing danger",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "club",
+    "hint": "A group or society",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "spokesperson",
+    "hint": "Speaks on behalf of others",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "cheating",
+    "hint": "Breaking rules to gain advantage",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "scale",
+    "hint": "Device for measuring weight",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "neighbor",
+    "hint": "Person living next door",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "statue",
+    "hint": "Carved or cast figure",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "scarecrow",
+    "hint": "Field figure scaring birds",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "lighter",
+    "hint": "Device that makes a flame",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "hamster",
+    "hint": "Small pet rodent",
+    "category": "Animals"
+  },
+  {
+    "word": "vanilla",
+    "hint": "Sweet flavoring from orchid pods",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "east",
+    "hint": "Direction of sunrise",
+    "category": "Places & Geography"
+  },
+  {
+    "word": "barrel",
+    "hint": "Large round wooden container",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "sugarcane",
+    "hint": "Tall plant that yields sugar",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "diamond",
+    "hint": "Hard, brilliant gemstone",
+    "category": "Objects & Vehicles"
+  },
+  {
+    "word": "happy",
+    "hint": "Feeling joy or pleasure",
+    "category": "Concepts & Adjectives"
+  },
+  {
+    "word": "judo",
+    "hint": "Japanese martial art focusing on throws and grappling",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "golf",
+    "hint": "Club-and-ball sport played on a course with holes",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "polo",
+    "hint": "Team sport played on horseback with mallets",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "swimming",
+    "hint": "Water sport of moving through water using limbs",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "hockey",
+    "hint": "Team sport played with curved sticks on ice or field",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "football",
+    "hint": "Popular team sport played with a spherical ball",
+    "category": "Sports & Entertainment"
+  },
+  {
+    "word": "rugby",
+    "hint": "Team contact sport played with an oval ball",
+    "category": "Sports & Entertainment"
+  }
 ]
