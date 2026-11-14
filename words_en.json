@@ -2,7 +2,7 @@
   {
     "word": "airplane",
     "hint": "A vehicle that flies in the sky",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "hospital",
@@ -12,7 +12,7 @@
   {
     "word": "computer",
     "hint": "An electronic device for storing and processing data",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "rainbow",
@@ -32,17 +32,17 @@
   {
     "word": "umbrella",
     "hint": "Used to protect yourself from rain or sun",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "guitar",
     "hint": "A musical string instrument",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "bicycle",
     "hint": "A two-wheeled vehicle powered by pedaling",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "sunflower",
@@ -72,27 +72,27 @@
   {
     "word": "album",
     "hint": "Photo collection",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "elevator",
     "hint": "Building lift",
-    "category": "Objects & Vehicles"
+    "category": "Buildings"
   },
   {
     "word": "geometry",
     "hint": "Math of shapes",
-    "category": "Concepts & Adjectives"
+    "category": "School & Lessons"
   },
   {
     "word": "hammer",
     "hint": "Nail-driving tool",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "sled",
     "hint": "Snow vehicle",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "spice",
@@ -107,7 +107,7 @@
   {
     "word": "bride",
     "hint": "Woman on wedding day",
-    "category": "People & Jobs"
+    "category": "Family & Occasions"
   },
   {
     "word": "england",
@@ -147,12 +147,12 @@
   {
     "word": "torch",
     "hint": "A flaming stick for light",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "lantern",
     "hint": "A portable lamp",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "blacksmith",
@@ -182,12 +182,12 @@
   {
     "word": "fossil",
     "hint": "Ancient remains in stone",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "soap",
     "hint": "A cleaning substance",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "shot",
@@ -197,12 +197,12 @@
   {
     "word": "missile",
     "hint": "A guided projectile",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "satan",
     "hint": "The devil",
-    "category": "People & Jobs"
+    "category": "Religion"
   },
   {
     "word": "giraffe",
@@ -212,7 +212,7 @@
   {
     "word": "metro",
     "hint": "Urban underground train",
-    "category": "Objects & Vehicles"
+    "category": "Vehicles"
   },
   {
     "word": "lie",
@@ -227,7 +227,7 @@
   {
     "word": "concert",
     "hint": "Live musical performance",
-    "category": "Sports & Entertainment"
+    "category": "Sports & Arts"
   },
   {
     "word": "everest",
@@ -242,7 +242,7 @@
   {
     "word": "thermos",
     "hint": "Insulated liquid container",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "skeleton",
@@ -252,17 +252,17 @@
   {
     "word": "boxing",
     "hint": "Combat sport with fists",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "taxi",
     "hint": "Urban public transport vehicle",
-    "category": "Objects & Vehicles"
+    "category": "Vehicles"
   },
   {
     "word": "skate",
     "hint": "Glide on ice or wheels",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "coconut",
@@ -272,12 +272,12 @@
   {
     "word": "vitamin",
     "hint": "Essential organic nutrient",
-    "category": "Food & Drink"
+    "category": "Food & Medicine"
   },
   {
     "word": "grape",
     "hint": "Small clustering fruit",
-    "category": "Food & Drink"
+    "category": "Fruit"
   },
   {
     "word": "juice",
@@ -317,7 +317,7 @@
   {
     "word": "lightbulb",
     "hint": "Glass globe emitting light",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "square",
@@ -327,17 +327,17 @@
   {
     "word": "tennis",
     "hint": "Racket sport played over net",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "gem",
     "hint": "Precious or semiprecious stone",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "orange",
     "hint": "Citrus fruit or color",
-    "category": "Food & Drink"
+    "category": "Fruit"
   },
   {
     "word": "scary",
@@ -347,7 +347,7 @@
   {
     "word": "display",
     "hint": "Screen or visual presentation",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "stadium",
@@ -362,7 +362,7 @@
   {
     "word": "villa",
     "hint": "Large luxurious country house",
-    "category": "Places & Geography"
+    "category": "Buildings"
   },
   {
     "word": "cowardly",
@@ -377,7 +377,7 @@
   {
     "word": "mirror",
     "hint": "Reflective glass surface",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "chips",
@@ -387,7 +387,7 @@
   {
     "word": "olympics",
     "hint": "International multi-sport event",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "meeting",
@@ -427,27 +427,27 @@
   {
     "word": "scale",
     "hint": "Device for measuring weight",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "neighbor",
     "hint": "Person living next door",
-    "category": "People & Jobs"
+    "category": "Buildings"
   },
   {
     "word": "statue",
     "hint": "Carved or cast figure",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "scarecrow",
     "hint": "Field figure scaring birds",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "lighter",
     "hint": "Device that makes a flame",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "hamster",
@@ -467,7 +467,7 @@
   {
     "word": "barrel",
     "hint": "Large round wooden container",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "sugarcane",
@@ -477,7 +477,7 @@
   {
     "word": "diamond",
     "hint": "Hard, brilliant gemstone",
-    "category": "Objects & Vehicles"
+    "category": "Objects & Tools"
   },
   {
     "word": "happy",
@@ -487,36 +487,36 @@
   {
     "word": "judo",
     "hint": "Japanese martial art focusing on throws and grappling",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "golf",
     "hint": "Club-and-ball sport played on a course with holes",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "polo",
     "hint": "Team sport played on horseback with mallets",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "swimming",
     "hint": "Water sport of moving through water using limbs",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "hockey",
     "hint": "Team sport played with curved sticks on ice or field",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "football",
     "hint": "Popular team sport played with a spherical ball",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   },
   {
     "word": "rugby",
     "hint": "Team contact sport played with an oval ball",
-    "category": "Sports & Entertainment"
+    "category": "Sports"
   }
 ]
