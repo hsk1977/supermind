@@ -2,7 +2,7 @@
   {
     "word": "airplane",
     "hint": "A vehicle that flies in the sky",
-    "category": "Objects & Tools"
+    "category": "Vehicles"
   },
   {
     "word": "hospital",
@@ -12,7 +12,7 @@
   {
     "word": "computer",
     "hint": "An electronic device for storing and processing data",
-    "category": "Objects & Tools"
+    "category": "Technology"
   },
   {
     "word": "rainbow",
@@ -32,17 +32,17 @@
   {
     "word": "umbrella",
     "hint": "Used to protect yourself from rain or sun",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "guitar",
     "hint": "A musical string instrument",
-    "category": "Objects & Tools"
+    "category": "Arts"
   },
   {
     "word": "bicycle",
     "hint": "A two-wheeled vehicle powered by pedaling",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "sunflower",
@@ -72,7 +72,7 @@
   {
     "word": "album",
     "hint": "Photo collection",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "elevator",
@@ -87,12 +87,12 @@
   {
     "word": "hammer",
     "hint": "Nail-driving tool",
-    "category": "Objects & Tools"
+    "category": "Tools"
   },
   {
     "word": "sled",
     "hint": "Snow vehicle",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "spice",
@@ -147,12 +147,12 @@
   {
     "word": "torch",
     "hint": "A flaming stick for light",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "lantern",
     "hint": "A portable lamp",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "blacksmith",
@@ -182,22 +182,22 @@
   {
     "word": "fossil",
     "hint": "Ancient remains in stone",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "soap",
     "hint": "A cleaning substance",
-    "category": "Objects & Tools"
+    "category": "Hygiene"
   },
   {
     "word": "shot",
     "hint": "Firing a weapon",
-    "category": "Concepts & Adjectives"
+    "category": "Weapons"
   },
   {
     "word": "missile",
     "hint": "A guided projectile",
-    "category": "Objects & Tools"
+    "category": "Weapons"
   },
   {
     "word": "satan",
@@ -227,7 +227,7 @@
   {
     "word": "concert",
     "hint": "Live musical performance",
-    "category": "Sports & Arts"
+    "category": "Arts"
   },
   {
     "word": "everest",
@@ -242,7 +242,7 @@
   {
     "word": "thermos",
     "hint": "Insulated liquid container",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "skeleton",
@@ -317,7 +317,7 @@
   {
     "word": "lightbulb",
     "hint": "Glass globe emitting light",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "square",
@@ -332,7 +332,7 @@
   {
     "word": "gem",
     "hint": "Precious or semiprecious stone",
-    "category": "Objects & Tools"
+    "category": "Jewelry"
   },
   {
     "word": "orange",
@@ -347,7 +347,7 @@
   {
     "word": "display",
     "hint": "Screen or visual presentation",
-    "category": "Objects & Tools"
+    "category": "Technology"
   },
   {
     "word": "stadium",
@@ -377,7 +377,7 @@
   {
     "word": "mirror",
     "hint": "Reflective glass surface",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "chips",
@@ -427,7 +427,7 @@
   {
     "word": "scale",
     "hint": "Device for measuring weight",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "neighbor",
@@ -437,17 +437,17 @@
   {
     "word": "statue",
     "hint": "Carved or cast figure",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "scarecrow",
     "hint": "Field figure scaring birds",
-    "category": "Objects & Tools"
+    "category": "Agriculture"
   },
   {
     "word": "lighter",
     "hint": "Device that makes a flame",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "hamster",
@@ -467,7 +467,7 @@
   {
     "word": "barrel",
     "hint": "Large round wooden container",
-    "category": "Objects & Tools"
+    "category": "Objects"
   },
   {
     "word": "sugarcane",
@@ -477,7 +477,7 @@
   {
     "word": "diamond",
     "hint": "Hard, brilliant gemstone",
-    "category": "Objects & Tools"
+    "category": "Jewelry"
   },
   {
     "word": "happy",
