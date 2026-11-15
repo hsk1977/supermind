@@ -518,5 +518,90 @@
     "word": "rugby",
     "hint": "Team contact sport played with an oval ball",
     "category": "Sports"
+  },
+  {
+    "word": "leopard",
+    "hint": "Spotted big cat",
+    "category": "Animals"
+  },
+  {
+    "word": "cat",
+    "hint": "Purring pet",
+    "category": "Animals"
+  },
+  {
+    "word": "mule",
+    "hint": "Horse-donkey hybrid",
+    "category": "Animals"
+  },
+  {
+    "word": "marten",
+    "hint": "Small furry weasel relative",
+    "category": "Animals"
+  },
+  {
+    "word": "canary",
+    "hint": "Yellow singing bird",
+    "category": "Animals"
+  },
+  {
+    "word": "boar",
+    "hint": "Wild pig",
+    "category": "Animals"
+  },
+  {
+    "word": "crocodile",
+    "hint": "Large river reptile",
+    "category": "Animals"
+  },
+  {
+    "word": "rhinoceros",
+    "hint": "Horned giant",
+    "category": "Animals"
+  },
+  {
+    "word": "rooster",
+    "hint": "Crowing male bird",
+    "category": "Animals"
+  },
+  {
+    "word": "chick",
+    "hint": "Baby bird",
+    "category": "Animals"
+  },
+  {
+    "word": "donkey",
+    "hint": "Stubborn pack animal",
+    "category": "Animals"
+  },
+  {
+    "word": "sheep",
+    "hint": "Wool-giving animal",
+    "category": "Animals"
+  },
+  {
+    "word": "whale",
+    "hint": "Largest sea mammal",
+    "category": "Animals"
+  },
+  {
+    "word": "shark",
+    "hint": "Fierce ocean fish",
+    "category": "Animals"
+  },
+  {
+    "word": "hyena",
+    "hint": "Laughing scavenger",
+    "category": "Animals"
+  },
+  {
+    "word": "jackal",
+    "hint": "Small wild dog",
+    "category": "Animals"
+  },
+  {
+    "word": "buffalo",
+    "hint": "Large wild ox",
+    "category": "Animals"
   }
 ]
