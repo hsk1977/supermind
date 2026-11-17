@@ -603,5 +603,110 @@
     "word": "buffalo",
     "hint": "Large wild ox",
     "category": "Animals"
+  },
+  {
+    "word": "raspberry",
+    "hint": "Small red berry",
+    "category": "Fruit"
+  },
+  {
+    "word": "raccoon",
+    "hint": "Masked night animal",
+    "category": "Animals"
+  },
+  {
+    "word": "jacket",
+    "hint": "Warm outer garment",
+    "category": "Clothing"
+  },
+  {
+    "word": "cheese",
+    "hint": "Dairy product",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "crow",
+    "hint": "Black bird",
+    "category": "Animals"
+  },
+  {
+    "word": "hunter",
+    "hint": "Chases wild prey",
+    "category": "People & Jobs"
+  },
+  {
+    "word": "cross",
+    "hint": "Christian symbol",
+    "category": "Religion"
+  },
+  {
+    "word": "pistachio",
+    "hint": "Green nut",
+    "category": "Food & Drink"
+  },
+  {
+    "word": "hive",
+    "hint": "Home of bees",
+    "category": "Agriculture"
+  },
+  {
+    "word": "white",
+    "hint": "Color of snow",
+    "category": "Colors"
+  },
+  {
+    "word": "red",
+    "hint": "Color of blood",
+    "category": "Colors"
+  },
+  {
+    "word": "pink",
+    "hint": "Color of roses",
+    "category": "Colors"
+  },
+  {
+    "word": "brown",
+    "hint": "Color of chocolate",
+    "category": "Colors"
+  },
+  {
+    "word": "realmadrid",
+    "hint": "Spanish white-kit club",
+    "category": "Football Clubs"
+  },
+  {
+    "word": "barcelona",
+    "hint": "Catalan club",
+    "category": "Football Clubs"
+  },
+  {
+    "word": "manchesterunited",
+    "hint": "The Red Devils",
+    "category": "Football Clubs"
+  },
+  {
+    "word": "manchestercity",
+    "hint": "The Citizens",
+    "category": "Football Clubs"
+  },
+  {
+    "word": "liverpool",
+    "hint": "Red club of Merseyside",
+    "category": "Football Clubs"
+  },
+  {
+    "word": "arsenal",
+    "hint": "The Gunners of London",
+    "category": "Football Clubs"
+  },
+  {
+    "word": "tottenham",
+    "hint": "The Spurs of London",
+    "category": "Football Clubs"
+  },
+  {
+    "word": "dortmund",
+    "hint": "Yellow-black German club",
+    "category": "Football Clubs"
   }
 ]
