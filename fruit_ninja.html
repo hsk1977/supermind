@@ -22,8 +22,8 @@
     }
     #gameContainer {
       position: relative;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
     }
     canvas {
       display: block;
@@ -100,12 +100,13 @@
       background: radial-gradient(circle, #3cb371 0%, #2e8b57 100%);
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       color: #fff;
       z-index: 10;
       padding: 20px;
       text-align: center;
+      overflow-y: auto;
     }
     
     .main-title {
@@ -204,6 +205,9 @@
     }
 
     .hidden { display: none !important; }
+    .overlay > :first-child { margin-top: auto; }
+    .overlay > :last-child { margin-bottom: auto; }
+    .overlay, .overlay * { touch-action: pan-y; }
 
     #activeEffects {
       position: absolute;
@@ -326,7 +330,7 @@
 
     function playExplodeSound() {
       if (!audioCtx) return;
-      const bufferSize = audioCtx.sampleRate * 0.4;
+      const bufferSize = Math.floor(audioCtx.sampleRate * 0.4);
       const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
@@ -366,9 +370,13 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
+    let W = window.innerWidth, H = window.innerHeight, dpr = 1;
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
@@ -400,7 +408,8 @@
     let selectedBlade = 'ice';
 
     let score = 0;
-    let highScore = parseInt(localStorage.getItem('fn_highscore') || '0');
+    let highScore = 0;
+    try { highScore = parseInt(localStorage.getItem('fn_highscore') || '0') || 0; } catch (e) {}
     let timeLeft = 60;
     let lives = 3;
     let isGameOver = true;
@@ -417,6 +426,7 @@
     let isMouseDown = false;
     let activeSwipe = null;
     let shakeDuration = 0;
+    let dt = 1, lastFrame = 0, rafId = 0, bladeSeq = 0, lastCheckedId = 0;
 
     document.getElementById('highScore').innerText = highScore;
 
@@ -433,10 +443,11 @@
     }
 
     function addBladePoint(x, y) {
-      bladePath.push({ x, y, time: Date.now() });
+      bladePath.push({ x, y, time: Date.now(), id: ++bladeSeq });
     }
 
     function resetSwipeTracker() {
+      lastCheckedId = bladeSeq;
       activeSwipe = { textObj: null, count: 0, score: 0, avgX: 0, minY: Infinity };
     }
 
@@ -445,45 +456,26 @@
       activeSwipe = null;
     }
 
-    window.addEventListener('mousedown', (e) => {
+    window.addEventListener('pointerdown', (e) => {
       initAudio();
       isMouseDown = true;
       bladePath = [];
       resetSwipeTracker();
       addBladePoint(e.clientX, e.clientY);
     });
-
-    window.addEventListener('mousemove', (e) => {
+    window.addEventListener('pointermove', (e) => {
       if (isMouseDown) addBladePoint(e.clientX, e.clientY);
     });
-
-    window.addEventListener('mouseup', endSwipeTracker);
-
-    window.addEventListener('touchstart', (e) => {
-      initAudio();
-      isMouseDown = true;
-      const touch = e.touches[0];
-      bladePath = [];
-      resetSwipeTracker();
-      addBladePoint(touch.clientX, touch.clientY);
-    });
-
-    window.addEventListener('touchmove', (e) => {
-      if (isMouseDown) {
-        const touch = e.touches[0];
-        addBladePoint(touch.clientX, touch.clientY);
-      }
-    });
-
-    window.addEventListener('touchend', endSwipeTracker);
+    ['pointerup', 'pointercancel', 'blur'].forEach(t => window.addEventListener(t, endSwipeTracker));
+    window.addEventListener('contextmenu', (e) => e.preventDefault());
 
     class Item {
       constructor(customX = null, customVX = null, customVY = null, isPackage = false) {
-        this.x = customX !== null ? customX : Math.random() * (canvas.width - 160) + 80;
-        this.y = canvas.height + 40;
+        this.x = customX !== null ? customX : Math.random() * (W - 160) + 80;
+        this.y = H + 40;
         
         const throwPower = 10.5;
-        const heightMultiplier = Math.sqrt(canvas.height / 700);
+        const heightMultiplier = Math.sqrt(H / 700);
         
         this.vx = customVX !== null ? customVX : (Math.random() - 0.5) * 2.5;
         this.vy = customVY !== null ? customVY : -(Math.random() * 2.0 + throwPower) * heightMultiplier;
@@ -536,13 +528,15 @@
       }
 
       update() {
-        const timeScale = freezeActive ? 0.4 : 1.0;
+        const timeScale = (freezeActive ? 0.4 : 1.0) * dt;
 
         if (!this.sliced) {
           this.x += this.vx * timeScale;
           this.y += this.vy * timeScale;
           this.vy += this.gravity * timeScale;
           this.rotation += this.vRot * timeScale;
+          if (this.x < this.radius) { this.x = this.radius; this.vx = Math.abs(this.vx); }
+          else if (this.x > W - this.radius) { this.x = W - this.radius; this.vx = -Math.abs(this.vx); }
         } else {
           this.halves.forEach(h => {
             h.x += h.vx * timeScale;
@@ -714,7 +708,7 @@
       } else if (type === 'time') {
         timeLeft += 10;
         document.getElementById('timer').innerText = timeLeft;
-        addFloatingText(canvas.width / 2, canvas.height / 2, '+10 SECONDS! ⏳', 32);
+        addFloatingText(W / 2, H / 2, '+10 SECONDS! ⏳', 32);
       }
       updateEffectBadges();
     }
@@ -735,17 +729,17 @@
 
     function spawnClusteredFruits() {
       const rand = Math.random();
-      const countScale = frenzyActive ? 2 : 1;
+      const countScale = frenzyActive ? 1 : 1;
 
       for (let c = 0; c < countScale; c++) {
         if (rand < 0.2) {
           items.push(new Item(null, null, null, true));
         } else if (rand < 0.65) {
           const clusterSize = Math.floor(Math.random() * 2) + 2;
-          const baseX = Math.random() * (canvas.width - 200) + 100;
+          const baseX = Math.random() * (W - 200) + 100;
           const baseVX = (Math.random() - 0.5) * 2;
           const throwPower = 10.5;
-          const heightMultiplier = Math.sqrt(canvas.height / 700);
+          const heightMultiplier = Math.sqrt(H / 700);
           const baseVY = -(Math.random() * 1.5 + throwPower) * heightMultiplier;
 
           for (let i = 0; i < clusterSize; i++) {
@@ -781,14 +775,14 @@
     }
 
     function checkSlices() {
-      if (bladePath.length < 2) return;
-      const p1 = bladePath[bladePath.length - 2];
-      const p2 = bladePath[bladePath.length - 1];
-
+      if (!isMouseDown || !activeSwipe || bladePath.length < 2) return;
       let hitInThisFrame = false;
 
+      for (let sg = 1; sg < bladePath.length; sg++) {
+      const p1 = bladePath[sg - 1], p2 = bladePath[sg];
+      if (p2.id <= lastCheckedId) continue;
       items.forEach(item => {
-        if (!item.sliced) {
+        if (!item.sliced && !isGameOver) {
           const dist = distToSegment({ x: item.x, y: item.y }, p1, p2);
           if (dist < item.radius) {
             const res = item.slice();
@@ -817,6 +811,8 @@
           }
         }
       });
+      }
+      lastCheckedId = bladePath[bladePath.length - 1].id;
 
       if (hitInThisFrame && activeSwipe && activeSwipe.count > 0) {
         playSliceSound();
@@ -824,7 +820,7 @@
         document.getElementById('score').innerText = score;
         if (score > highScore) {
           highScore = score;
-          localStorage.setItem('fn_highscore', highScore);
+          try { localStorage.setItem('fn_highscore', highScore); } catch (e) {}
           document.getElementById('highScore').innerText = highScore;
         }
 
@@ -857,7 +853,7 @@
       if (selectedMode === 'classic') return;
 
       timerInterval = setInterval(() => {
-        if (!isGameOver) {
+        if (!isGameOver && !document.hidden) {
           timeLeft--;
           document.getElementById('timer').innerText = timeLeft;
           if (timeLeft <= 0) {
@@ -867,18 +863,21 @@
       }, 1000);
     }
 
-    function update() {
+    function update(ts) {
       if (isGameOver) return;
+      dt = Math.min(3, (ts - lastFrame) / 16.667) || 1;
+      lastFrame = ts;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       ctx.save();
       if (shakeDuration > 0) {
         const dx = (Math.random() - 0.5) * 10;
         const dy = (Math.random() - 0.5) * 10;
         ctx.translate(dx, dy);
-        shakeDuration--;
+        shakeDuration -= dt;
       }
 
-      ctx.clearRect(-10, -10, canvas.width + 20, canvas.height + 20);
+      ctx.clearRect(-10, -10, W + 20, H + 20);
 
       splatters.forEach(s => {
         ctx.save();
@@ -895,8 +894,8 @@
         ctx.restore();
       });
 
-      spawnTimer++;
-      const spawnInterval = frenzyActive ? 30 : 90;
+      spawnTimer += dt;
+      const spawnInterval = frenzyActive ? 50 : 90;
       if (spawnTimer > spawnInterval) {
         spawnClusteredFruits();
         spawnTimer = 0;
@@ -907,8 +906,9 @@
         item.update();
         item.draw();
 
-        if (item.y > canvas.height + 80) {
-          if (selectedMode === 'classic' && !item.sliced && !item.isBomb) {
+        const gone = item.sliced ? item.halves.every(h => h.y > H + 80) : item.y > H + 80;
+        if (gone) {
+          if (!isGameOver && selectedMode === 'classic' && !item.sliced && !item.isBomb) {
             lives--;
             updateLivesDisplay();
             if (lives <= 0) {
@@ -921,8 +921,8 @@
 
       for (let i = floatingTexts.length - 1; i >= 0; i--) {
         const ft = floatingTexts[i];
-        ft.y += ft.vy;
-        ft.alpha -= 0.015;
+        ft.y += ft.vy * dt;
+        ft.alpha -= 0.015 * dt;
 
         if (ft.alpha <= 0) {
           floatingTexts.splice(i, 1);
@@ -942,9 +942,9 @@
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= p.life;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.alpha -= p.life * dt;
 
         if (p.alpha <= 0) {
           particles.splice(i, 1);
@@ -1001,7 +1001,7 @@
 
       checkSlices();
       ctx.restore();
-      requestAnimationFrame(update);
+      rafId = requestAnimationFrame(update);
     }
 
     function updateLivesDisplay() {
@@ -1030,7 +1030,13 @@
       bladePath = [];
       score = 0;
       isGameOver = false;
+      isMouseDown = false;
       activeSwipe = null;
+      shakeDuration = 0;
+      spawnTimer = 80;
+      [freezeTimer, frenzyTimer, doubleTimer].forEach(clearTimeout);
+      initAudio();
+      lastFrame = performance.now();
       freezeActive = false;
       frenzyActive = false;
       doubleActive = false;
@@ -1054,7 +1060,8 @@
         startTimer();
       }
 
-      requestAnimationFrame(update);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(update);
     }
 
     document.getElementById('menuBtn').addEventListener('click', () => {
@@ -1062,7 +1069,7 @@
       clearInterval(timerInterval);
       document.getElementById('ui').classList.add('hidden');
       document.getElementById('startScreen').classList.remove('hidden');
-      document.getElementById('gameOverScreen').classList.remove('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
     });
   </script>
 </body>
