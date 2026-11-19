@@ -40,6 +40,8 @@
         .status-box { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
         @keyframes btnBlink { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .7; transform: scale(.96); } }
         .hint-btn { background: linear-gradient(135deg, #fbbf24, #d97706); color: #fff; border: 1px solid rgba(255,255,255,.4); border-radius: 25px; padding: 10px 24px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(217,119,6,.3); text-shadow: 0 1px 2px rgba(0,0,0,.2); transition: all .25s ease; animation: btnBlink 1.4s infinite ease-in-out; }
+        .help-btn { background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 4px 12px rgba(5,150,105,.3); }
+        .slot.hinted { border-style: solid; border-color: var(--success-color); background: #d1fae5; color: #047857; cursor: default; }
         .hint-btn:not(:disabled):hover { animation: none; transform: translateY(-2px) scale(1.04); }
         .hint-btn:disabled { background: #e5e7eb; color: #9ca3af; border: none; cursor: not-allowed; box-shadow: none; opacity: .7; animation: none; text-shadow: none; }
         .hint-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
@@ -97,6 +99,7 @@
 
         <div class="status-box">
             <div class="hint-row">
+                <button id="help-btn" class="hint-btn help-btn" disabled>✨ <span id="help-btn-text">کمک</span></button>
                 <button id="hint-btn" class="hint-btn" disabled>💡 <span id="hint-btn-text">راهنمایی</span></button>
                 <div id="cat-box" class="cat-box"></div>
             </div>
@@ -123,10 +126,10 @@
 
     <script>
         const translations = {
-            fa: { title: "کلمات درهم", home: "خانه", hint: "راهنمایی", cat: "دسته", noHint: "راهنمایی موجود نیست.", word: "کلمه", moves: "حرکت", len: "حرفی", clear: "پاک کردن", shuffle: "ترکیب مجدد", langToggle: "🌐 English",
+            fa: { title: "کلمات درهم", home: "خانه", hint: "راهنمایی", help: "کمک", cat: "دسته", noHint: "راهنمایی موجود نیست.", word: "کلمه", moves: "حرکت", len: "حرفی", clear: "پاک کردن", shuffle: "ترکیب مجدد", langToggle: "🌐 English",
                   lvlTitle: "🎊 مرحله تمام شد!", lvlMsg: "مرحلهٔ بعد: کلمات {n} حرفی", next: "ادامه",
                   allTitle: "🏆 همهٔ مرحله‌ها تمام شد!", allMsg: "تبریک! همهٔ کلمات را درست چیدی.", again: "شروع دوباره", loadErr: "خطا در دریافت فایل کلمات!" },
-            en: { title: "Word Scramble", home: "Home", hint: "Hint", cat: "Category", noHint: "No hint available.", word: "Word", moves: "Moves", len: "Letters", clear: "Clear", shuffle: "Shuffle", langToggle: "🌐 فارسی",
+            en: { title: "Word Scramble", home: "Home", hint: "Hint", help: "Help", cat: "Category", noHint: "No hint available.", word: "Word", moves: "Moves", len: "Letters", clear: "Clear", shuffle: "Shuffle", langToggle: "🌐 فارسی",
                   lvlTitle: "🎊 Level Complete!", lvlMsg: "Next level: {n}-letter words", next: "Continue",
                   allTitle: "🏆 All Levels Done!", allMsg: "Congratulations! You solved every word.", again: "Play Again", loadErr: "Could not load the word file!" }
         };
@@ -136,7 +139,7 @@
 
         let currentLang = 'fa', byLen = {}, lens = [], list = [], cur = null;
         let solved = new Set(), curLen = 0, pos = 0;   // کلمه‌های حل‌شده (برای هر زبان جدا ذخیره می‌شود)
-        let tiles = [], slots = [], moves = 0, fails = 0, locked = false, soundOn = true;
+        let tiles = [], slots = [], moves = 0, fails = 0, fixed = [], locked = false, soundOn = true;
         const $ = id => document.getElementById(id);
         const nf = n => currentLang === 'fa' ? n.toLocaleString('fa-IR') : String(n);
         const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -220,6 +223,7 @@
             $('game-title').textContent = t.title;
             $('home-text').textContent = t.home;
             $('hint-btn-text').textContent = t.hint;
+            $('help-btn-text').textContent = t.help;
             $('lb-word').textContent = t.word;
             $('lb-moves').textContent = t.moves;
             $('lb-len').textContent = t.len;
@@ -284,7 +288,9 @@
             do { t = shuf(chars.map(c => ({ c, u: false }))); }
             while (t.map(x => x.c).join('') === cur.w && new Set(chars).size > 1);
             tiles = t; slots = chars.map(() => null); moves = 0; locked = false;
-            fails = 0; $('hint-btn').disabled = true;   // راهنما بعد از ۳ تلاش ناموفق روشن می‌شود
+            fails = 0; fixed = [];
+            $('hint-btn').disabled = true;   // «راهنمایی» بعد از ۵ تلاش ناموفق روشن می‌شود
+            $('help-btn').disabled = true;   // «کمک» بعد از ۳ تلاش ناموفق روشن می‌شود
             $('hint-text').style.display = 'none';
             const cb = $('cat-box');   // دسته‌بندی از همان اول و بدون نیاز به کلیک نمایش داده می‌شود
             cb.textContent = cur.c ? '📂 ' + translations[currentLang].cat + ': ' + cur.c : '';
@@ -304,7 +310,7 @@
             sr.className = 'slots'; sr.innerHTML = ''; tr.innerHTML = '';
             slots.forEach((s, i) => {
                 const d = document.createElement('div');
-                d.className = 'slot' + (s !== null ? ' filled' : '');
+                d.className = 'slot' + (s !== null ? ' filled' : '') + (fixed[i] ? ' hinted' : '');
                 d.textContent = s !== null ? tiles[s].c : '';
                 d.onclick = () => back(i);
                 sr.appendChild(d);
@@ -327,18 +333,23 @@
             if (slots.indexOf(null) < 0) check();
         }
         function back(k) {
-            if (locked || slots[k] === null) return;
+            if (locked || slots[k] === null || fixed[k]) return;
             tiles[slots[k]].u = false; slots[k] = null;
             sfx.back(); draw();
         }
         function clearAll() {
             if (locked) return;
-            slots.forEach((s, k) => { if (s !== null) { tiles[s].u = false; slots[k] = null; } });
+            slots.forEach((s, k) => { if (s !== null && !fixed[k]) { tiles[s].u = false; slots[k] = null; } });
             sfx.click(); draw();
         }
         function reshuffle() {
             if (locked) return;
-            clearAll(); tiles = shuf(tiles); sfx.click(); draw();
+            clearAll();
+            const order = shuf(tiles.map((_, i) => i)), inv = {};   // جابه‌جایی حرف‌ها بدون به‌هم‌ریختن حرف‌های روشن‌شده
+            order.forEach((o, n) => inv[o] = n);
+            tiles = order.map(o => tiles[o]);
+            slots = slots.map(s => s === null ? null : inv[s]);
+            sfx.click(); draw();
         }
 
         function check() {
@@ -352,7 +363,9 @@
             } else {
                 $('slots').classList.add('bad');
                 sfx.bad();
-                if (++fails >= 3) $('hint-btn').disabled = false;
+                fails++;
+                if (fails >= 3 && !fixed.some(Boolean)) $('help-btn').disabled = false;
+                if (fails >= 5) $('hint-btn').disabled = false;
                 setTimeout(() => { locked = false; clearAll(); }, 600);
             }
         }
@@ -377,6 +390,20 @@
             $('modal-btn').onclick = () => { solved = new Set(); save(); $('modal').classList.remove('show'); startLevel(); };
             $('modal').classList.add('show');
         }
+
+        // «کمک»: دو حرف تصادفی را در جای درستشان روشن می‌کند (برای هر کلمه یک بار)
+        $('help-btn').onclick = () => {
+            if (locked || $('help-btn').disabled) return;
+            clearAll();
+            const chars = [...cur.w];
+            shuf(chars.map((_, k) => k).filter(k => !fixed[k])).slice(0, 2).forEach(k => {
+                const i = tiles.findIndex(t => !t.u && t.c === chars[k]);
+                if (i >= 0) { slots[k] = i; tiles[i].u = true; fixed[k] = true; }
+            });
+            $('help-btn').disabled = true;
+            tone(660, .1, 'triangle'); tone(880, .15, 'triangle', .1);
+            draw();
+        };
 
         $('hint-btn').onclick = () => {
             const h = $('hint-text');
