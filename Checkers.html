@@ -304,11 +304,48 @@
             color: #fff;
         }
 
+
+        /* ---------- Gear (capture available) ---------- */
+        .gear {
+            position: absolute;
+            width: 96%;
+            height: 96%;
+            z-index: 1;
+            pointer-events: none;
+            animation: gear-spin 3s linear infinite;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.45));
+        }
+
+        .gear svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .piece.has-gear {
+            width: 68%;
+            height: 68%;
+        }
+
+        .piece.has-gear.king::after {
+            font-size: 1rem;
+        }
+
+        @keyframes gear-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .gear { animation-duration: 8s; }
+        }
+
         @media (max-width: 500px) {
             h1 { font-size: 1.8rem; }
             .status-panel { font-size: 0.9rem; padding: 10px; }
             .diff-btn, .home-btn { padding: 6px 12px; font-size: 0.85rem; }
             .piece.king::after { font-size: 0.9rem; }
+            .piece.has-gear.king::after { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -357,7 +394,8 @@
         const BOARD_SIZE = 8;
         const PLAYER = 'player';
         const COMPUTER = 'computer';
-        
+        const DRAW_LIMIT = 80; // turns in a row without a capture or a regular-piece move
+
         let boardState = [];
         let selectedPiece = null;
         let validMoves = [];
@@ -365,6 +403,8 @@
         let difficulty = 'easy';
         let isMultiJump = false;
         let gameOver = false;
+        let gameId = 0;            // invalidates stale timers after a reset
+        let quietTurns = 0;
 
         const boardEl = document.getElementById('board');
         const playerScoreEl = document.getElementById('player-score');
@@ -373,11 +413,37 @@
         const overlayEl = document.getElementById('game-over-overlay');
         const winnerMessageEl = document.getElementById('winner-message');
 
+        /* ---------- Gear graphic ---------- */
+        const GEAR_SVG = (() => {
+            const teeth = 12, rOut = 50, rIn = 39;
+            const step = (Math.PI * 2) / teeth;
+            const w1 = step * 0.30, w2 = step * 0.15;
+            const pts = [];
+            for (let i = 0; i < teeth; i++) {
+                const a = i * step;
+                [[a - w1, rIn], [a - w2, rOut], [a + w2, rOut], [a + w1, rIn]].forEach(([ang, rad]) => {
+                    pts.push((Math.cos(ang) * rad).toFixed(2) + ',' + (Math.sin(ang) * rad).toFixed(2));
+                });
+            }
+            return '<svg viewBox="-52 -52 104 104" xmlns="http://www.w3.org/2000/svg">' +
+                   '<polygon points="' + pts.join(' ') + '" fill="#1e272e" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
+                   '</svg>';
+        })();
+
+        function createGearEl() {
+            const gear = document.createElement('div');
+            gear.className = 'gear';
+            gear.innerHTML = GEAR_SVG;
+            // keep the rotation continuous even though the board is re-rendered
+            gear.style.animationDelay = (-((performance.now() % 3000) / 1000)).toFixed(3) + 's';
+            return gear;
+        }
+
         document.querySelectorAll('.diff-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                difficulty = e.target.getAttribute('data-diff');
+                e.currentTarget.classList.add('active');
+                difficulty = e.currentTarget.getAttribute('data-diff');
             });
         });
 
@@ -385,12 +451,14 @@
         document.getElementById('restart-btn').addEventListener('click', initGame);
 
         function initGame() {
+            gameId++;
             boardState = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
             currentTurn = PLAYER;
             selectedPiece = null;
             validMoves = [];
             isMultiJump = false;
             gameOver = false;
+            quietTurns = 0;
             overlayEl.classList.remove('active');
 
             for (let r = 0; r < BOARD_SIZE; r++) {
@@ -410,9 +478,25 @@
             updateTurnUI();
         }
 
+        /* Squares holding a player piece that can capture right now */
+        function getGearSquares() {
+            const set = new Set();
+            if (gameOver || currentTurn !== PLAYER) return set;
+            if (isMultiJump && selectedPiece) {
+                set.add(selectedPiece.r + ',' + selectedPiece.c);
+                return set;
+            }
+            getAllMoves(boardState, PLAYER).forEach(m => {
+                if (m.jump) set.add(m.fromR + ',' + m.fromC);
+            });
+            return set;
+        }
+
         function renderBoard() {
             boardEl.innerHTML = '';
             boardEl.appendChild(overlayEl);
+
+            const gearSquares = getGearSquares();
 
             for (let r = 0; r < BOARD_SIZE; r++) {
                 for (let c = 0; c < BOARD_SIZE; c++) {
@@ -427,6 +511,11 @@
                         const piece = document.createElement('div');
                         piece.classList.add('piece', pieceData.player);
                         if (pieceData.isKing) piece.classList.add('king');
+
+                        if (pieceData.player === PLAYER && gearSquares.has(r + ',' + c)) {
+                            piece.classList.add('has-gear');
+                            square.appendChild(createGearEl());
+                        }
 
                         if (selectedPiece && selectedPiece.r === r && selectedPiece.c === c) {
                             piece.classList.add('selected');
@@ -462,8 +551,14 @@
             if (clickedPiece && clickedPiece.player === PLAYER) {
                 if (isMultiJump) return;
 
-                selectedPiece = { r, c };
-                validMoves = getPieceMoves(boardState, r, c, PLAYER);
+                // tapping the selected piece again deselects it
+                if (selectedPiece && selectedPiece.r === r && selectedPiece.c === c) {
+                    selectedPiece = null;
+                    validMoves = [];
+                } else {
+                    selectedPiece = { r, c };
+                    validMoves = getLegalMovesFor(boardState, r, c, PLAYER);
+                }
                 renderBoard();
                 return;
             }
@@ -472,10 +567,15 @@
                 const move = validMoves.find(m => m.toR === r && m.toC === c);
                 if (move) {
                     executeMove(move);
+                } else if (!isMultiJump) {
+                    selectedPiece = null;
+                    validMoves = [];
+                    renderBoard();
                 }
             }
         }
 
+        /* Raw moves of one piece (no mandatory-capture filtering) */
         function getPieceMoves(board, r, c, player) {
             const piece = board[r][c];
             if (!piece) return [];
@@ -485,37 +585,29 @@
 
             if (piece.isKing) {
                 directions.push([-1, -1], [-1, 1], [1, -1], [1, 1]);
+            } else if (player === PLAYER) {
+                directions.push([-1, -1], [-1, 1]);
             } else {
-                if (player === PLAYER) {
-                    directions.push([-1, -1], [-1, 1]);
-                } else {
-                    directions.push([1, -1], [1, 1]);
-                }
+                directions.push([1, -1], [1, 1]);
             }
 
             for (let [dr, dc] of directions) {
                 const targetR = r + dr;
                 const targetC = c + dc;
 
-                if (targetR >= 0 && targetR < BOARD_SIZE && targetC >= 0 && targetC < BOARD_SIZE) {
-                    if (!board[targetR][targetC]) {
-                        moves.push({ fromR: r, fromC: c, toR: targetR, toC: targetC, jump: null });
-                    } 
-                    else if (board[targetR][targetC].player !== player) {
-                        const jumpR = targetR + dr;
-                        const jumpC = targetC + dc;
+                if (targetR < 0 || targetR >= BOARD_SIZE || targetC < 0 || targetC >= BOARD_SIZE) continue;
 
-                        if (jumpR >= 0 && jumpR < BOARD_SIZE && jumpC >= 0 && jumpC < BOARD_SIZE) {
-                            if (!board[jumpR][jumpC]) {
-                                moves.push({
-                                    fromR: r,
-                                    fromC: c,
-                                    toR: jumpR,
-                                    toC: jumpC,
-                                    jump: { r: targetR, c: targetC }
-                                });
-                            }
-                        }
+                if (!board[targetR][targetC]) {
+                    moves.push({ fromR: r, fromC: c, toR: targetR, toC: targetC, jump: null });
+                } else if (board[targetR][targetC].player !== player) {
+                    const jumpR = targetR + dr;
+                    const jumpC = targetC + dc;
+
+                    if (jumpR >= 0 && jumpR < BOARD_SIZE && jumpC >= 0 && jumpC < BOARD_SIZE && !board[jumpR][jumpC]) {
+                        moves.push({
+                            fromR: r, fromC: c, toR: jumpR, toC: jumpC,
+                            jump: { r: targetR, c: targetC }
+                        });
                     }
                 }
             }
@@ -527,9 +619,29 @@
             return moves.filter(m => m.jump !== null);
         }
 
+        /* All legal moves for a side. Captures are mandatory. */
+        function getAllMoves(board, player) {
+            let allMoves = [];
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (board[r][c]?.player === player) {
+                        allMoves.push(...getPieceMoves(board, r, c, player));
+                    }
+                }
+            }
+            const jumps = getOnlyJumps(allMoves);
+            return jumps.length > 0 ? jumps : allMoves;
+        }
+
+        function getLegalMovesFor(board, r, c, player) {
+            return getAllMoves(board, player).filter(m => m.fromR === r && m.fromC === c);
+        }
+
         function executeMove(move) {
             const { fromR, fromC, toR, toC, jump } = move;
             const piece = boardState[fromR][fromC];
+            const wasKing = piece.isKing;
+            const id = gameId;
 
             boardState[toR][toC] = piece;
             boardState[fromR][fromC] = null;
@@ -546,9 +658,13 @@
                 }
             }
 
+            // progress tracking for the draw rule
+            if (jump || !wasKing) quietTurns = 0;
+
             if (jump && !newlyKinged) {
                 const nextJumps = getOnlyJumps(getPieceMoves(boardState, toR, toC, piece.player));
                 if (nextJumps.length > 0) {
+                    updateScores();
                     if (piece.player === PLAYER) {
                         selectedPiece = { r: toR, c: toC };
                         validMoves = nextJumps;
@@ -556,10 +672,12 @@
                         renderBoard();
                         return;
                     } else {
+                        selectedPiece = null;
+                        validMoves = [];
                         renderBoard();
                         setTimeout(() => {
-                            const nextMove = nextJumps[Math.floor(Math.random() * nextJumps.length)];
-                            executeMove(nextMove);
+                            if (id !== gameId || gameOver) return;
+                            executeMove(pickContinuation(boardState, nextJumps, COMPUTER));
                         }, 500);
                         return;
                     }
@@ -569,17 +687,17 @@
             selectedPiece = null;
             validMoves = [];
             isMultiJump = false;
-            
+            if (!jump && wasKing) quietTurns++;
+
+            currentTurn = (currentTurn === PLAYER) ? COMPUTER : PLAYER;
             updateScores();
+            updateTurnUI();
             renderBoard();
 
             if (checkGameOver()) return;
 
-            currentTurn = (currentTurn === PLAYER) ? COMPUTER : PLAYER;
-            updateTurnUI();
-
             if (currentTurn === COMPUTER) {
-                setTimeout(computerTurn, 600);
+                setTimeout(() => computerTurn(id), 600);
             }
         }
 
@@ -605,23 +723,14 @@
             }
         }
 
+        /* Called after the turn has switched: the side to move loses if it has no legal move */
         function checkGameOver() {
-            const playerMoves = getAllMoves(boardState, PLAYER);
-            const computerMoves = getAllMoves(boardState, COMPUTER);
-
-            let playerPieces = 0, computerPieces = 0;
-            for (let r = 0; r < BOARD_SIZE; r++) {
-                for (let c = 0; c < BOARD_SIZE; c++) {
-                    if (boardState[r][c]?.player === PLAYER) playerPieces++;
-                    if (boardState[r][c]?.player === COMPUTER) computerPieces++;
-                }
-            }
-
-            if (playerPieces === 0 || playerMoves.length === 0) {
-                endGame("AI Wins!");
+            if (quietTurns >= DRAW_LIMIT) {
+                endGame("Draw!");
                 return true;
-            } else if (computerPieces === 0 || computerMoves.length === 0) {
-                endGame("You Win!");
+            }
+            if (getAllMoves(boardState, currentTurn).length === 0) {
+                endGame(currentTurn === PLAYER ? "AI Wins!" : "You Win!");
                 return true;
             }
             return false;
@@ -631,23 +740,11 @@
             gameOver = true;
             winnerMessageEl.textContent = message;
             overlayEl.classList.add('active');
+            renderBoard();
         }
 
-        function getAllMoves(board, player) {
-            let allMoves = [];
-            for (let r = 0; r < BOARD_SIZE; r++) {
-                for (let c = 0; c < BOARD_SIZE; c++) {
-                    if (board[r][c]?.player === player) {
-                        const moves = getPieceMoves(board, r, c, player);
-                        allMoves.push(...moves);
-                    }
-                }
-            }
-            return allMoves;
-        }
-
-        function computerTurn() {
-            if (gameOver) return;
+        function computerTurn(id) {
+            if (id !== gameId || gameOver || currentTurn !== COMPUTER) return;
 
             const moves = getAllMoves(boardState, COMPUTER);
             if (moves.length === 0) {
@@ -661,7 +758,7 @@
                 chosenMove = moves[Math.floor(Math.random() * moves.length)];
             } else if (difficulty === 'medium') {
                 chosenMove = getBestMoveMinimax(boardState, 2);
-            } else if (difficulty === 'hard') {
+            } else {
                 chosenMove = getBestMoveMinimax(boardState, 4, true);
             }
 
@@ -699,19 +796,17 @@
         }
 
         function minimax(board, depth, isMaximizing, alpha, beta, aggressive) {
-            if (depth === 0) {
-                return evaluateBoard(board, aggressive);
-            }
+            const side = isMaximizing ? COMPUTER : PLAYER;
+            const moves = getAllMoves(board, side);
+            if (moves.length === 0) return isMaximizing ? -1000 : 1000;
+            if (depth === 0) return evaluateBoard(board, aggressive);
 
             if (isMaximizing) {
                 let maxEval = -Infinity;
-                const moves = getAllMoves(board, COMPUTER);
-                if (moves.length === 0) return -1000;
-
                 for (let move of moves) {
                     const tempBoard = cloneBoard(board);
                     applyMoveToBoard(tempBoard, move);
-                    let evalVal = minimax(tempBoard, depth - 1, false, alpha, beta, aggressive);
+                    const evalVal = minimax(tempBoard, depth - 1, false, alpha, beta, aggressive);
                     maxEval = Math.max(maxEval, evalVal);
                     alpha = Math.max(alpha, evalVal);
                     if (beta <= alpha) break;
@@ -719,13 +814,10 @@
                 return maxEval;
             } else {
                 let minEval = Infinity;
-                const moves = getAllMoves(board, PLAYER);
-                if (moves.length === 0) return 1000;
-
                 for (let move of moves) {
                     const tempBoard = cloneBoard(board);
                     applyMoveToBoard(tempBoard, move);
-                    let evalVal = minimax(tempBoard, depth - 1, true, alpha, beta, aggressive);
+                    const evalVal = minimax(tempBoard, depth - 1, true, alpha, beta, aggressive);
                     minEval = Math.min(minEval, evalVal);
                     beta = Math.min(beta, evalVal);
                     if (beta <= alpha) break;
@@ -740,19 +832,19 @@
             for (let r = 0; r < BOARD_SIZE; r++) {
                 for (let c = 0; c < BOARD_SIZE; c++) {
                     const piece = board[r][c];
-                    if (piece) {
-                        let value = piece.isKing ? 15 : 10;
+                    if (!piece) continue;
 
-                        if (piece.player === COMPUTER) {
-                            value += r;
-                            if (c === 0 || c === 7) value += 2;
-                            if (aggressive) value += 3;
-                            score += value;
-                        } else {
-                            value += (7 - r);
-                            if (c === 0 || c === 7) value += 2;
-                            score -= value;
-                        }
+                    let value = piece.isKing ? 15 : 10;
+
+                    if (piece.player === COMPUTER) {
+                        if (!piece.isKing) value += r;
+                        if (c === 0 || c === 7) value += 2;
+                        if (aggressive) value += 3;
+                        score += value;
+                    } else {
+                        if (!piece.isKing) value += (7 - r);
+                        if (c === 0 || c === 7) value += 2;
+                        score -= value;
                     }
                 }
             }
@@ -764,6 +856,7 @@
             return board.map(row => row.map(cell => cell ? { ...cell } : null));
         }
 
+        /* Applies a move, including the forced multi-jump chain, to a simulated board */
         function applyMoveToBoard(board, move) {
             const { fromR, fromC, toR, toC, jump } = move;
             const piece = board[fromR][fromC];
@@ -775,11 +868,37 @@
                 board[jump.r][jump.c] = null;
             }
 
+            let newlyKinged = false;
             if (!piece.isKing) {
                 if ((piece.player === PLAYER && toR === 0) || (piece.player === COMPUTER && toR === BOARD_SIZE - 1)) {
                     piece.isKing = true;
+                    newlyKinged = true;
                 }
             }
+
+            if (jump && !newlyKinged) {
+                const nextJumps = getOnlyJumps(getPieceMoves(board, toR, toC, piece.player));
+                if (nextJumps.length > 0) {
+                    applyMoveToBoard(board, pickContinuation(board, nextJumps, piece.player));
+                }
+            }
+        }
+
+        /* Chooses the best follow-up jump of a chain for the given side */
+        function pickContinuation(board, jumps, player) {
+            if (jumps.length === 1) return jumps[0];
+            let best = jumps[0];
+            let bestScore = player === COMPUTER ? -Infinity : Infinity;
+            for (const j of jumps) {
+                const temp = cloneBoard(board);
+                applyMoveToBoard(temp, j);
+                const s = evaluateBoard(temp, false);
+                if (player === COMPUTER ? s > bestScore : s < bestScore) {
+                    bestScore = s;
+                    best = j;
+                }
+            }
+            return best;
         }
 
         initGame();
