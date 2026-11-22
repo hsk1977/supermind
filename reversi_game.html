@@ -41,6 +41,7 @@
             height: 100%;
             border-radius: 50%;
             backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
             border: 2px solid rgba(0, 0, 0, 0.2);
         }
 
@@ -52,9 +53,34 @@
             background: radial-gradient(circle at 30% 30%, #3b82f6, #1e40af);
             transform: rotateY(180deg);
         }
+
+        button, .cell { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+        /* Valid-move hint */
+        .cell.valid { cursor: pointer; }
+        .cell.valid:hover { background-color: rgba(52, 211, 153, 0.95) !important; }
+        .hint-dot {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 28%; height: 28%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.55);
+            pointer-events: none;
+        }
+
+        /* Highlight the last move */
+        .cell.last-move { box-shadow: inset 0 0 0 3px rgba(250, 204, 21, 0.9); }
+
+        /* New piece pop-in */
+        @keyframes pop-in {
+            from { transform: scale(0); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: pop-in 0.25s ease-out; }
     </style>
 </head>
-<body class="bg-[#fcf8f2] text-slate-800 min-h-screen flex flex-col items-center justify-between p-4 sm:p-6">
+<body class="bg-[#fcf8f2] text-slate-800 min-h-[100dvh] flex flex-col items-center justify-between p-4 sm:p-6">
 
     <!-- Header & Title -->
     <header class="w-full max-w-xl text-center mb-2 relative flex items-center justify-center">
@@ -78,16 +104,16 @@
         
         <!-- Difficulty Selection Bar -->
         <div class="bg-amber-100/70 backdrop-blur border border-amber-200/80 p-1.5 rounded-xl flex w-full justify-between items-center shadow-md">
-            <span class="text-xs sm:text-sm font-semibold text-slate-700 ml-2 hidden xs:inline">Difficulty:</span>
-            <div class="grid grid-cols-3 gap-1.5 w-full xs:w-auto flex-1 xs:flex-none">
+            <span class="text-xs sm:text-sm font-semibold text-slate-700 ml-2 hidden sm:inline">Difficulty:</span>
+            <div class="grid grid-cols-3 gap-1.5 w-full sm:w-auto flex-1 sm:flex-none">
                 <button id="btn-easy" onclick="setDifficulty('easy')" class="difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-medium transition-all duration-200">
                     Easy
                 </button>
                 <button id="btn-medium" onclick="setDifficulty('medium')" class="difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-medium transition-all duration-200">
                     Medium
                 </button>
-                <button id="btn-hard" onclick="setDifficulty('hard')" class="difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-medium transition-all duration-200">
-                    Hard (Aggressive)
+                <button id="btn-hard" title="Aggressive AI (minimax)" onclick="setDifficulty('hard')" class="difficulty-btn text-xs sm:text-sm px-3 py-1.5 rounded-lg font-medium transition-all duration-200">
+                    Hard
                 </button>
             </div>
         </div>
@@ -161,6 +187,9 @@
             <button onclick="closeModal(); resetGame();" class="w-full bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-500 hover:to-blue-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-all">
                 Play Again
             </button>
+            <button onclick="closeModal()" class="w-full mt-2 text-slate-600 hover:text-slate-900 font-semibold text-sm py-2 rounded-xl transition-all">
+                View Board
+            </button>
         </div>
     </div>
 
@@ -199,6 +228,20 @@
         let currentPlayer = RED;
         let currentDifficulty = 'easy'; // Default difficulty set to easy
         let isAiThinking = false;
+        let gameOver = false;
+        let lastMove = null;
+        let cellEls = [];
+
+        // Pending timers (so "New Game" can cancel stale AI moves / game-over popups)
+        const timers = new Set();
+        function schedule(fn, ms) {
+            const id = setTimeout(() => { timers.delete(id); fn(); }, ms);
+            timers.add(id);
+        }
+        function clearTimers() {
+            timers.forEach(clearTimeout);
+            timers.clear();
+        }
 
         // Initialize on load
         window.onload = function() {
@@ -207,9 +250,11 @@
         };
 
         function resetGame() {
+            clearTimers();
+
             // Clear board
             board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(EMPTY));
-            
+
             // Standard Othello starting configuration
             board[3][3] = BLUE;
             board[3][4] = RED;
@@ -218,14 +263,18 @@
 
             currentPlayer = RED;
             isAiThinking = false;
+            gameOver = false;
+            lastMove = null;
 
+            createBoardCells();
             renderBoard();
             updateScoresAndStatus();
+            showStatusBanner("Your Turn (Red)");
         }
 
         function setDifficulty(diff) {
             currentDifficulty = diff;
-            
+
             // Update difficulty UI buttons
             const buttons = ['easy', 'medium', 'hard'];
             buttons.forEach(b => {
@@ -238,58 +287,89 @@
             });
         }
 
-        function renderBoard() {
+        // Build the 64 cells once per game; pieces are updated in place so the flip animation works
+        function createBoardCells() {
             const boardEl = document.getElementById('board');
             boardEl.innerHTML = '';
+            cellEls = [];
 
-            const validMoves = getValidMoves(board, currentPlayer);
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                const row = [];
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell w-full h-full bg-emerald-500/80 rounded-md sm:rounded-lg flex items-center justify-center relative';
+                    cell.addEventListener('click', () => handlePlayerMove(r, c));
+                    boardEl.appendChild(cell);
+                    row.push(cell);
+                }
+                cellEls.push(row);
+            }
+        }
+
+        function createPiece(value) {
+            const pieceContainer = document.createElement('div');
+            pieceContainer.className = 'piece-container pop-in w-full h-full flex items-center justify-center';
+
+            const piece = document.createElement('div');
+            piece.className = `piece ${value === RED ? 'red' : 'blue'}`;
+
+            const front = document.createElement('div');
+            front.className = 'piece-front';
+            const back = document.createElement('div');
+            back.className = 'piece-back';
+
+            piece.appendChild(front);
+            piece.appendChild(back);
+            pieceContainer.appendChild(piece);
+            return pieceContainer;
+        }
+
+        function renderBoard() {
+            const canPlay = !gameOver && currentPlayer === RED && !isAiThinking;
+            const validMoves = canPlay ? getValidMoves(board, RED) : [];
 
             for (let r = 0; r < BOARD_SIZE; r++) {
                 for (let c = 0; c < BOARD_SIZE; c++) {
-                    const cellVal = board[r][c];
-                    const isValidMove = validMoves.some(m => m.r === r && m.c === c);
+                    const cell = cellEls[r][c];
+                    const val = board[r][c];
+                    let container = cell.querySelector('.piece-container');
 
-                    const cell = document.createElement('div');
-                    cell.className = 'w-full h-full bg-emerald-500/80 rounded-md sm:rounded-lg flex items-center justify-center relative cursor-pointer';
-                    
-                    if (isValidMove && currentPlayer === RED && !isAiThinking) {
-                        cell.onclick = () => handlePlayerMove(r, c);
-                    } else if (cellVal === EMPTY) {
-                        cell.onclick = null;
+                    if (val === EMPTY) {
+                        if (container) container.remove();
+                    } else if (!container) {
+                        cell.appendChild(createPiece(val));
+                    } else {
+                        // Same element, class change => CSS 3D flip transition
+                        const piece = container.firstElementChild;
+                        piece.classList.toggle('red', val === RED);
+                        piece.classList.toggle('blue', val === BLUE);
                     }
 
-                    if (cellVal !== EMPTY) {
-                        const pieceContainer = document.createElement('div');
-                        pieceContainer.className = 'piece-container w-full h-full flex items-center justify-center';
-
-                        const piece = document.createElement('div');
-                        piece.className = `piece ${cellVal === RED ? 'red' : 'blue'}`;
-
-                        const front = document.createElement('div');
-                        front.className = 'piece-front';
-                        const back = document.createElement('div');
-                        back.className = 'piece-back';
-
-                        piece.appendChild(front);
-                        piece.appendChild(back);
-                        pieceContainer.appendChild(piece);
-                        cell.appendChild(pieceContainer);
+                    const isValid = validMoves.some(m => m.r === r && m.c === c);
+                    cell.classList.toggle('valid', isValid);
+                    const dot = cell.querySelector('.hint-dot');
+                    if (isValid && !dot) {
+                        const d = document.createElement('div');
+                        d.className = 'hint-dot';
+                        cell.appendChild(d);
+                    } else if (!isValid && dot) {
+                        dot.remove();
                     }
 
-                    boardEl.appendChild(cell);
+                    cell.classList.toggle('last-move', !!lastMove && lastMove.r === r && lastMove.c === c);
                 }
             }
         }
 
         function handlePlayerMove(r, c) {
-            if (currentPlayer !== RED || isAiThinking) return;
+            if (gameOver || currentPlayer !== RED || isAiThinking) return;
+            if (board[r][c] !== EMPTY) return;
 
             const flipped = getFlippedPieces(board, r, c, RED);
             if (flipped.length === 0) return;
 
             makeMove(board, r, c, RED);
-            renderBoard();
-            updateScoresAndStatus();
+            lastMove = { r, c };
 
             // Next turn: AI
             currentPlayer = BLUE;
@@ -305,42 +385,52 @@
         }
 
         function checkNextTurn() {
-            updateScoresAndStatus();
+            if (gameOver) return;
+
             const playerMoves = getValidMoves(board, RED);
             const aiMoves = getValidMoves(board, BLUE);
 
             if (playerMoves.length === 0 && aiMoves.length === 0) {
-                // Game ended
-                setTimeout(endGame, 600);
+                finishGame();
                 return;
             }
 
             if (currentPlayer === BLUE) {
                 if (aiMoves.length === 0) {
                     // AI has no moves, pass turn back to Player
-                    showStatusBanner("AI has no valid moves. Your turn! (Red)");
+                    isAiThinking = false;
                     currentPlayer = RED;
-                    renderBoard();
+                    showStatusBanner("AI has no valid moves. Your turn! (Red)");
                 } else {
                     // AI Turn
                     isAiThinking = true;
                     showStatusBanner("AI is thinking...");
-                    renderBoard();
-                    setTimeout(triggerAiMove, 700);
+                    schedule(triggerAiMove, 700);
                 }
             } else {
                 if (playerMoves.length === 0) {
                     // Player has no moves, pass turn to AI
-                    showStatusBanner("You have no valid moves. AI's turn!");
-                    currentPlayer = BLUE;
-                    renderBoard();
-                    setTimeout(checkNextTurn, 1000);
-                } else {
-                    showStatusBanner("Your Turn (Red)");
                     isAiThinking = false;
-                    renderBoard();
+                    currentPlayer = BLUE;
+                    showStatusBanner("You have no valid moves. AI's turn!");
+                    schedule(checkNextTurn, 1000);
+                } else {
+                    isAiThinking = false;
+                    showStatusBanner("Your Turn (Red)");
                 }
             }
+
+            renderBoard();
+            updateScoresAndStatus();
+        }
+
+        function finishGame() {
+            gameOver = true;
+            isAiThinking = false;
+            renderBoard();
+            updateScoresAndStatus();
+            showStatusBanner("Game over!");
+            schedule(endGame, 600);
         }
 
         function getValidMoves(bd, player) {
@@ -384,6 +474,8 @@
         }
 
         function triggerAiMove() {
+            if (gameOver) return;
+
             const validMoves = getValidMoves(board, BLUE);
             if (validMoves.length === 0) {
                 isAiThinking = false;
@@ -398,17 +490,19 @@
                 // Random move selection
                 chosenMove = validMoves[Math.floor(Math.random() * validMoves.length)];
             } else if (currentDifficulty === 'medium') {
-                // Medium: Positional evaluation + flip count
+                // Medium: Positional evaluation + flip count (random choice among equal best moves)
                 let bestScore = -Infinity;
+                let bestMoves = [];
                 for (const move of validMoves) {
-                    const tempBoard = cloneBoard(board);
-                    makeMove(tempBoard, move.r, move.c, BLUE);
-                    let score = POSITIONAL_WEIGHTS[move.r][move.c] + (move.count * 2);
+                    const score = POSITIONAL_WEIGHTS[move.r][move.c] + (move.count * 2);
                     if (score > bestScore) {
                         bestScore = score;
-                        chosenMove = move;
+                        bestMoves = [move];
+                    } else if (score === bestScore) {
+                        bestMoves.push(move);
                     }
                 }
+                chosenMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
             } else {
                 // Hard: Aggressive Minimax with Alpha-Beta Pruning (Depth 4)
                 chosenMove = getBestMoveMinimax(board, 4);
@@ -419,10 +513,10 @@
             }
 
             makeMove(board, chosenMove.r, chosenMove.c, BLUE);
+            lastMove = { r: chosenMove.r, c: chosenMove.c };
             isAiThinking = false;
             currentPlayer = RED;
 
-            renderBoard();
             checkNextTurn();
         }
 
@@ -434,7 +528,7 @@
             for (const move of validMoves) {
                 const tempBoard = cloneBoard(bd);
                 makeMove(tempBoard, move.r, move.c, BLUE);
-                const score = minimax(tempBoard, depth - 1, -Infinity, Infinity, false);
+                const score = minimax(tempBoard, depth - 1, bestScore, Infinity, false);
                 if (score > bestScore) {
                     bestScore = score;
                     bestMove = move;
@@ -447,8 +541,19 @@
             const aiMoves = getValidMoves(bd, BLUE);
             const playerMoves = getValidMoves(bd, RED);
 
-            if (depth === 0 || (aiMoves.length === 0 && playerMoves.length === 0)) {
-                return evaluateBoardAggressive(bd);
+            // Game over: score by final disc difference (a real win/loss outweighs any heuristic)
+            if (aiMoves.length === 0 && playerMoves.length === 0) {
+                let diff = 0;
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        diff += bd[r][c] === BLUE ? 1 : (bd[r][c] === RED ? -1 : 0);
+                    }
+                }
+                return diff === 0 ? 0 : Math.sign(diff) * (100000 + Math.abs(diff));
+            }
+
+            if (depth === 0) {
+                return evaluateBoardAggressive(bd, aiMoves.length, playerMoves.length);
             }
 
             if (isMaximizing) {
@@ -483,7 +588,7 @@
         }
 
         // Aggressive board evaluation focusing on corner control, mobility restriction, and piece advantage
-        function evaluateBoardAggressive(bd) {
+        function evaluateBoardAggressive(bd, aiMobility, playerMobility) {
             let positionalScore = 0;
             let blueCount = 0;
             let redCount = 0;
@@ -501,8 +606,6 @@
             }
 
             // Mobility Evaluation (Restricting player options)
-            const aiMobility = getValidMoves(bd, BLUE).length;
-            const playerMobility = getValidMoves(bd, RED).length;
             const mobilityScore = (aiMobility - playerMobility) * 15;
 
             // Aggressive Piece count weighting
@@ -515,35 +618,34 @@
             return bd.map(row => [...row]);
         }
 
-        function updateScoresAndStatus() {
-            let redScore = 0;
-            let blueScore = 0;
-
+        function countDiscs() {
+            let red = 0, blue = 0;
             for (let r = 0; r < BOARD_SIZE; r++) {
                 for (let c = 0; c < BOARD_SIZE; c++) {
-                    if (board[r][c] === RED) redScore++;
-                    if (board[r][c] === BLUE) blueScore++;
+                    if (board[r][c] === RED) red++;
+                    if (board[r][c] === BLUE) blue++;
                 }
             }
+            return { red, blue };
+        }
 
-            document.getElementById('score-red').innerText = redScore;
-            document.getElementById('score-blue').innerText = blueScore;
+        function updateScoresAndStatus() {
+            const { red, blue } = countDiscs();
 
-            // Active player card styling
+            document.getElementById('score-red').innerText = red;
+            document.getElementById('score-blue').innerText = blue;
+
+            // Active player card styling (no highlight once the game is over)
             const cardRed = document.getElementById('card-red');
             const cardBlue = document.getElementById('card-blue');
+            const redActive = !gameOver && currentPlayer === RED;
+            const blueActive = !gameOver && currentPlayer === BLUE;
 
-            if (currentPlayer === RED) {
-                cardRed.classList.add('border-red-500', 'bg-red-50/80', 'ring-2', 'ring-red-400/50');
-                cardRed.classList.remove('border-red-500/40', 'bg-amber-50/90');
-                cardBlue.classList.remove('border-blue-500', 'bg-blue-50/80', 'ring-2', 'ring-blue-400/50');
-                cardBlue.classList.add('border-slate-300', 'bg-amber-50/90');
-            } else {
-                cardBlue.classList.add('border-blue-500', 'bg-blue-50/80', 'ring-2', 'ring-blue-400/50');
-                cardBlue.classList.remove('border-slate-300', 'bg-amber-50/90');
-                cardRed.classList.remove('border-red-500', 'bg-red-50/80', 'ring-2', 'ring-red-400/50');
-                cardRed.classList.add('border-red-500/40', 'bg-amber-50/90');
-            }
+            ['border-red-500', 'bg-red-50/80', 'ring-2', 'ring-red-400/50'].forEach(k => cardRed.classList.toggle(k, redActive));
+            ['border-red-500/40', 'bg-amber-50/90'].forEach(k => cardRed.classList.toggle(k, !redActive));
+
+            ['border-blue-500', 'bg-blue-50/80', 'ring-2', 'ring-blue-400/50'].forEach(k => cardBlue.classList.toggle(k, blueActive));
+            ['border-slate-300', 'bg-amber-50/90'].forEach(k => cardBlue.classList.toggle(k, !blueActive));
         }
 
         function showStatusBanner(msg) {
@@ -551,15 +653,7 @@
         }
 
         function endGame() {
-            let redScore = 0;
-            let blueScore = 0;
-
-            for (let r = 0; r < BOARD_SIZE; r++) {
-                for (let c = 0; c < BOARD_SIZE; c++) {
-                    if (board[r][c] === RED) redScore++;
-                    if (board[r][c] === BLUE) blueScore++;
-                }
-            }
+            const { red: redScore, blue: blueScore } = countDiscs();
 
             const modal = document.getElementById('game-over-modal');
             const modalContent = document.getElementById('modal-content');
@@ -595,15 +689,17 @@
             }, 10);
         }
 
+        let modalHideTimer = null;
         function closeModal() {
             const modal = document.getElementById('game-over-modal');
             const modalContent = document.getElementById('modal-content');
-            
+
             modal.classList.add('opacity-0');
             modalContent.classList.remove('scale-100');
             modalContent.classList.add('scale-95');
-            
-            setTimeout(() => {
+
+            clearTimeout(modalHideTimer);
+            modalHideTimer = setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
         }
