@@ -708,5 +708,40 @@
     "word": "dortmund",
     "hint": "Yellow-black German club",
     "category": "Football Clubs"
+  },
+  {
+    "word": "volleyball",
+    "hint": "Ball over a net",
+    "category": "Sports"
+  },
+  {
+    "word": "basketball",
+    "hint": "Ball into a hoop",
+    "category": "Sports"
+  },
+  {
+    "word": "handball",
+    "hint": "Throw ball into goal",
+    "category": "Sports"
+  },
+  {
+    "word": "gymnastics",
+    "hint": "Acrobatic moves on apparatus",
+    "category": "Sports"
+  },
+  {
+    "word": "athletics",
+    "hint": "Track and field",
+    "category": "Sports"
+  },
+  {
+    "word": "karate",
+    "hint": "Japanese striking art",
+    "category": "Sports"
+  },
+  {
+    "word": "taekwondo",
+    "hint": "Korean kicking art",
+    "category": "Sports"
   }
 ]
