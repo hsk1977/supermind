@@ -743,5 +743,85 @@
     "word": "taekwondo",
     "hint": "Korean kicking art",
     "category": "Sports"
+  },
+  {
+    "word": "berlin",
+    "hint": "Capital of Germany",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "paris",
+    "hint": "Capital of France",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "london",
+    "hint": "Capital of the UK",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "warsaw",
+    "hint": "Capital of Poland",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "ankara",
+    "hint": "Capital of Turkey",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "baku",
+    "hint": "Capital of Azerbaijan",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "washington",
+    "hint": "Capital of the USA",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "tokyo",
+    "hint": "Capital of Japan",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "jakarta",
+    "hint": "Capital of Indonesia",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "canberra",
+    "hint": "Capital of Australia",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "madrid",
+    "hint": "Capital of Spain",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "lisbon",
+    "hint": "Capital of Portugal",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "cairo",
+    "hint": "Capital of Egypt",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "copenhagen",
+    "hint": "Capital of Denmark",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "oslo",
+    "hint": "Capital of Norway",
+    "category": "Cities & Capitals"
+  },
+  {
+    "word": "helsinki",
+    "hint": "Capital of Finland",
+    "category": "Cities & Capitals"
   }
 ]
