@@ -23,8 +23,8 @@ html{background:var(--ink)}
 body{
   min-height:100vh;color:var(--text);
   background:
-    radial-gradient(ellipse 70% 45% at 50% -5%,rgba(245,150,50,.30),transparent 70%),
-    radial-gradient(ellipse 60% 40% at 90% 100%,rgba(190,80,40,.26),transparent 70%),
+    radial-gradient(ellipse 70% 45% at 50% -5%,rgba(255,205,100,.26),transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 100%,rgba(40,160,100,.24),transparent 70%),
     radial-gradient(ellipse 50% 40% at 5% 70%,rgba(255,98,146,.16),transparent 70%),
     linear-gradient(180deg,var(--ink),var(--ink2));
   background-attachment:fixed;
@@ -49,33 +49,33 @@ main{position:relative;max-width:880px;margin:0 auto}
 
 header{text-align:center;margin-bottom:clamp(24px,5vw,44px)}
 header{position:relative}
-.thanks{position:relative;width:clamp(150px,40vw,210px);margin:0 auto 6px}
-.turkey{display:block;width:100%;overflow:visible;
-  filter:drop-shadow(0 0 22px rgba(255,150,40,.45)) drop-shadow(0 0 60px rgba(230,110,30,.25));
-  animation:bob 5s ease-in-out infinite;transform-origin:50% 90%}
-@keyframes bob{50%{transform:translateY(-5px) rotate(-1.2deg)}}
-.leaf{position:absolute;top:0;width:clamp(16px,4vw,26px);opacity:.9;pointer-events:none;
-  stroke:rgba(60,25,5,.45);stroke-width:.8;stroke-linejoin:round;animation:fall 10s linear infinite}
-.leaf.l1{left:6%;fill:#e8631a}
-.leaf.l2{left:20%;fill:#f4b024;animation-delay:-3.5s;animation-duration:12s}
-.leaf.l3{left:34%;fill:#c0392b;animation-delay:-7s;animation-duration:11s}
-.leaf.l4{left:66%;fill:#f4a21b;animation-delay:-2s;animation-duration:13s}
-.leaf.l5{left:80%;fill:#d2541b;animation-delay:-5.5s}
-.leaf.l6{left:93%;fill:#b5651d;animation-delay:-8.5s;animation-duration:12s}
-@keyframes fall{
-  0%{transform:translate(0,-14px) rotate(0);opacity:0}
-  10%{opacity:.95}
-  50%{transform:translate(22px,120px) rotate(190deg)}
-  90%{opacity:.9}
-  100%{transform:translate(-10px,250px) rotate(380deg);opacity:0}
+.xmas{position:relative;width:clamp(130px,34vw,180px);margin:0 auto 6px;transform:translateX(-26%)}
+.tree{display:block;width:100%;overflow:visible;
+  filter:drop-shadow(0 0 20px rgba(255,214,102,.40)) drop-shadow(0 0 50px rgba(40,170,100,.28));
+  animation:bob 6s ease-in-out infinite;transform-origin:50% 95%}
+@keyframes bob{50%{transform:translateY(-4px) rotate(-.8deg)}}
+.santa{position:absolute;right:-58%;bottom:2px;width:46%;overflow:visible;filter:drop-shadow(0 0 14px rgba(255,255,255,.18))}
+.wave{transform-origin:20px 62px;animation:wave 1.4s ease-in-out infinite alternate}
+@keyframes wave{from{transform:rotate(-8deg)}to{transform:rotate(16deg)}}
+.tw{animation:twinkle2 1.8s ease-in-out infinite}
+@keyframes twinkle2{0%,100%{opacity:1}50%{opacity:.25}}
+.star{transform-box:fill-box;transform-origin:center;animation:starpulse 2.4s ease-in-out infinite}
+@keyframes starpulse{50%{transform:scale(1.15)}}
+.flake{position:absolute;top:0;width:var(--s);height:var(--s);border-radius:50%;background:#fff;opacity:.85;
+  pointer-events:none;animation:snow var(--d) linear infinite;animation-delay:var(--dl)}
+@keyframes snow{
+  0%{transform:translate(0,-10px);opacity:0}
+  10%{opacity:.9}
+  50%{transform:translate(14px,120px)}
+  100%{transform:translate(-10px,260px);opacity:0}
 }
 h1{
   font-size:clamp(2.2rem,8vw,3.8rem);font-weight:900;line-height:1.2;
-  background:linear-gradient(180deg,#ffe3a6 5%,#f2a03a 55%,#d9531e 100%);
+  background:linear-gradient(180deg,#fff3c4 5%,#ffcf5a 55%,#ef5350 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 16px rgba(240,140,40,.4));
+  filter:drop-shadow(0 0 16px rgba(255,200,90,.38));
 }
-.subtitle{margin-top:8px;color:#f0d8b2;font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600}
+.subtitle{margin-top:8px;color:#cfe6ff;font-size:clamp(.9rem,2.6vw,1.05rem);font-weight:600}
 
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2.5vw,18px)}
 @media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
@@ -143,34 +143,56 @@ footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.8rem;opac
 <body>
 <main>
   <header>
-    <div class="thanks" aria-hidden="true">
-      <svg class="turkey" viewBox="0 0 120 112">
-        <g transform="rotate(-78 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#b3341c" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
-        <g transform="rotate(-52 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#e8631a" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
-        <g transform="rotate(-26 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#f4a21b" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
-        <g transform="rotate(0 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#c98a2b" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
-        <g transform="rotate(26 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#f4a21b" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
-        <g transform="rotate(52 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#e8631a" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
-        <g transform="rotate(78 60 72)"><ellipse cx="60" cy="36" rx="11" ry="31" fill="#b3341c" stroke="#5b2a0e" stroke-width="1.6"/><ellipse cx="60" cy="38" rx="5" ry="20" fill="#fff" fill-opacity=".22"/></g>
-        <ellipse cx="60" cy="82" rx="30" ry="26" fill="#8b5a2b" stroke="#4a2a10" stroke-width="2"/>
-        <ellipse cx="60" cy="88" rx="19" ry="17" fill="#b98350"/>
-        <ellipse cx="34" cy="84" rx="8" ry="14" fill="#6e4520" stroke="#4a2a10" stroke-width="1.6" transform="rotate(14 34 84)"/>
-        <ellipse cx="86" cy="84" rx="8" ry="14" fill="#6e4520" stroke="#4a2a10" stroke-width="1.6" transform="rotate(-14 86 84)"/>
-        <path d="M50 106V111M54 106V111M66 106V111M70 106V111" stroke="#f6a416" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="60" cy="56" r="15" fill="#8b5a2b" stroke="#4a2a10" stroke-width="2"/>
-        <circle cx="54" cy="52" r="4.2" fill="#fff"/><circle cx="66" cy="52" r="4.2" fill="#fff"/>
-        <circle cx="55" cy="52.6" r="2" fill="#1c1209"/><circle cx="65" cy="52.6" r="2" fill="#1c1209"/>
-        <path d="M49 46Q54 43 58 46M62 46Q66 43 71 46" stroke="#4a2a10" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-        <path d="M55 58L65 58L60 67Z" fill="#f6b21a" stroke="#b9770e" stroke-width="1.2" stroke-linejoin="round"/>
-        <path d="M58.5 66Q56 74 60 77Q64 74 61.5 66Z" fill="#d62828" stroke="#8f1717" stroke-width="1.2" stroke-linejoin="round"/>
+    <div class="xmas" aria-hidden="true">
+      <svg class="tree" viewBox="0 0 120 132">
+        <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2fb36b"/><stop offset="1" stop-color="#176b3b"/></linearGradient></defs>
+        <rect x="53" y="104" width="14" height="14" rx="2" fill="#8a5a2b" stroke="#4a2a10" stroke-width="1.6"/>
+        <g fill="url(#tg)" stroke="#0e4a28" stroke-width="2" stroke-linejoin="round">
+          <polygon points="60,52 100,108 20,108"/>
+          <polygon points="60,34 92,82 28,82"/>
+          <polygon points="60,18 84,58 36,58"/>
+        </g>
+        <circle class="tw" cx="52" cy="48" r="3.6" fill="#ff4d5e" stroke="#fff" stroke-opacity=".5" stroke-width=".8" style="animation-delay:0s"/><circle class="tw" cx="68" cy="56" r="3.6" fill="#ffd23f" stroke="#fff" stroke-opacity=".5" stroke-width=".8" style="animation-delay:0.4s"/><circle class="tw" cx="46" cy="72" r="3.6" fill="#ffd23f" stroke="#fff" stroke-opacity=".5" stroke-width=".8" style="animation-delay:0.8s"/><circle class="tw" cx="66" cy="78" r="3.6" fill="#ff4d5e" stroke="#fff" stroke-opacity=".5" stroke-width=".8" style="animation-delay:1.2s"/><circle class="tw" cx="80" cy="92" r="3.6" fill="#5cc4ff" stroke="#fff" stroke-opacity=".5" stroke-width=".8" style="animation-delay:0.2s"/><circle class="tw" cx="40" cy="94" r="3.6" fill="#5cc4ff" stroke="#fff" stroke-opacity=".5" stroke-width=".8" style="animation-delay:0.6s"/><circle class="tw" cx="58" cy="96" r="3.6" fill="#ff4d5e" stroke="#fff" stroke-opacity=".5" stroke-width=".8" style="animation-delay:1s"/>
+        <circle class="tw" cx="60" cy="34" r="1.7" fill="#fff2a8" style="animation-delay:0.00s"/><circle class="tw" cx="70" cy="48" r="1.7" fill="#ff9aa8" style="animation-delay:0.23s"/><circle class="tw" cx="50" cy="58" r="1.7" fill="#9fe3ff" style="animation-delay:0.46s"/><circle class="tw" cx="78" cy="68" r="1.7" fill="#fff2a8" style="animation-delay:0.69s"/><circle class="tw" cx="36" cy="80" r="1.7" fill="#ff9aa8" style="animation-delay:0.92s"/><circle class="tw" cx="62" cy="66" r="1.7" fill="#9fe3ff" style="animation-delay:1.15s"/><circle class="tw" cx="90" cy="96" r="1.7" fill="#fff2a8" style="animation-delay:1.38s"/><circle class="tw" cx="30" cy="100" r="1.7" fill="#ff9aa8" style="animation-delay:1.61s"/><circle class="tw" cx="72" cy="102" r="1.7" fill="#9fe3ff" style="animation-delay:0.04s"/><circle class="tw" cx="48" cy="104" r="1.7" fill="#fff2a8" style="animation-delay:0.27s"/>
+        <polygon class="star" points="60.0,4.0 62.8,11.1 70.5,11.6 64.6,16.5 66.5,23.9 60.0,19.8 53.5,23.9 55.4,16.5 49.5,11.6 57.2,11.1" fill="#ffd23f" stroke="#c98a00" stroke-width="1.5" stroke-linejoin="round"/>
+        <g stroke="#3a1010" stroke-width="1.4"><rect x="20" y="114" width="22" height="16" rx="2" fill="#e53950"/><rect x="82" y="116" width="20" height="14" rx="2" fill="#3b82f6"/></g>
+        <path d="M31 114V130M20 122H42" stroke="#ffd23f" stroke-width="2.4"/>
+        <path d="M92 116V130M82 123H102" stroke="#fff" stroke-width="2.2"/>
+      </svg>
+      <svg class="santa" viewBox="0 0 80 132">
+        <g stroke="#1a0a10" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+          <rect x="22" y="116" width="15" height="12" rx="4" fill="#1d1d26"/><rect x="43" y="116" width="15" height="12" rx="4" fill="#1d1d26"/>
+          <path d="M26 92H38V118H26ZM42 92H54V118H42Z" fill="#c62233"/>
+          <path d="M20 58Q40 50 60 58L66 106Q40 114 14 106Z" fill="#d62839"/>
+          <rect x="11" y="102" width="58" height="11" rx="5.5" fill="#fff"/>
+          <rect x="36" y="58" width="8" height="46" fill="#fff" stroke="none"/>
+          <rect x="16" y="82" width="48" height="8" fill="#1d1d26"/>
+          <rect x="33" y="80" width="14" height="12" rx="2" fill="#ffd23f"/><rect x="37" y="83.5" width="6" height="5" fill="#1d1d26" stroke="none"/>
+          <path d="M60 62Q70 72 70 88" fill="none" stroke="#c62233" stroke-width="9"/>
+          <circle cx="70" cy="90" r="5" fill="#fff"/>
+          <g class="wave"><path d="M20 62Q10 56 8 42" fill="none" stroke="#c62233" stroke-width="9"/><circle cx="8" cy="39" r="5" fill="#fff"/></g>
+          <circle cx="40" cy="38" r="14" fill="#ffd7b5"/>
+          <path d="M26 40Q27 62 40 65Q53 62 54 40Q48 49 40 49Q32 49 26 40Z" fill="#fff"/>
+          <ellipse cx="34.5" cy="44" rx="6" ry="3.4" fill="#fff"/><ellipse cx="45.5" cy="44" rx="6" ry="3.4" fill="#fff"/>
+          <circle cx="40" cy="41" r="3.2" fill="#ff9a9a"/>
+          <path d="M26 31Q40 9 66 25Q50 21 26 31Z" fill="#d62839"/>
+          <path d="M27 31Q40 11 56 20L54 29Z" fill="#d62839" stroke="none"/>
+          <rect x="24" y="27" width="34" height="9" rx="4.5" fill="#fff"/>
+          <circle cx="66" cy="25" r="5.2" fill="#fff"/>
+        </g>
+        <g fill="#1a0a10"><circle cx="34" cy="36" r="1.6"/><circle cx="46" cy="36" r="1.6"/></g>
+        <path d="M31 32Q34 30 37 32M43 32Q46 30 49 32" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
       </svg>
     </div>
-    <svg class="leaf l1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
-    <svg class="leaf l2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
-    <svg class="leaf l3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
-    <svg class="leaf l4" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
-    <svg class="leaf l5" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
-    <svg class="leaf l6" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6 6 4 12 8 18C10 20 12 22 12 22C12 22 14 20 16 18C20 12 18 6 12 2Z"/><path d="M12 6V21" fill="none"/></svg>
+    <i class="flake" style="left:6%;--s:5px;--d:10s;--dl:0s"></i>
+    <i class="flake" style="left:16%;--s:3px;--d:12s;--dl:-4s"></i>
+    <i class="flake" style="left:27%;--s:6px;--d:9s;--dl:-2s"></i>
+    <i class="flake" style="left:38%;--s:4px;--d:11s;--dl:-7s"></i>
+    <i class="flake" style="left:60%;--s:5px;--d:13s;--dl:-5s"></i>
+    <i class="flake" style="left:71%;--s:3px;--d:10s;--dl:-1s"></i>
+    <i class="flake" style="left:82%;--s:6px;--d:12s;--dl:-8s"></i>
+    <i class="flake" style="left:92%;--s:4px;--d:11s;--dl:-3s"></i>
+    <i class="flake" style="left:48%;--s:3px;--d:9s;--dl:-6s"></i>
     <h1 data-en="Dreams of the Mind">رویاهای ذهن</h1>
     <p class="subtitle" data-en="A collection of brain games &amp; fun">مجموعه بازی‌های فکری و سرگرمی</p>
   </header>
